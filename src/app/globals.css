@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-white text-toko-gray-900 antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl md:text-4xl lg:text-5xl;
+  }
+
+  h3 {
+    @apply text-2xl md:text-3xl lg:text-4xl;
+  }
+
+  h4 {
+    @apply text-xl md:text-2xl;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-block px-8 py-4 bg-toko-green text-white font-bold text-lg 
+           rounded hover:bg-toko-green-dark transition-colors duration-300 
+           focus:outline-none focus:ring-4 focus:ring-toko-green/50;
+  }
+
+  .btn-secondary {
+    @apply inline-block px-8 py-4 bg-white text-toko-green font-bold text-lg 
+           border-2 border-toko-green rounded hover:bg-toko-green hover:text-white 
+           transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-toko-green/50;
+  }
+
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-toko hover:shadow-toko-lg 
+           transition-shadow duration-300;
+  }
+
+  .link-hover {
+    @apply hover:text-toko-green transition-colors duration-300;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
