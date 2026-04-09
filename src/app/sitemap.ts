@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { fetchNewsArticles, fetchGalleryAlbums } from '@/lib/wordpress'
+import { fetchNewsArticles, fetchGalleryAlbums, fetchEventPosts } from '@/lib/wordpress'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://tokoacademy.org'
@@ -36,6 +36,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/partners`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -55,6 +61,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${baseUrl}/gallery`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/events`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.8,
@@ -79,5 +91,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticRoutes, ...newsRoutes, ...galleryRoutes]
+  const events = await fetchEventPosts();
+
+  const eventRoutes: MetadataRoute.Sitemap = events.map((eventItem) => ({
+    url: `${baseUrl}/events/${eventItem.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...staticRoutes, ...newsRoutes, ...galleryRoutes, ...eventRoutes]
 }

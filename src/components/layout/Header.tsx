@@ -2,21 +2,42 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import { navigation, contactInfo, externalLinks } from '@/data/config';
-
-// Dynamically import Icon to avoid hydration issues
-const Icon = dynamic(() => import('@iconify/react').then((mod) => ({ default: mod.Icon })), {
-  ssr: false,
-  loading: () => null,
-});
+import { usePathname } from 'next/navigation';
+import { navigation, contactInfo } from '@/data/config';
 
 export default function Header() {
+  const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [openMobileDropdown, setOpenMobileDropdown] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+
+  const normalizeHref = useCallback((href: string) => {
+    const [pathOnly] = href.split('?');
+    if (!pathOnly) {
+      return '/';
+    }
+    if (pathOnly === '/') {
+      return '/';
+    }
+    return pathOnly.endsWith('/') ? pathOnly.slice(0, -1) : pathOnly;
+  }, []);
+
+  const isActiveHref = useCallback((href: string) => {
+    const normalizedHref = normalizeHref(href);
+    const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
+
+    if (normalizedHref === '/') {
+      return normalizedPath === '/';
+    }
+
+    return normalizedPath === normalizedHref || normalizedPath.startsWith(`${normalizedHref}/`);
+  }, [normalizeHref, pathname]);
+
+  const isDropdownActive = useCallback((item: { dropdown?: Array<{ href: string }> }) => {
+    return Boolean(item.dropdown?.some((subItem) => isActiveHref(subItem.href)));
+  }, [isActiveHref]);
 
   useEffect(() => {
     setMounted(true);
@@ -37,15 +58,25 @@ export default function Header() {
             {/* Contact Info */}
             <div className="flex flex-wrap items-center gap-4 text-xs md:text-sm">
               <a href={`tel:${contactInfo.phones[0]}`} className="link-hover flex items-center gap-1">
-                <Icon icon="material-symbols:call-rounded" className="w-4 h-4" aria-hidden /> {contactInfo.phones[0]}
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.08 4.18 2 2 0 014 2h3a2 2 0 012 1.72c.12.9.33 1.78.63 2.62a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.46-1.12a2 2 0 012.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0122 16.92z" />
+                </svg>
+                {contactInfo.phones[0]}
               </a>
               <span className="hidden md:inline">|</span>
               <a href={`tel:${contactInfo.phones[1]}`} className="link-hover flex items-center gap-1">
-                <Icon icon="material-symbols:call-rounded" className="w-4 h-4" aria-hidden /> {contactInfo.phones[1]}
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.08 4.18 2 2 0 014 2h3a2 2 0 012 1.72c.12.9.33 1.78.63 2.62a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.46-1.12a2 2 0 012.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0122 16.92z" />
+                </svg>
+                {contactInfo.phones[1]}
               </a>
               <span className="hidden md:inline">|</span>
               <a href={`mailto:${contactInfo.email}`} className="link-hover flex items-center gap-1">
-                <Icon icon="material-symbols:mail-rounded" className="w-4 h-4" aria-hidden /> {contactInfo.email}
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M22 6l-10 7L2 6" />
+                </svg>
+                {contactInfo.email}
               </a>
             </div>
 
@@ -90,29 +121,40 @@ export default function Header() {
             <div className="hidden lg:flex items-center gap-8">
               {navigation.map((item) => (
                 item.dropdown ? (
+                  (() => {
+                    const isActive = isDropdownActive(item);
+                    return (
                   <div
                     key={item.name}
                     className="relative group"
                     onMouseEnter={() => setOpenDropdown(item.name)}
                     onMouseLeave={() => setOpenDropdown(null)}
                   >
-                    <button className="text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300 flex items-center gap-1">
+                    <button className={`font-medium transition-colors duration-300 flex items-center gap-1 ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}>
                       {item.name}
-                      <Icon icon="material-symbols:keyboard-arrow-down-rounded" className="w-5 h-5" />
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                      </svg>
                     </button>
+                    {isActive && <span className="absolute -bottom-1 left-0 h-0.5 w-full rounded-full bg-toko-green/70" aria-hidden />}
                     
                     {openDropdown === item.name && (
                       <div className="absolute top-full right-0 mt-0 w-64 bg-white shadow-2xl rounded-lg py-2 z-50 border border-toko-gray-200">
                         {item.dropdown.map((subItem: any) => (
+                          (() => {
+                            const isSubActive = isActiveHref(subItem.href);
+                            return (
                           <div key={subItem.name} className="relative group/submenu">
                             {subItem.megaMenu ? (
                               <div className="relative">
                                 <Link
                                   href={subItem.href}
-                                  className="block px-4 py-2 text-toko-gray-700 hover:bg-toko-green/10 hover:text-toko-green transition-colors flex items-center justify-between"
+                                  className={`block px-4 py-2 transition-colors flex items-center justify-between ${isSubActive ? 'bg-toko-green/10 text-toko-green font-semibold' : 'text-toko-gray-700 hover:bg-toko-green/10 hover:text-toko-green'}`}
                                 >
                                   {subItem.name}
-                                  <Icon icon="material-symbols:chevron-left-rounded" className="w-5 h-5" />
+                                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 18l-6-6 6-6" />
+                                  </svg>
                                 </Link>
                                 <div className="hidden group-hover/submenu:block absolute right-full top-0 mr-1 w-80 bg-white shadow-2xl rounded-lg py-2 border border-toko-gray-200 z-50">
                                   {subItem.megaMenu.map((megaItem: any) => (
@@ -146,34 +188,48 @@ export default function Header() {
                             ) : (
                               <Link
                                 href={subItem.href}
-                                className="block px-4 py-2 text-toko-gray-700 hover:bg-toko-green/10 hover:text-toko-green transition-colors"
+                                className={`block px-4 py-2 transition-colors ${isSubActive ? 'bg-toko-green/10 text-toko-green font-semibold' : 'text-toko-gray-700 hover:bg-toko-green/10 hover:text-toko-green'}`}
                               >
                                 {subItem.name}
                               </Link>
                             )}
                           </div>
+                            );
+                          })()
                         ))}
                       </div>
                     )}
                   </div>
+                    );
+                  })()
                 ) : item.external ? (
+                  (() => {
+                    const isActive = isActiveHref(item.href);
+                    return (
                   <a
                     key={item.name}
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300"
+                    className={`font-medium transition-colors duration-300 ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}
                   >
                     {item.name}
                   </a>
+                    );
+                  })()
                 ) : (
+                  (() => {
+                    const isActive = isActiveHref(item.href);
+                    return (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300"
+                    className={`font-medium transition-colors duration-300 ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}
                   >
                     {item.name}
                   </Link>
+                    );
+                  })()
                 )
               ))}
               <Link
@@ -208,26 +264,38 @@ export default function Header() {
                 {navigation.map((item) => (
                   <div key={item.name}>
                     {item.dropdown ? (
+                      (() => {
+                        const isActive = isDropdownActive(item);
+                        return (
                       <div>
                         <button
                           onClick={() => setOpenMobileDropdown(openMobileDropdown === item.name ? null : item.name)}
-                          className="w-full text-left text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300 py-2 flex items-center justify-between"
+                          className={`w-full text-left font-medium transition-colors duration-300 py-2 flex items-center justify-between ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}
                         >
                           {item.name}
-                          <Icon 
-                            icon="material-symbols:keyboard-arrow-down-rounded" 
-                            className={`w-5 h-5 transition-transform ${openMobileDropdown === item.name ? 'rotate-180' : ''}`}
-                          />
+                          <svg
+                            className={`h-5 w-5 transition-transform ${openMobileDropdown === item.name ? 'rotate-180' : ''}`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            aria-hidden
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 9l6 6 6-6" />
+                          </svg>
                         </button>
                         {openMobileDropdown === item.name && (
                           <div className="pl-4 mt-2 space-y-2">
                             {item.dropdown.map((subItem: any) => (
+                              (() => {
+                                const isSubActive = isActiveHref(subItem.href);
+                                return (
                               <div key={subItem.name}>
                                 {subItem.megaMenu ? (
                                   <div>
                                     <Link
                                       href={subItem.href}
-                                      className="block text-toko-gray-600 hover:text-toko-green py-2 font-medium"
+                                      className={`block py-2 font-medium ${isSubActive ? 'text-toko-green' : 'text-toko-gray-600 hover:text-toko-green'}`}
                                       onClick={() => setIsMenuOpen(false)}
                                     >
                                       {subItem.name}
@@ -248,35 +316,49 @@ export default function Header() {
                                 ) : (
                                   <Link
                                     href={subItem.href}
-                                    className="block text-toko-gray-600 hover:text-toko-green py-2"
+                                    className={`block py-2 ${isSubActive ? 'text-toko-green font-semibold' : 'text-toko-gray-600 hover:text-toko-green'}`}
                                     onClick={() => setIsMenuOpen(false)}
                                   >
                                     {subItem.name}
                                   </Link>
                                 )}
                               </div>
+                                );
+                              })()
                             ))}
                           </div>
                         )}
                       </div>
+                        );
+                      })()
                     ) : item.external ? (
+                      (() => {
+                        const isActive = isActiveHref(item.href);
+                        return (
                       <a
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300 py-2 block"
+                        className={`font-medium transition-colors duration-300 py-2 block ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {item.name}
                       </a>
+                        );
+                      })()
                     ) : (
+                      (() => {
+                        const isActive = isActiveHref(item.href);
+                        return (
                       <Link
                         href={item.href}
-                        className="text-toko-gray-700 hover:text-toko-green font-medium transition-colors duration-300 py-2 block"
+                        className={`font-medium transition-colors duration-300 py-2 block ${isActive ? 'text-toko-green' : 'text-toko-gray-700 hover:text-toko-green'}`}
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {item.name}
                       </Link>
+                        );
+                      })()
                     )}
                   </div>
                 ))}

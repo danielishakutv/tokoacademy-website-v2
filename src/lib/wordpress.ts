@@ -3,7 +3,10 @@ type GraphQLResponse<T> = {
   errors?: Array<{ message: string }>;
 };
 
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+const WORDPRESS_API_URL =
+  process.env.WORDPRESS_API_URL ??
+  process.env.NEXT_PUBLIC_WORDPRESS_API_URL ??
+  'https://wp.tokoacademy.org/graphql';
 
 export type WordPressPost = {
   slug: string;
@@ -11,6 +14,7 @@ export type WordPressPost = {
   excerpt: string;
   date: string;
   content: string;
+  status?: string | null;
   featuredImage?: {
     node?: {
       sourceUrl?: string;
@@ -18,7 +22,7 @@ export type WordPressPost = {
     } | null;
   } | null;
   categories?: {
-    nodes?: Array<{ name?: string | null }>;
+    nodes?: Array<{ name?: string | null; slug?: string | null }>;
   } | null;
 };
 
@@ -35,10 +39,39 @@ export type NewsArticle = {
 };
 
 const DEFAULT_IMAGE = '/images/hero/professional-courses.jpg';
+const ALLOWED_NEWS_CATEGORY_SLUGS = ['in-the-news', 'newsroom', 'press-release'] as const;
+
+function hasAllowedNewsCategory(categories?: WordPressPost['categories']) {
+  return Boolean(
+    categories?.nodes?.some((category) =>
+      ALLOWED_NEWS_CATEGORY_SLUGS.includes((category.slug ?? '').toLowerCase() as (typeof ALLOWED_NEWS_CATEGORY_SLUGS)[number])
+    )
+  );
+}
+
+function getPrimaryNewsCategory(categories?: WordPressPost['categories']): NewsArticle['category'] {
+  if (!categories?.nodes?.length) {
+    return 'Newsroom';
+  }
+
+  if (categories.nodes.some((category) => (category.slug ?? '').toLowerCase() === 'press-release')) {
+    return 'Press Release';
+  }
+
+  if (categories.nodes.some((category) => (category.slug ?? '').toLowerCase() === 'in-the-news')) {
+    return 'Toko in the News';
+  }
+
+  if (categories.nodes.some((category) => (category.slug ?? '').toLowerCase() === 'newsroom')) {
+    return 'Newsroom';
+  }
+
+  return 'Newsroom';
+}
 
 export async function graphqlRequest<T>(query: string, variables: Record<string, unknown> = {}) {
   if (!WORDPRESS_API_URL) {
-    throw new Error('NEXT_PUBLIC_WORDPRESS_API_URL is not set');
+    throw new Error('WORDPRESS_API_URL or NEXT_PUBLIC_WORDPRESS_API_URL is not set');
   }
 
   const response = await fetch(WORDPRESS_API_URL, {
@@ -69,15 +102,12 @@ function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function stripImagesFromHtml(value: string) {
+  return value.replace(/<figure[^>]*>.*?<\/figure>/gi, '').replace(/<img[^>]*>/gi, '').trim();
+}
+
 function normalizeCategory(categories?: WordPressPost['categories']): NewsArticle['category'] {
-  const name = categories?.nodes?.[0]?.name?.toLowerCase() ?? '';
-
-  if (name.includes('press')) return 'Press Release';
-  if (name.includes('toko') && name.includes('news')) return 'Toko in the News';
-  if (name.includes('tips')) return 'Tips';
-  if (name.includes('newsroom')) return 'Newsroom';
-
-  return 'Newsroom';
+  return getPrimaryNewsCategory(categories);
 }
 
 function calculateReadTime(content: string) {
@@ -110,13 +140,20 @@ function mapPostToArticle(post: WordPressPost): NewsArticle {
 export async function fetchNewsArticles(limit = 30): Promise<NewsArticle[]> {
   const query = `
     query NewsPosts($first: Int!) {
-      posts(first: $first, where: { orderby: { field: DATE, order: DESC } }) {
+      posts(
+        first: $first
+        where: {
+          status: PUBLISH
+          orderby: { field: DATE, order: DESC }
+        }
+      ) {
         nodes {
           slug
           title
           excerpt
           date
           content
+          status
           featuredImage {
             node {
               sourceUrl
@@ -126,6 +163,7 @@ export async function fetchNewsArticles(limit = 30): Promise<NewsArticle[]> {
           categories {
             nodes {
               name
+              slug
             }
           }
         }
@@ -134,7 +172,9 @@ export async function fetchNewsArticles(limit = 30): Promise<NewsArticle[]> {
   `;
 
   const data = await graphqlRequest<{ posts: { nodes: WordPressPost[] } }>(query, { first: limit });
-  return data.posts.nodes.map(mapPostToArticle);
+  return data.posts.nodes
+    .filter((post) => (post.status ?? '').toLowerCase() === 'publish' && hasAllowedNewsCategory(post.categories))
+    .map(mapPostToArticle);
 }
 
 export async function fetchNewsArticleBySlug(slug: string): Promise<NewsArticle | null> {
@@ -146,6 +186,7 @@ export async function fetchNewsArticleBySlug(slug: string): Promise<NewsArticle 
         excerpt
         date
         content
+        status
         featuredImage {
           node {
             sourceUrl
@@ -155,6 +196,7 @@ export async function fetchNewsArticleBySlug(slug: string): Promise<NewsArticle 
         categories {
           nodes {
             name
+            slug
           }
         }
       }
@@ -164,6 +206,14 @@ export async function fetchNewsArticleBySlug(slug: string): Promise<NewsArticle 
   const data = await graphqlRequest<{ post: WordPressPost | null }>(query, { slug });
 
   if (!data.post) {
+    return null;
+  }
+
+  if ((data.post.status ?? '').toLowerCase() !== 'publish') {
+    return null;
+  }
+
+  if (!hasAllowedNewsCategory(data.post.categories)) {
     return null;
   }
 
@@ -188,6 +238,81 @@ export type GalleryAlbum = {
   }>;
   shareUrl: string;
 };
+
+export type EventPost = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  image: string;
+  imageAlt: string;
+  contentHtml: string;
+  contentHtmlWithoutImages: string;
+  images: Array<{
+    url: string;
+    alt: string;
+  }>;
+  links: Array<{
+    href: string;
+    label: string;
+  }>;
+};
+
+function extractLinksFromContent(content: string): Array<{ href: string; label: string }> {
+  const links: Array<{ href: string; label: string }> = [];
+  const anchorRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+
+  while ((match = anchorRegex.exec(content)) !== null) {
+    const href = (match[1] ?? '').trim();
+    const label = stripHtml(match[2] ?? '').trim();
+
+    if (!href || (!href.startsWith('http://') && !href.startsWith('https://'))) {
+      continue;
+    }
+
+    links.push({
+      href,
+      label: label || 'Event website',
+    });
+  }
+
+  return links.slice(0, 3);
+}
+
+function isPublishedEventPost(post: WordPressPost) {
+  if ((post.status ?? '').toLowerCase() !== 'publish') {
+    return false;
+  }
+
+  return Boolean(post.categories?.nodes?.some((category) => (category.slug ?? '').toLowerCase() === 'events'));
+}
+
+function mapPostToEvent(post: WordPressPost): EventPost {
+  const imageUrl = post.featuredImage?.node?.sourceUrl || DEFAULT_IMAGE;
+  const imageAlt = post.featuredImage?.node?.altText || stripHtml(post.title);
+  const excerpt = stripHtml(post.excerpt || post.content || '');
+  const extractedImages = extractImagesFromContent(post.content || '');
+  const contentHtml = post.content || '';
+  const contentHtmlWithoutImages = stripImagesFromHtml(contentHtml);
+
+  return {
+    slug: post.slug,
+    title: stripHtml(post.title),
+    excerpt,
+    date: new Date(post.date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+    image: imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE,
+    imageAlt,
+    contentHtml,
+    contentHtmlWithoutImages,
+    images: extractedImages,
+    links: extractLinksFromContent(contentHtml),
+  };
+}
 
 function extractImagesFromContent(content: string): Array<{ url: string; alt: string }> {
   const images: Array<{ url: string; alt: string }> = [];
@@ -215,6 +340,87 @@ function extractImagesFromContent(content: string): Array<{ url: string; alt: st
   }
 
   return images;
+}
+
+export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
+  const query = `
+    query EventPosts($first: Int!) {
+      posts(
+        first: $first
+        where: {
+          status: PUBLISH
+          categoryName: "events"
+          orderby: { field: DATE, order: DESC }
+        }
+      ) {
+        nodes {
+          slug
+          title
+          excerpt
+          date
+          content
+          status
+          featuredImage {
+            node {
+              sourceUrl
+              altText
+            }
+          }
+          categories {
+            nodes {
+              name
+              slug
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await graphqlRequest<{ posts: { nodes: WordPressPost[] } }>(query, { first: limit });
+
+  return data.posts.nodes
+    .filter(isPublishedEventPost)
+    .map(mapPostToEvent);
+}
+
+export async function fetchEventPostBySlug(slug: string): Promise<EventPost | null> {
+  const query = `
+    query EventPostBySlug($slug: ID!) {
+      post(id: $slug, idType: SLUG) {
+        slug
+        title
+        excerpt
+        date
+        content
+        status
+        featuredImage {
+          node {
+            sourceUrl
+            altText
+          }
+        }
+        categories {
+          nodes {
+            name
+            slug
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await graphqlRequest<{ post: WordPressPost | null }>(query, { slug });
+
+  if (!data.post) {
+    return null;
+  }
+
+  if (!isPublishedEventPost(data.post)) {
+    return null;
+  }
+
+  return mapPostToEvent(data.post);
 }
 
 export async function fetchGalleryAlbums(): Promise<GalleryAlbum[]> {

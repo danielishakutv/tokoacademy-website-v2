@@ -34,64 +34,32 @@ export type NavigationItem = {
 };
 
 export const navigation: NavigationItem[] = [
-  { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
-  { name: 'Courses', href: '/courses' },
-  { name: 'Kids', href: '/kids' },
-  { name: 'Corporate Training', href: '/corporate' },
-  { name: 'Contact', href: '/contact' },
-  { name: 'News', href: '/news' },
   {
-    name: 'More',
+    name: 'Programs',
     href: '#',
     dropdown: [
+      { name: 'All Programs', href: '/courses' },
+      { name: 'Kids', href: '/kids' },
       {
         name: 'Bootcamps',
-        href: '/bootcamps',
-        megaMenu: [
-          {
-            name: 'TechForge Bootcamp',
-            href: 'https://bootcamp.tokoacademy.org/signup',
-            description: 'Intensive coding bootcamp',
-            image: '/images/bootcamps/techforge.jpg'
-          },
-          {
-            name: 'Kids AI Camp',
-            href: 'https://tokoacademy.org/kids/',
-            description: 'Annual Spring AI Bootcamp for kids ages 5-16',
-            image: '/images/bootcamps/robotics-student.png'
-          }
-        ]
+        href: 'https://bootcamp.tokoacademy.org/signup',
       },
-      { name: 'Workshops', href: '/workshops' },
-      {
-        name: 'Events',
-        href: '/events',
-        megaMenu: [
-          {
-            name: 'TEDxYola',
-            href: 'https://tedxyola.com/',
-            description: 'Annual TEDx Conference to spark innovation and ideas',
-            image: '/images/events/tedxyola.png'
-          },
-          {
-            name: 'KSCC Graduation',
-            href: 'https://www.facebook.com/share/v/17zVww3zLE/',
-            description: 'Kids Summer Coding Class Graduation Ceremony',
-            image: '/images/events/kscc-graduation.jpg'
-          },
-          {
-            name: 'Women in Uniform',
-            href: 'https://tokoacademy.org/iwd/',
-            description: 'Empowering women in service in commemoration of IWD',
-            image: '/images/events/iwd.png'
-          }
-        ]
-      },
-      { name: 'Gallery', href: '/gallery' },
+      { name: 'Corporate Training', href: '/corporate' },
       { name: 'Class Schedules', href: '/schedules' },
-      { name: 'Press Releases', href: '/press' },
-      { name: 'Toko in the News', href: '/news' }
     ]
-  }
+  },
+  {
+    name: 'Impact',
+    href: '#',
+    dropdown: [
+      { name: 'Events', href: '/events' },
+      { name: 'Newsroom', href: '/news' },
+      { name: 'Press Releases', href: '/news?category=press-release' },
+      { name: 'Toko in the News', href: '/news?category=in-the-news' },
+      { name: 'Gallery', href: '/gallery' },
+    ]
+  },
+  { name: 'Partners', href: '/partners' },
+  { name: 'Contact', href: '/contact' },
 ];
