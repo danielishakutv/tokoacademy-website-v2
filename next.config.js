@@ -2,8 +2,8 @@
 const nextConfig = {
   output: 'export',
   images: {
-    unoptimized: true,
     domains: ['tokoacademy.org', 'wp.tokoacademy.org'],
+    unoptimized: true,
   },
   trailingSlash: true,
   reactStrictMode: true,

@@ -1,13 +1,7 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { navigation, contactInfo, externalLinks } from '@/data/config';
-
-const Icon = dynamic(() => import('@iconify/react').then((mod) => ({ default: mod.Icon })), {
-  ssr: false,
-  loading: () => null,
-});
+import { navigation, contactInfo } from '@/data/config';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -86,7 +80,7 @@ export default function Footer() {
             <h3 className="text-lg font-bold mb-4">Contact Us</h3>
             <ul className="space-y-3 text-toko-gray-300">
               <li className="flex items-start gap-2">
-                <Icon icon="material-symbols:call-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
+                <svg className="w-5 h-5 text-toko-green mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.08 4.18 2 2 0 014 2h3a2 2 0 012 1.72c.12.9.33 1.78.63 2.62a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.46-1.12a2 2 0 012.11-.45c.84.3 1.72.51 2.62.63A2 2 0 0122 16.92z" /></svg>
                 <div>
                   <a href={`tel:${contactInfo.phones[0]}`} className="hover:text-toko-green transition-colors block">
                     {contactInfo.phones[0]}
@@ -97,13 +91,13 @@ export default function Footer() {
                 </div>
               </li>
               <li className="flex items-start gap-2">
-                <Icon icon="material-symbols:mail-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
+                <svg className="w-5 h-5 text-toko-green mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z" /><path strokeLinecap="round" strokeLinejoin="round" d="M22 6l-10 7L2 6" /></svg>
                 <a href={`mailto:${contactInfo.email}`} className="hover:text-toko-green transition-colors">
                   {contactInfo.email}
                 </a>
               </li>
               <li className="flex items-start gap-2">
-                <Icon icon="material-symbols:location-on-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
+                <svg className="w-5 h-5 text-toko-green mt-0.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-8-6.5-8-12a8 8 0 1116 0c0 5.5-8 12-8 12z" /><circle cx="12" cy="9" r="2.5" /></svg>
                 <span>{contactInfo.address}</span>
               </li>
             </ul>

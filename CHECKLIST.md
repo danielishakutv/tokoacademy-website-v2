@@ -274,3 +274,11 @@ Your Toko Academy website is now live!
 **Designed For**: Global reach
 
 **You're ready to transform lives through education! 🚀**
+
+
+HOME PAGES
+- https://tokoacademy.org/home-v1-original
+- https://tokoacademy.org/home-v2-hybrid
+
+
+cd /home/tokoacademy/apps/tokoacademy-website-v2 && git pull origin master && npm ci && npm run build && pm2 restart tokoacademy-web --update-env
