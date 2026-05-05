@@ -44,9 +44,9 @@ export const metadata: Metadata = {
 
 const impactStats = [
   { label: 'Learners Trained', value: '2,000+' },
-  { label: 'Programs Delivered', value: '120+' },
+  { label: 'Programmes Delivered', value: '20+' },
   { label: 'Partner Institutions', value: '35+' },
-  { label: 'Career Progression Outcomes', value: '85%' },
+  { label: 'Career Progression', value: '75%' },
 ];
 
 const pathways = [
@@ -141,21 +141,22 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(124,179,66,0.45),transparent_45%),radial-gradient(circle_at_85%_25%,rgba(33,150,243,0.35),transparent_48%),linear-gradient(135deg,#1f2937,#0f172a)]" />
         <div className="section-container relative z-10">
           <div className="mx-auto max-w-5xl text-center lg:text-left">
+            <p className="text-sm uppercase tracking-[0.2em] text-toko-yellow mb-4">Skills for Tomorrow</p>
             <h1 className="text-balance text-4xl font-bold leading-[1.08] sm:text-5xl md:text-6xl lg:max-w-4xl">
-              Empowering Youths, Children, and Professionals for Lasting Change
+              Building Africa&apos;s Digital Future — One Community at a Time.
             </h1>
             <p className="mt-6 max-w-3xl text-balance text-base text-white/90 sm:text-lg md:text-xl lg:text-2xl">
-              Practical learning pathways delivered with government and organizational partners to create measurable impact.
+              Toko Academy Ltd. is a Nigerian-incorporated digital skills and workforce development organisation training individuals, institutions, and communities for the digital economy. Headquartered in Yola, Adamawa State, with national virtual reach.
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 lg:justify-start">
               <Link href="/courses" className="btn-primary w-full text-center sm:w-auto">
-                Explore Programs
+                Explore Programmes →
               </Link>
               <Link
-                href="/contact"
+                href="/partners"
                 className="inline-flex w-full items-center justify-center rounded border border-white/40 px-8 py-4 text-base font-bold text-white transition-colors duration-300 hover:bg-white/10 sm:w-auto sm:text-lg"
               >
-                Partner With Us
+                Partner With Us →
               </Link>
             </div>
           </div>

@@ -224,8 +224,8 @@ export default function ContactPage() {
             <h2 className="text-3xl font-bold text-toko-gray-900 mb-4">Visit Us</h2>
             <p className="text-toko-gray-600">Find us at any of our locations</p>
           </div>
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 gap-6">
               {/* Yola Office */}
               <div className="card p-6">
                 <div className="w-16 h-16 bg-toko-green/10 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -236,7 +236,7 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-xl font-bold text-toko-gray-900 mb-3 text-center">Toko Academy, Yola</h3>
                 <p className="text-toko-gray-600 text-center mb-4">
-                  No. 2 Bekaji Road, Bekaji, Yola, Jimeta 640261, Adamawa
+                  No. 1A Bekaji Road, Adjacent to YEDC S/C Office, Jimeta, Yola, Adamawa State, Nigeria.
                 </p>
                 <a 
                   href={`tel:${contactInfo.phones[0]}`}
@@ -246,61 +246,7 @@ export default function ContactPage() {
                 </a>
               </div>
 
-              {/* Abuja Office */}
-              <div className="card p-6 relative">
-                <div className="absolute top-4 right-4">
-                  <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
-                    Under Maintenance
-                  </span>
-                </div>
-                <div className="w-16 h-16 bg-toko-blue/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-toko-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-3 text-center">Toko Academy, FCT - Abuja</h3>
-                <p className="text-toko-gray-600 text-center mb-4">
-                  25a Olu Agabi Close, Life Camp, FCT - Abuja
-                </p>
-                <p className="text-center text-sm text-orange-600 font-semibold mb-4">
-                  Temporarily Closed
-                </p>
-                <a 
-                  href={`tel:${contactInfo.phones[1]}`}
-                  className="btn-secondary w-full text-center"
-                >
-                  Contact Us
-                </a>
-              </div>
 
-              {/* Kaduna Office */}
-              <div className="card p-6 relative">
-                <div className="absolute top-4 right-4">
-                  <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">
-                    Under Maintenance
-                  </span>
-                </div>
-                <div className="w-16 h-16 bg-toko-magenta/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-toko-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-3 text-center">Toko Academy, Kaduna</h3>
-                <p className="text-toko-gray-600 text-center mb-4">
-                  No. 3, Ghana Road, Malali Kaduna
-                </p>
-                <p className="text-center text-sm text-orange-600 font-semibold mb-4">
-                  Temporarily Closed
-                </p>
-                <a 
-                  href={`tel:${contactInfo.phones[0]}`}
-                  className="btn-secondary w-full text-center"
-                >
-                  Contact Us
-                </a>
-              </div>
             </div>
           </div>
         </div>

@@ -343,6 +343,9 @@ function extractImagesFromContent(content: string): Array<{ url: string; alt: st
 }
 
 export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
+  // Import static events
+  const { staticEvents } = await import('@/data/events');
+
   const query = `
     query EventPosts($first: Int!) {
       posts(
@@ -377,14 +380,87 @@ export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
     }
   `;
 
-  const data = await graphqlRequest<{ posts: { nodes: WordPressPost[] } }>(query, { first: limit });
+  try {
+    const data = await graphqlRequest<{ posts: { nodes: WordPressPost[] } }>(query, { first: limit });
+    const wordPressEvents = data.posts.nodes
+      .filter(isPublishedEventPost)
+      .map(mapPostToEvent);
 
-  return data.posts.nodes
-    .filter(isPublishedEventPost)
-    .map(mapPostToEvent);
+    // Convert static events to EventPost format
+    const staticEventPosts: EventPost[] = staticEvents.map((event) => ({
+      slug: event.slug,
+      title: event.title,
+      excerpt: event.excerpt,
+      date: new Date(event.date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      image: event.image,
+      imageAlt: event.imageAlt,
+      contentHtml: event.description,
+      contentHtmlWithoutImages: event.description,
+      images: [],
+      links: [],
+    }));
+
+    // Merge and sort by date (newest first)
+    const allEvents = [...wordPressEvents, ...staticEventPosts].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    return allEvents.slice(0, limit);
+  } catch (error) {
+    console.warn('Failed to fetch WordPress events, using static events only:', error);
+
+    // Fallback to static events if WordPress fails
+    const { staticEvents } = await import('@/data/events');
+    return staticEvents
+      .map((event) => ({
+        slug: event.slug,
+        title: event.title,
+        excerpt: event.excerpt,
+        date: new Date(event.date).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+        image: event.image,
+        imageAlt: event.imageAlt,
+        contentHtml: event.description,
+        contentHtmlWithoutImages: event.description,
+        images: [],
+        links: [],
+      }))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, limit);
+  }
 }
 
 export async function fetchEventPostBySlug(slug: string): Promise<EventPost | null> {
+  // Check static events first
+  const { staticEvents } = await import('@/data/events');
+  const staticEvent = staticEvents.find((e) => e.slug === slug);
+
+  if (staticEvent) {
+    return {
+      slug: staticEvent.slug,
+      title: staticEvent.title,
+      excerpt: staticEvent.excerpt,
+      date: new Date(staticEvent.date).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }),
+      image: staticEvent.image,
+      imageAlt: staticEvent.imageAlt,
+      contentHtml: staticEvent.description,
+      contentHtmlWithoutImages: staticEvent.description,
+      images: [],
+      links: [],
+    };
+  }
+
   const query = `
     query EventPostBySlug($slug: ID!) {
       post(id: $slug, idType: SLUG) {

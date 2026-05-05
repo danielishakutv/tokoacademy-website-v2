@@ -127,11 +127,15 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-toko-gray-800">
         <div className="section-container py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-toko-gray-400">
-            <p>© {currentYear} Toko Academy. All rights reserved.</p>
+          <div className="flex flex-col gap-4 text-sm text-toko-gray-400">
+            <p>Toko Academy Ltd. — Registered with the Corporate Affairs Commission of Nigeria, 2025 (CAC).<br />No. 1A Bekaji Road, Adjacent to YEDC S/C Office, Jimeta, Yola, Adamawa State, Nigeria.<br />+234 808 825 6055  •  +234 812 856 1493  •  info@tokoacademy.org</p>
+            <p>© {currentYear} Toko Academy Ltd. All rights reserved.</p>
+          </div>
+          <div className="flex flex-col md:flex-row justify-center items-center gap-6 text-sm text-toko-gray-400 mt-4">
             <div className="flex gap-6">
               <Link href="/privacy" className="hover:text-toko-green transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="hover:text-toko-green transition-colors">Terms of Service</Link>
+              <Link href="/safeguarding" className="hover:text-toko-green transition-colors">Safeguarding Policy</Link>
             </div>
           </div>
         </div>

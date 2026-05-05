@@ -1,7 +1,7 @@
 export const contactInfo = {
   phones: ['+234 808 825 6055', '+234 812 856 1493'],
   email: 'info@tokoacademy.org',
-  address: 'Yola, Nigeria',
+  address: 'No. 1A Bekaji Road, Adjacent to YEDC S/C Office, Jimeta, Yola, Adamawa State, Nigeria.',
   socialMedia: {
     facebook: 'https://facebook.com/tokoacademy',
     instagram: 'https://instagram.com/tokoacademy',
