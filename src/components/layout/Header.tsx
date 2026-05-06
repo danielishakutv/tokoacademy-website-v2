@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { navigation, contactInfo } from '@/data/config';
+import { navigation, contactInfo, externalLinks } from '@/data/config';
 
 export default function Header() {
   const pathname = usePathname();
@@ -232,12 +232,14 @@ export default function Header() {
                   })()
                 )
               ))}
-              <Link
-                href="/register/"
+              <a
+                href={externalLinks.applyNow}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="btn-primary py-3 px-6 text-base"
               >
                 Apply Now
-              </Link>
+              </a>
             </div>
 
             {/* Mobile Menu Button */}
@@ -362,13 +364,15 @@ export default function Header() {
                     )}
                   </div>
                 ))}
-                <Link
-                  href="/register/"
+                <a
+                  href={externalLinks.applyNow}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-primary text-center mt-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Apply Now
-                </Link>
+                </a>
               </div>
             </div>
           )}
