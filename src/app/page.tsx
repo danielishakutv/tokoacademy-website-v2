@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PartnerLogosStrip from '@/components/PartnerLogosStrip';
 
 function InlineIcon({ className }: { className?: string }) {
   return (
@@ -232,6 +233,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PartnerLogosStrip limit={12} showViewAll={true} />
 
       <section className="section-padding bg-toko-gray-900 text-white [content-visibility:auto] [contain-intrinsic-size:1px_620px]">
         <div className="section-container">

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PartnerLogosWall from '@/components/PartnerLogosWall';
 
 export const metadata: Metadata = {
   title: 'Partners - Collaborate for Lasting Impact',
@@ -106,6 +107,8 @@ export default function PartnersPage() {
           </div>
         </div>
       </section>
+
+      <PartnerLogosWall />
 
       <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_560px]">
         <div className="section-container">
