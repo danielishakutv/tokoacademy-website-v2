@@ -1,6 +1,17 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import PartnerLogosStrip from '@/components/PartnerLogosStrip';
+import CourseThumbnail from '@/components/CourseThumbnail';
+import featuredCourses from '@/data/featured-courses.json';
+
+type FeaturedCourse = {
+  id: string;
+  title: string;
+  description: string;
+  duration: string;
+  level: string;
+  category: string;
+};
 
 function InlineIcon({ className }: { className?: string }) {
   return (
@@ -230,6 +241,39 @@ export default function Home() {
                 </Link>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-toko-gray-50 [content-visibility:auto] [contain-intrinsic-size:1px_900px]">
+        <div className="section-container">
+          <div className="mb-12 max-w-3xl">
+            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Featured Courses</p>
+            <h2 className="mt-3 text-toko-gray-900">Programs You Can Start With</h2>
+            <p className="mt-4 text-base text-toko-gray-600 md:text-lg">
+              A snapshot of in-demand training programs delivered through Toko Academy. View all courses for the full catalog.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {(featuredCourses as FeaturedCourse[]).map((course) => (
+              <article key={course.id} className="card flex flex-col rounded-2xl border border-toko-gray-200 bg-white p-6 transition-shadow duration-300 hover:shadow-toko-lg">
+                <CourseThumbnail id={course.id} title={course.title} duration={course.duration} courseId={course.id} />
+                <h3 className="mt-5 text-xl text-toko-gray-900 md:text-2xl">{course.title}</h3>
+                <p className="mt-3 text-sm text-toko-gray-600 md:text-base">{course.description}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="rounded bg-toko-blue/10 px-3 py-1 text-xs font-medium text-toko-blue">{course.level}</span>
+                  <span className="rounded bg-toko-magenta/10 px-3 py-1 text-xs font-medium text-toko-magenta">{course.category}</span>
+                </div>
+                <Link href={`/courses/${course.id}`} className="mt-6 inline-flex items-center text-sm font-semibold text-toko-green transition-colors hover:text-toko-green-dark md:text-base">
+                  View course →
+                </Link>
+              </article>
+            ))}
+          </div>
+          <div className="mt-12 text-center">
+            <Link href="/courses" className="btn-primary inline-flex">
+              View All Courses
+            </Link>
           </div>
         </div>
       </section>

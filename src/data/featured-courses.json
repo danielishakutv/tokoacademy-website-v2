@@ -1,0 +1,50 @@
+[
+  {
+    "id": "data-analysis",
+    "title": "Data Analysis & Visualization",
+    "description": "Master Excel, SQL, Power BI, and Python for data-driven decision making.",
+    "duration": "12 weeks",
+    "level": "Beginner to Advanced",
+    "category": "Data Science"
+  },
+  {
+    "id": "web-development",
+    "title": "Website Development",
+    "description": "Build modern, responsive websites with HTML, CSS, JavaScript, and frameworks like React and Next.js.",
+    "duration": "16 weeks",
+    "level": "Beginner to Advanced",
+    "category": "Development"
+  },
+  {
+    "id": "ui-ux-design",
+    "title": "UI/UX Design",
+    "description": "Design beautiful, user-friendly interfaces. Learn wireframing, prototyping, and user research.",
+    "duration": "12 weeks",
+    "level": "Beginner to Intermediate",
+    "category": "Design"
+  },
+  {
+    "id": "digital-marketing",
+    "title": "Digital Marketing & Content Creation",
+    "description": "Learn SEO, social media marketing, content strategy, and digital advertising to grow your online presence.",
+    "duration": "12 weeks",
+    "level": "Beginner to Advanced",
+    "category": "Marketing"
+  },
+  {
+    "id": "python-programming",
+    "title": "Python Programming",
+    "description": "One of the most versatile programming languages for web development, automation, data science, and AI.",
+    "duration": "14 weeks",
+    "level": "Beginner to Advanced",
+    "category": "Programming"
+  },
+  {
+    "id": "ai-automation",
+    "title": "AI Essentials & Automation",
+    "description": "Explore artificial intelligence, machine learning basics, and automation tools to enhance productivity.",
+    "duration": "10 weeks",
+    "level": "Intermediate to Advanced",
+    "category": "AI & Automation"
+  }
+]
