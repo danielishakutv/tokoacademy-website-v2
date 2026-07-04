@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
+import MatomoAnalytics from '@/components/MatomoAnalytics'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tokoacademy.org'),
@@ -81,6 +82,9 @@ export default function RootLayout({
       </head>
       <body>
         <ServiceWorkerRegister />
+        <Suspense fallback={null}>
+          <MatomoAnalytics />
+        </Suspense>
         <Suspense fallback={null}>
           <Header />
         </Suspense>
