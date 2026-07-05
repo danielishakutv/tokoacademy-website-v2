@@ -1,0 +1,62 @@
+name: Build and deploy to server
+
+on:
+  # Deploy when code changes are pushed to GitHub
+  push:
+    branches: [master]
+  # Deploy when WordPress publishes/updates content (webhook from WP)
+  repository_dispatch:
+    types: [wordpress_update]
+  # Hourly fallback in case a webhook is missed (minute 17 to avoid peak congestion)
+  schedule:
+    - cron: '17 * * * *'
+  # Manual "Run workflow" button in the Actions tab
+  workflow_dispatch:
+
+# Queue deploys instead of running two at once; never cancel a deploy mid-upload
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build static site (fetches fresh WordPress content)
+        run: npm run build
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      # Additive deploy: uploads/overwrites this site's files only.
+      # NEVER add --delete here — public_html contains other sites that must not be touched.
+      - name: Deploy out/ to server (additive rsync, no delete)
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            out/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
