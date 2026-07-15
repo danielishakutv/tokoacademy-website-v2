@@ -38,11 +38,11 @@ const CONCURRENCY = 6;
 
 const ALLOWED_NEWS_CATEGORY_SLUGS = ['in-the-news', 'newsroom', 'press-release'];
 
-// Cloudflare (in front of wp.tokoacademy.org) returns 403 to requests with no
-// browser User-Agent, so send a realistic one on every request.
-const USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-
+// IMPORTANT: send only Content-Type, exactly like src/lib/wordpress.ts's
+// graphqlRequest(). Wordfence/Cloudflare in front of wp.tokoacademy.org returns
+// 403 to requests carrying a browser User-Agent that lacks matching browser
+// fingerprint headers (it reads as a spoofed browser), while this minimal,
+// honest request is allowed.
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function gqlOnce(query, variables) {
@@ -51,11 +51,7 @@ async function gqlOnce(query, variables) {
   try {
     const res = await fetch(WP_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': USER_AGENT,
-        Accept: 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
       signal: controller.signal,
     });
@@ -87,10 +83,7 @@ async function fetchImageBuffer(url) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-      const res = await fetch(url, {
-        headers: { 'User-Agent': USER_AGENT },
-        signal: controller.signal,
-      });
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error(`image HTTP ${res.status}`);
       return Buffer.from(await res.arrayBuffer());
     } finally {
