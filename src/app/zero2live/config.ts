@@ -7,8 +7,8 @@
 export const PAYSTACK_URL = 'https://paystack.com/pay/REPLACE-ME';
 
 export const PRICE_FLASH = '₦25,000';
-export const PRICE_FULL = '₦30,000';
-export const PRICE_SAVINGS = '₦5,000';
+export const PRICE_FULL = '₦50,000';
+export const PRICE_SAVINGS = '₦25,000';
 export const PRICE_FLASH_NUMBER = '25000'; // for structured data / analytics
 
 export const SEATS = 25;
