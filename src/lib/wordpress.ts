@@ -98,8 +98,72 @@ export async function graphqlRequest<T>(query: string, variables: Record<string,
   return json.data;
 }
 
+// WordPress returns plain-text fields (title, excerpt) with HTML entities encoded
+// (e.g. &#8217; &#8211; &hellip; &amp;). When those strings are rendered as React
+// text nodes they are NOT decoded by the browser, so the raw codes show on screen.
+// Decode them here. NOTE: never run this on HTML that will be passed to
+// dangerouslySetInnerHTML — the browser decodes that itself, and decoding it here
+// would turn escaped markup back into live tags.
+const NAMED_HTML_ENTITIES: Record<string, string> = {
+  amp: '&', lt: '<', gt: '>', quot: '"', apos: "'",
+  nbsp: ' ', ensp: ' ', emsp: ' ', thinsp: ' ', shy: '',
+  hellip: '…', mdash: '—', ndash: '–', minus: '−',
+  lsquo: '‘', rsquo: '’', sbquo: '‚',
+  ldquo: '“', rdquo: '”', bdquo: '„',
+  laquo: '«', raquo: '»', lsaquo: '‹', rsaquo: '›',
+  copy: '©', reg: '®', trade: '™', deg: '°',
+  plusmn: '±', times: '×', divide: '÷',
+  frac12: '½', frac14: '¼', frac34: '¾',
+  sup1: '¹', sup2: '²', sup3: '³',
+  micro: 'µ', para: '¶', middot: '·', bull: '•',
+  dagger: '†', Dagger: '‡', permil: '‰',
+  prime: '′', Prime: '″', euro: '€', pound: '£',
+  cent: '¢', yen: '¥', curren: '¤', sect: '§',
+  iexcl: '¡', iquest: '¿', brvbar: '¦', not: '¬',
+  ordf: 'ª', ordm: 'º', acute: '´', cedil: '¸',
+  uml: '¨', macr: '¯', szlig: 'ß',
+  agrave: 'à', aacute: 'á', acirc: 'â', atilde: 'ã', auml: 'ä', aring: 'å', aelig: 'æ',
+  ccedil: 'ç',
+  egrave: 'è', eacute: 'é', ecirc: 'ê', euml: 'ë',
+  igrave: 'ì', iacute: 'í', icirc: 'î', iuml: 'ï',
+  ntilde: 'ñ',
+  ograve: 'ò', oacute: 'ó', ocirc: 'ô', otilde: 'õ', ouml: 'ö', oslash: 'ø', oelig: 'œ',
+  ugrave: 'ù', uacute: 'ú', ucirc: 'û', uuml: 'ü',
+  yacute: 'ý', yuml: 'ÿ',
+  Agrave: 'À', Aacute: 'Á', Acirc: 'Â', Atilde: 'Ã', Auml: 'Ä', Aring: 'Å', AElig: 'Æ',
+  Ccedil: 'Ç',
+  Egrave: 'È', Eacute: 'É', Ecirc: 'Ê', Euml: 'Ë',
+  Igrave: 'Ì', Iacute: 'Í', Icirc: 'Î', Iuml: 'Ï',
+  Ntilde: 'Ñ',
+  Ograve: 'Ò', Oacute: 'Ó', Ocirc: 'Ô', Otilde: 'Õ', Ouml: 'Ö', Oslash: 'Ø', OElig: 'Œ',
+  Ugrave: 'Ù', Uacute: 'Ú', Ucirc: 'Û', Uuml: 'Ü',
+  Yacute: 'Ý',
+  hearts: '♥', spades: '♠', clubs: '♣', diams: '♦',
+  larr: '←', uarr: '↑', rarr: '→', darr: '↓', harr: '↔',
+};
+
+function decodeHtmlEntities(value: string): string {
+  return value.replace(/&(#\d+|#x[0-9a-fA-F]+|[a-zA-Z][a-zA-Z0-9]*);/g, (match, entity: string) => {
+    if (entity.charAt(0) === '#') {
+      const isHex = entity.charAt(1) === 'x' || entity.charAt(1) === 'X';
+      const codePoint = isHex ? parseInt(entity.slice(2), 16) : parseInt(entity.slice(1), 10);
+      if (!Number.isFinite(codePoint) || codePoint < 0 || codePoint > 0x10ffff) {
+        return match;
+      }
+      try {
+        return String.fromCodePoint(codePoint);
+      } catch {
+        return match;
+      }
+    }
+    const decoded = NAMED_HTML_ENTITIES[entity];
+    return decoded !== undefined ? decoded : match;
+  });
+}
+
 function stripHtml(value: string) {
-  return value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const withoutTags = value.replace(/<[^>]*>/g, '');
+  return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
 }
 
 function stripImagesFromHtml(value: string) {
@@ -118,7 +182,7 @@ function calculateReadTime(content: string) {
 
 function mapPostToArticle(post: WordPressPost): NewsArticle {
   const imageUrl = post.featuredImage?.node?.sourceUrl || DEFAULT_IMAGE;
-  const imageAlt = post.featuredImage?.node?.altText || post.title;
+  const imageAlt = stripHtml(post.featuredImage?.node?.altText || post.title);
 
   return {
     slug: post.slug,
@@ -290,7 +354,7 @@ function isPublishedEventPost(post: WordPressPost) {
 
 function mapPostToEvent(post: WordPressPost): EventPost {
   const imageUrl = post.featuredImage?.node?.sourceUrl || DEFAULT_IMAGE;
-  const imageAlt = post.featuredImage?.node?.altText || stripHtml(post.title);
+  const imageAlt = stripHtml(post.featuredImage?.node?.altText || post.title);
   const excerpt = stripHtml(post.excerpt || post.content || '');
   const extractedImages = extractImagesFromContent(post.content || '');
   const contentHtml = post.content || '';
