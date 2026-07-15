@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       url: `https://tokoacademy.org/news/${item.slug}`,
       type: 'article',
       images: [{
-        url: item.image,
+        url: item.ogImage,
         width: 1200,
         height: 630,
         alt: item.imageAlt
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: item.title,
       description: item.excerpt,
-      images: [item.image],
+      images: [item.ogImage],
     },
   };
 }

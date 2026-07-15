@@ -10,6 +10,10 @@
 /.next/
 /out/
 
+# Generated Open Graph images + manifest (produced by scripts/generate-og-images.mjs)
+/public/og/
+/src/lib/og-manifest.json
+
 # Production
 /build
 

@@ -1,7 +1,19 @@
+import ogManifest from './og-manifest.json';
+
 type GraphQLResponse<T> = {
   data?: T;
   errors?: Array<{ message: string }>;
 };
+
+// Optimized Open Graph images (1200x630 JPEG, <300KB, same-domain) are produced at
+// build time by scripts/generate-og-images.mjs, which writes this manifest. If an
+// item has no generated image the app falls back to the original, so link previews
+// never regress when generation is skipped or fails.
+const OG_MANIFEST = ogManifest as Record<string, string>;
+
+function ogImageFor(type: 'news' | 'event' | 'gallery', slug: string, fallback: string): string {
+  return OG_MANIFEST[`${type}:${slug}`] ?? fallback;
+}
 
 const WORDPRESS_API_URL =
   process.env.WORDPRESS_API_URL ??
@@ -35,6 +47,7 @@ export type NewsArticle = {
   readTime: string;
   image: string;
   imageAlt: string;
+  ogImage: string;
   contentHtml: string;
 };
 
@@ -183,6 +196,7 @@ function calculateReadTime(content: string) {
 function mapPostToArticle(post: WordPressPost): NewsArticle {
   const imageUrl = post.featuredImage?.node?.sourceUrl || DEFAULT_IMAGE;
   const imageAlt = stripHtml(post.featuredImage?.node?.altText || post.title);
+  const image = imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE;
 
   return {
     slug: post.slug,
@@ -195,8 +209,9 @@ function mapPostToArticle(post: WordPressPost): NewsArticle {
     }),
     category: normalizeCategory(post.categories),
     readTime: calculateReadTime(post.content || post.excerpt || ''),
-    image: imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE,
+    image,
     imageAlt,
+    ogImage: ogImageFor('news', post.slug, image),
     contentHtml: post.content || '',
   };
 }
@@ -300,6 +315,7 @@ export type GalleryAlbum = {
     url: string;
     alt: string;
   }>;
+  ogImage: string;
   shareUrl: string;
 };
 
@@ -310,6 +326,7 @@ export type EventPost = {
   date: string;
   image: string;
   imageAlt: string;
+  ogImage: string;
   contentHtml: string;
   contentHtmlWithoutImages: string;
   images: Array<{
@@ -355,6 +372,7 @@ function isPublishedEventPost(post: WordPressPost) {
 function mapPostToEvent(post: WordPressPost): EventPost {
   const imageUrl = post.featuredImage?.node?.sourceUrl || DEFAULT_IMAGE;
   const imageAlt = stripHtml(post.featuredImage?.node?.altText || post.title);
+  const image = imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE;
   const excerpt = stripHtml(post.excerpt || post.content || '');
   const extractedImages = extractImagesFromContent(post.content || '');
   const contentHtml = post.content || '';
@@ -369,8 +387,9 @@ function mapPostToEvent(post: WordPressPost): EventPost {
       day: 'numeric',
       year: 'numeric',
     }),
-    image: imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE,
+    image,
     imageAlt,
+    ogImage: ogImageFor('event', post.slug, image),
     contentHtml,
     contentHtmlWithoutImages,
     images: extractedImages,
@@ -462,6 +481,7 @@ export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
       }),
       image: event.image,
       imageAlt: event.imageAlt,
+      ogImage: ogImageFor('event', event.slug, event.image),
       contentHtml: event.description,
       contentHtmlWithoutImages: event.description,
       images: [],
@@ -491,6 +511,7 @@ export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
         }),
         image: event.image,
         imageAlt: event.imageAlt,
+        ogImage: ogImageFor('event', event.slug, event.image),
         contentHtml: event.description,
         contentHtmlWithoutImages: event.description,
         images: [],
@@ -518,6 +539,7 @@ export async function fetchEventPostBySlug(slug: string): Promise<EventPost | nu
       }),
       image: staticEvent.image,
       imageAlt: staticEvent.imageAlt,
+      ogImage: ogImageFor('event', staticEvent.slug, staticEvent.image),
       contentHtml: staticEvent.description,
       contentHtmlWithoutImages: staticEvent.description,
       images: [],
@@ -606,6 +628,7 @@ export async function fetchGalleryAlbums(): Promise<GalleryAlbum[]> {
           year: 'numeric',
         }),
         images,
+        ogImage: ogImageFor('gallery', post.slug, images[0]?.url || 'https://tokoacademy.org/images/og-gallery.jpg'),
         shareUrl: `https://tokoacademy.org/gallery/${post.slug}`,
       };
     })
@@ -652,6 +675,7 @@ export async function fetchGalleryAlbumBySlug(slug: string): Promise<GalleryAlbu
       year: 'numeric',
     }),
     images,
+    ogImage: ogImageFor('gallery', data.post.slug, images[0]?.url || 'https://tokoacademy.org/images/og-gallery.jpg'),
     shareUrl: `https://tokoacademy.org/gallery/${data.post.slug}`,
   };
 }
