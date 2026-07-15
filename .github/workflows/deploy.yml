@@ -4,12 +4,13 @@ on:
   # Deploy when code changes are pushed to GitHub
   push:
     branches: [master]
-  # Deploy when WordPress publishes/updates content (webhook from WP)
+  # Deploy instantly when WordPress publishes/updates content. The WP plugin in
+  # wordpress-plugin/ fires this on every publish, so no hourly polling is needed.
   repository_dispatch:
     types: [wordpress_update]
-  # Hourly fallback in case a webhook is missed (minute 17 to avoid peak congestion)
+  # Once-a-day safety net (06:17 UTC) in case a WordPress webhook is ever missed.
   schedule:
-    - cron: '17 * * * *'
+    - cron: '17 6 * * *'
   # Manual "Run workflow" button in the Actions tab
   workflow_dispatch:
 
@@ -23,10 +24,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -57,6 +58,20 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          rsync -avz \
-            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
-            out/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+          upload() {
+            rsync -avz \
+              -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+              out/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+          }
+          # Retry up to 3 times so a one-off network/SSH blip self-heals
+          # instead of failing the run (and emailing a false alarm).
+          n=1
+          until upload; do
+            if [ "$n" -ge 3 ]; then
+              echo "rsync failed after $n attempts" >&2
+              exit 1
+            fi
+            echo "rsync attempt $n failed — retrying in 10s..."
+            n=$((n + 1))
+            sleep 10
+          done
