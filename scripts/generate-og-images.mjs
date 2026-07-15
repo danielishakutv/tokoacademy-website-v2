@@ -196,7 +196,33 @@ async function runWithConcurrency(items, limit, worker) {
   return results;
 }
 
+// Temporary diagnostic: reveal why GraphQL is blocked and whether image files
+// (all this script really needs) are fetchable from the build environment.
+async function probe() {
+  console.log('[og][probe] node', process.version);
+  try {
+    const r = await fetch(WP_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{posts(first:1){nodes{slug}}}' }),
+    });
+    const body = await r.text();
+    console.log(`[og][probe] graphql status=${r.status} server=${r.headers.get('server')} cf-ray=${r.headers.get('cf-ray')} cf-mitigated=${r.headers.get('cf-mitigated')}`);
+    console.log(`[og][probe] graphql body: ${body.replace(/\s+/g, ' ').slice(0, 180)}`);
+  } catch (err) {
+    console.log(`[og][probe] graphql ERR ${err.message}`);
+  }
+  const testImg = 'https://wp.tokoacademy.org/wp-content/uploads/2026/07/toko-academy-partners-with-sirstevehq.png';
+  try {
+    const r = await fetch(testImg);
+    console.log(`[og][probe] image status=${r.status} type=${r.headers.get('content-type')} len=${r.headers.get('content-length')} cf-cache=${r.headers.get('cf-cache-status')}`);
+  } catch (err) {
+    console.log(`[og][probe] image ERR ${err.message}`);
+  }
+}
+
 async function main() {
+  await probe();
   await mkdir(OG_DIR, { recursive: true });
 
   // Default image buffer, used when an item has no source or its source fails.
