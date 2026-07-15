@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: EventDetailPageProps): Promis
       type: 'article',
       images: [
         {
-          url: item.ogImage,
+          url: item.image,
           width: 1200,
           height: 630,
           alt: item.imageAlt,
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: EventDetailPageProps): Promis
       card: 'summary_large_image',
       title: `${item.title} | Toko Academy Events`,
       description: item.excerpt,
-      images: [item.ogImage],
+      images: [item.image],
     },
   };
 }

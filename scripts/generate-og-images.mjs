@@ -1,34 +1,30 @@
-// Pre-build step: generate social-share (Open Graph) images for every WordPress
-// article, event, and gallery album.
+// Postbuild step: optimize social-share (Open Graph) images in the exported site.
 //
-// Why: link-preview crawlers (WhatsApp especially, which drops any og:image over
-// ~300KB) need a small, correctly-sized, same-domain image. WordPress featured
-// images are often large PNGs on the wp. subdomain, so previews fail. This script
-// downloads each source image and produces a 1200x630 JPEG under ~280KB in
-// public/og/, then writes src/lib/og-manifest.json mapping each item to its file.
+// Why not fetch WordPress directly? wp.tokoacademy.org's firewall (Wordfence)
+// returns 403 to standalone GraphQL requests, so we can't query it from a script.
+// But `next build` CAN reach it, and it bakes the featured-image URLs into each
+// page's og:image / twitter:image tags. This step runs AFTER the build: it reads
+// those URLs out of the exported HTML, downloads each image (static files ARE
+// reachable), and produces a same-domain 1200x630 JPEG under ~280KB — small
+// enough for WhatsApp (which drops og:images over ~300KB) and correctly sized.
+// It then rewrites the tags to point at the optimized, local copy.
 //
-// The site's metadata reads that manifest. If this script fails for an item (or
-// entirely), the manifest simply omits it and the app falls back to the original
-// image — so a failure here never makes previews worse than before. This script
-// therefore always exits 0; it must never block a deploy.
+// Anything that fails (a download, a resize) is left untouched, so previews never
+// regress. This step must never fail the build; it always exits 0.
 
 import sharp from 'sharp';
-import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const PUBLIC_DIR = join(ROOT, 'public');
-const OG_DIR = join(PUBLIC_DIR, 'og');
-const MANIFEST_PATH = join(ROOT, 'src', 'lib', 'og-manifest.json');
+const OUT_DIR = join(ROOT, 'out');
+const OG_OUT_DIR = join(OUT_DIR, 'og');
 
-const WP_API_URL =
-  process.env.WORDPRESS_API_URL ??
-  process.env.NEXT_PUBLIC_WORDPRESS_API_URL ??
-  'https://wp.tokoacademy.org/graphql';
-
-const DEFAULT_LOCAL_IMAGE = join(PUBLIC_DIR, 'images', 'hero', 'professional-courses.jpg');
+const SITE_ORIGIN = 'https://tokoacademy.org';
+const SOURCE_HOST = 'wp.tokoacademy.org'; // only optimize images from the WordPress origin
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
@@ -36,69 +32,68 @@ const MAX_BYTES = 280 * 1024; // stay safely under WhatsApp's ~300KB ceiling
 const FETCH_TIMEOUT_MS = 20000;
 const CONCURRENCY = 6;
 
-const ALLOWED_NEWS_CATEGORY_SLUGS = ['in-the-news', 'newsroom', 'press-release'];
+// A <meta> tag is an OG/Twitter image if it carries one of these property/name values.
+const IMAGE_META_RE =
+  /property=["'](?:og:image(?::(?:url|secure_url))?)["']|name=["']twitter:image(?::src)?["']/i;
+const CONTENT_RE = /content=["']([^"']+)["']/i;
 
-// IMPORTANT: send only Content-Type, exactly like src/lib/wordpress.ts's
-// graphqlRequest(). Wordfence/Cloudflare in front of wp.tokoacademy.org returns
-// 403 to requests carrying a browser User-Agent that lacks matching browser
-// fingerprint headers (it reads as a spoofed browser), while this minimal,
-// honest request is allowed.
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+async function listHtmlFiles(dir) {
+  const files = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...(await listHtmlFiles(full)));
+    else if (entry.isFile() && entry.name.endsWith('.html')) files.push(full);
+  }
+  return files;
+}
 
-async function gqlOnce(query, variables) {
+function isSourceImage(url) {
+  try {
+    return new URL(url).host === SOURCE_HOST;
+  } catch {
+    return false;
+  }
+}
+
+// Pull every og:image/twitter:image URL (on SOURCE_HOST) out of an HTML string.
+function collectImageUrls(html, into) {
+  const metaRe = /<meta\b[^>]*>/gi;
+  let match;
+  while ((match = metaRe.exec(html)) !== null) {
+    const tag = match[0];
+    if (!IMAGE_META_RE.test(tag)) continue;
+    const content = CONTENT_RE.exec(tag);
+    if (content && isSourceImage(content[1])) into.add(content[1]);
+  }
+}
+
+// Replace the content URL of OG/Twitter image tags using the url->newUrl map.
+function rewriteHtml(html, urlMap) {
+  return html.replace(/<meta\b[^>]*>/gi, (tag) => {
+    if (!IMAGE_META_RE.test(tag)) return tag;
+    return tag.replace(CONTENT_RE, (whole, url) => {
+      const mapped = urlMap.get(url);
+      return mapped ? `content="${mapped}"` : whole;
+    });
+  });
+}
+
+async function fetchBuffer(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(WP_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, variables }),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`GraphQL HTTP ${res.status}`);
-    const json = await res.json();
-    if (json.errors?.length) throw new Error(json.errors.map((e) => e.message).join('; '));
-    return json.data;
+    const res = await fetch(url, { signal: controller.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return Buffer.from(await res.arrayBuffer());
   } finally {
     clearTimeout(timer);
   }
 }
 
-// Retry transient failures (rate limits, brief network blips) a couple of times.
-async function gql(query, variables = {}) {
-  let lastError;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    try {
-      return await gqlOnce(query, variables);
-    } catch (err) {
-      lastError = err;
-      if (attempt < 3) await sleep(attempt * 1500);
-    }
-  }
-  throw lastError;
-}
-
-async function fetchImageBuffer(url) {
-  if (/^https?:\/\//i.test(url)) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    try {
-      const res = await fetch(url, { signal: controller.signal });
-      if (!res.ok) throw new Error(`image HTTP ${res.status}`);
-      return Buffer.from(await res.arrayBuffer());
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-  // Local public asset, e.g. "/images/hero/foo.jpg"
-  return readFile(join(PUBLIC_DIR, url.replace(/^\//, '')));
-}
-
-// Resize/crop to a 1200x630 JPEG, dropping quality until it fits under MAX_BYTES.
 async function toOgJpeg(inputBuffer) {
   const render = (quality) =>
     sharp(inputBuffer)
-      .flatten({ background: '#ffffff' }) // PNGs with transparency -> white, not black
+      .flatten({ background: '#ffffff' }) // transparent PNGs -> white, not black
       .resize(OG_WIDTH, OG_HEIGHT, { fit: 'cover', position: 'attention' })
       .jpeg({ quality, mozjpeg: true })
       .toBuffer();
@@ -112,175 +107,71 @@ async function toOgJpeg(inputBuffer) {
   return out;
 }
 
-function extractFirstContentImage(html) {
-  const match = /<img[^>]+src=["']([^"']+)["']/i.exec(html || '');
-  return match ? match[1] : null;
-}
-
-// Gather every {key, slug, type, source} we should produce an OG image for.
-async function collectItems() {
-  const items = [];
-
-  // News: published posts in an allowed news category
-  try {
-    const data = await gql(
-      `query { posts(first: 50, where: { status: PUBLISH, orderby: { field: DATE, order: DESC } }) {
-        nodes { slug status featuredImage { node { sourceUrl } } categories { nodes { slug } } }
-      } }`
-    );
-    for (const post of data.posts?.nodes ?? []) {
-      const cats = (post.categories?.nodes ?? []).map((c) => (c.slug ?? '').toLowerCase());
-      if ((post.status ?? '').toLowerCase() !== 'publish') continue;
-      if (!cats.some((c) => ALLOWED_NEWS_CATEGORY_SLUGS.includes(c))) continue;
-      items.push({
-        type: 'news',
-        slug: post.slug,
-        source: post.featuredImage?.node?.sourceUrl || null,
-      });
-    }
-  } catch (err) {
-    console.warn(`[og] could not load news posts: ${err.message}`);
-  }
-
-  // Events: published posts in the "events" category
-  try {
-    const data = await gql(
-      `query { posts(first: 50, where: { status: PUBLISH, categoryName: "events", orderby: { field: DATE, order: DESC } }) {
-        nodes { slug status featuredImage { node { sourceUrl } } categories { nodes { slug } } }
-      } }`
-    );
-    for (const post of data.posts?.nodes ?? []) {
-      const cats = (post.categories?.nodes ?? []).map((c) => (c.slug ?? '').toLowerCase());
-      if ((post.status ?? '').toLowerCase() !== 'publish' || !cats.includes('events')) continue;
-      items.push({
-        type: 'event',
-        slug: post.slug,
-        source: post.featuredImage?.node?.sourceUrl || null,
-      });
-    }
-  } catch (err) {
-    console.warn(`[og] could not load event posts: ${err.message}`);
-  }
-
-  // Gallery: albums use their first content image
-  try {
-    const data = await gql(
-      `query { posts(first: 100, where: { categoryName: "Gallery", orderby: { field: DATE, order: DESC } }) {
-        nodes { slug content categories { nodes { name } } }
-      } }`
-    );
-    for (const post of data.posts?.nodes ?? []) {
-      const isGallery = (post.categories?.nodes ?? []).some((c) => (c.name ?? '').toLowerCase() === 'gallery');
-      if (!isGallery) continue;
-      const source = extractFirstContentImage(post.content);
-      if (!source) continue; // gallery pages only exist when they have images
-      items.push({ type: 'gallery', slug: post.slug, source });
-    }
-  } catch (err) {
-    console.warn(`[og] could not load gallery albums: ${err.message}`);
-  }
-
-  return items;
-}
-
 async function runWithConcurrency(items, limit, worker) {
-  const results = [];
   let index = 0;
   const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
     while (index < items.length) {
       const current = index++;
-      results[current] = await worker(items[current]);
+      await worker(items[current]);
     }
   });
   await Promise.all(runners);
-  return results;
-}
-
-// Temporary diagnostic: reveal why GraphQL is blocked and whether image files
-// (all this script really needs) are fetchable from the build environment.
-async function probe() {
-  console.log('[og][probe] node', process.version);
-  try {
-    const r = await fetch(WP_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: '{posts(first:1){nodes{slug}}}' }),
-    });
-    const body = await r.text();
-    console.log(`[og][probe] graphql status=${r.status} server=${r.headers.get('server')} cf-ray=${r.headers.get('cf-ray')} cf-mitigated=${r.headers.get('cf-mitigated')}`);
-    console.log(`[og][probe] graphql body: ${body.replace(/\s+/g, ' ').slice(0, 180)}`);
-  } catch (err) {
-    console.log(`[og][probe] graphql ERR ${err.message}`);
-  }
-  const testImg = 'https://wp.tokoacademy.org/wp-content/uploads/2026/07/toko-academy-partners-with-sirstevehq.png';
-  try {
-    const r = await fetch(testImg);
-    console.log(`[og][probe] image status=${r.status} type=${r.headers.get('content-type')} len=${r.headers.get('content-length')} cf-cache=${r.headers.get('cf-cache-status')}`);
-  } catch (err) {
-    console.log(`[og][probe] image ERR ${err.message}`);
-  }
 }
 
 async function main() {
-  await probe();
-  await mkdir(OG_DIR, { recursive: true });
-
-  // Default image buffer, used when an item has no source or its source fails.
-  let defaultBuffer = null;
+  let htmlFiles;
   try {
-    defaultBuffer = await toOgJpeg(await readFile(DEFAULT_LOCAL_IMAGE));
-    await writeFile(join(OG_DIR, 'default.jpg'), defaultBuffer);
+    htmlFiles = await listHtmlFiles(OUT_DIR);
   } catch (err) {
-    console.warn(`[og] could not build default image: ${err.message}`);
+    console.warn(`[og] no exported site found at out/ (${err.message}); skipping`);
+    return;
   }
 
-  const items = await collectItems();
-  console.log(`[og] generating ${items.length} OG image(s) -> public/og/`);
+  // 1. Collect every unique source image URL referenced across the exported HTML.
+  const fileContents = new Map();
+  const urls = new Set();
+  for (const file of htmlFiles) {
+    const html = await readFile(file, 'utf8');
+    fileContents.set(file, html);
+    collectImageUrls(html, urls);
+  }
 
-  const manifest = {};
+  if (urls.size === 0) {
+    console.log('[og] no WordPress og:image URLs found; nothing to optimize');
+    return;
+  }
+
+  await mkdir(OG_OUT_DIR, { recursive: true });
+
+  // 2. Download + optimize each unique image; build url -> optimized-url map.
+  const urlMap = new Map();
   let ok = 0;
-  let fallback = 0;
-
-  await runWithConcurrency(items, CONCURRENCY, async (item) => {
-    const fileName = `${item.type}-${item.slug}.jpg`;
-    const key = `${item.type}:${item.slug}`;
+  await runWithConcurrency([...urls], CONCURRENCY, async (url) => {
     try {
-      let buffer;
-      if (item.source) {
-        buffer = await toOgJpeg(await fetchImageBuffer(item.source));
-      } else if (defaultBuffer) {
-        buffer = defaultBuffer;
-        fallback += 1;
-      } else {
-        throw new Error('no source and no default');
-      }
-      await writeFile(join(OG_DIR, fileName), buffer);
-      manifest[key] = `/og/${fileName}`;
+      const hash = createHash('sha1').update(url).digest('hex').slice(0, 16);
+      const fileName = `${hash}.jpg`;
+      const jpeg = await toOgJpeg(await fetchBuffer(url));
+      await writeFile(join(OG_OUT_DIR, fileName), jpeg);
+      urlMap.set(url, `${SITE_ORIGIN}/og/${fileName}`);
       ok += 1;
     } catch (err) {
-      // On failure, still give the item a picture if we have a default, so the
-      // preview shows *something* rather than nothing.
-      if (defaultBuffer) {
-        try {
-          await writeFile(join(OG_DIR, fileName), defaultBuffer);
-          manifest[key] = `/og/${fileName}`;
-          fallback += 1;
-          return;
-        } catch {
-          /* fall through to omit */
-        }
-      }
-      console.warn(`[og] skipped ${key}: ${err.message} (app will use the original image)`);
+      console.warn(`[og] left original (optimize failed): ${url} -> ${err.message}`);
     }
   });
 
-  await writeFile(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n');
-  console.log(`[og] done: ${ok} optimized, ${fallback} used default, ${items.length - ok} omitted`);
+  // 3. Rewrite og:image/twitter:image tags in every HTML file that referenced one.
+  let rewritten = 0;
+  for (const [file, html] of fileContents) {
+    const next = rewriteHtml(html, urlMap);
+    if (next !== html) {
+      await writeFile(file, next);
+      rewritten += 1;
+    }
+  }
+
+  console.log(`[og] optimized ${ok}/${urls.size} image(s); rewrote ${rewritten} page(s)`);
 }
 
 main().catch((err) => {
-  // Never block the build; write an empty manifest so the import always resolves
-  // and the app falls back to original images everywhere.
-  console.warn(`[og] generation failed, falling back to original images: ${err?.message ?? err}`);
-  writeFile(MANIFEST_PATH, '{}\n').catch(() => {});
+  console.warn(`[og] postbuild skipped due to error (previews keep original images): ${err?.message ?? err}`);
 });

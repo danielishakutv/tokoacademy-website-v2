@@ -23,6 +23,8 @@ export async function generateMetadata({ params }: AlbumPageProps): Promise<Meta
     };
   }
 
+  const firstImage = album.images[0]?.url || 'https://tokoacademy.org/images/og-gallery.jpg';
+
   return {
     title: `${album.title} | Toko Academy Gallery`,
     description: album.description,
@@ -36,7 +38,7 @@ export async function generateMetadata({ params }: AlbumPageProps): Promise<Meta
       type: 'article',
       images: [
         {
-          url: album.ogImage,
+          url: firstImage,
           width: 1200,
           height: 630,
           alt: album.title,
@@ -47,7 +49,7 @@ export async function generateMetadata({ params }: AlbumPageProps): Promise<Meta
       card: 'summary_large_image',
       title: `${album.title} | Toko Academy Gallery`,
       description: album.description,
-      images: [album.ogImage],
+      images: [firstImage],
     },
   };
 }
