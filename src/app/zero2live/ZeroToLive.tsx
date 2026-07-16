@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
-  PAYSTACK_URL,
   PRICE_FLASH,
   PRICE_FULL,
   PRICE_SAVINGS,
@@ -12,6 +11,7 @@ import {
   HERO_IMG,
   NOTE_IMG,
 } from './config';
+import EnrolModal from './EnrolModal';
 
 const WINDOW_MS = FLASH_WINDOW_HOURS * 60 * 60 * 1000;
 const STORAGE_KEY = 'z2l_first_visit_v1';
@@ -162,6 +162,8 @@ const faqs = [
 
 export default function ZeroToLive() {
   const { active, price, time } = useFlash();
+  const [enrolOpen, setEnrolOpen] = useState(false);
+  const openEnrol = () => setEnrolOpen(true);
 
   return (
     <>
@@ -224,15 +226,14 @@ export default function ZeroToLive() {
               )}
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-                <a
-                  href={PAYSTACK_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex items-center justify-center gap-2 rounded-lg bg-toko-green px-8 py-4 text-lg font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.4)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
+                <button
+                  type="button"
+                  onClick={openEnrol}
+                  className="group inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-toko-green px-8 py-4 text-lg font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.4)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
                 >
                   Hold my seat — {price}
                   {arrow}
-                </a>
+                </button>
                 <a
                   href="#what-you-leave-with"
                   className="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-4 text-base font-semibold text-white/90 transition-colors duration-300 hover:bg-white/10"
@@ -350,11 +351,10 @@ export default function ZeroToLive() {
               </div>
             ))}
 
-            <a
-              href={PAYSTACK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative flex flex-col justify-between overflow-hidden rounded-2xl bg-toko-gray-900 p-7 text-white shadow-toko-lg"
+            <button
+              type="button"
+              onClick={openEnrol}
+              className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl bg-toko-gray-900 p-7 text-left text-white shadow-toko-lg"
             >
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(124,179,66,0.35),transparent_55%)]" />
               <div className="relative">
@@ -368,7 +368,7 @@ export default function ZeroToLive() {
                 Hold my seat
                 {arrow}
               </span>
-            </a>
+            </button>
           </div>
         </div>
       </section>
@@ -499,15 +499,14 @@ export default function ZeroToLive() {
 
                 <div className="rounded-2xl bg-white/5 p-6 ring-1 ring-inset ring-white/10">
                   <p className="text-center text-sm text-white/70">Pay to hold your seat</p>
-                  <a
-                    href={PAYSTACK_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-toko-green px-6 py-4 text-lg font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.45)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
+                  <button
+                    type="button"
+                    onClick={openEnrol}
+                    className="group mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-toko-green px-6 py-4 text-lg font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.45)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
                   >
                     Pay {price} — hold my seat
                     {arrow}
-                  </a>
+                  </button>
                   {active && (
                     <p className="mt-3 text-center text-xs font-semibold text-toko-yellow-light">
                       <span className="tabular-nums">{time.h}:{time.m}:{time.s}</span> left at {PRICE_FLASH}
@@ -552,9 +551,9 @@ export default function ZeroToLive() {
                   <p className="font-heading text-xl font-bold text-toko-gray-900">Daniel Ishaku</p>
                   <p className="text-toko-gray-500">Founder, Toko Academy</p>
                 </div>
-                <a href={PAYSTACK_URL} target="_blank" rel="noopener noreferrer" className="ml-auto inline-flex items-center gap-2 rounded-lg bg-toko-green px-6 py-3 font-bold text-white transition-colors duration-300 hover:bg-toko-green-dark">
+                <button type="button" onClick={openEnrol} className="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-lg bg-toko-green px-6 py-3 font-bold text-white transition-colors duration-300 hover:bg-toko-green-dark">
                   Hold my seat
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -598,15 +597,14 @@ export default function ZeroToLive() {
               <>Founding seats at {PRICE_FULL}. When the {SEATS} are gone, they&apos;re gone.</>
             )}
           </p>
-          <a
-            href={PAYSTACK_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group mt-8 inline-flex items-center justify-center gap-2 rounded-lg bg-toko-green px-10 py-5 text-xl font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.45)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
+          <button
+            type="button"
+            onClick={openEnrol}
+            className="group mt-8 inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-toko-green px-10 py-5 text-xl font-bold text-white shadow-toko-lg transition-all duration-300 hover:bg-toko-green-dark hover:shadow-[0_10px_40px_rgba(124,179,66,0.45)] focus:outline-none focus:ring-4 focus:ring-toko-green/50"
           >
             Pay {price} — hold my seat
             <svg className="h-6 w-6 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
+          </button>
           <p className="mt-4 text-sm text-white/50">— Daniel Ishaku, Toko Academy · Jimeta-Yola</p>
         </div>
       </section>
@@ -626,12 +624,14 @@ export default function ZeroToLive() {
               )}
             </p>
           </div>
-          <a href={PAYSTACK_URL} target="_blank" rel="noopener noreferrer" className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-toko-green px-4 py-3 font-bold text-white">
+          <button type="button" onClick={openEnrol} className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-toko-green px-4 py-3 font-bold text-white">
             Hold my seat
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </a>
+          </button>
         </div>
       </div>
+
+      <EnrolModal open={enrolOpen} onClose={() => setEnrolOpen(false)} price={price} />
     </>
   );
 }
