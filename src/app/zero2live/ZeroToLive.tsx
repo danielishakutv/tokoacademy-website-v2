@@ -35,22 +35,26 @@ function useFlash() {
         /* private mode — countdown still runs for this session */
       }
     }
-    const end = first + WINDOW_MS;
-    const tick = () => setRemaining(Math.max(0, end - Date.now()));
+    // Evergreen countdown: perpetually cycles every WINDOW_MS from the first
+    // visit so the urgency timer is always live. The price never reverts.
+    const tick = () => {
+      const elapsed = (Date.now() - first) % WINDOW_MS;
+      setRemaining(WINDOW_MS - elapsed);
+    };
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
   }, []);
 
-  const active = remaining === null ? true : remaining > 0;
-  const price = active ? PRICE_FLASH : PRICE_FULL;
+  // Price is always the flash price (₦25,000); ₦50,000 stays struck through.
+  const price = PRICE_FLASH;
   const total = Math.floor((remaining === null ? WINDOW_MS : remaining) / 1000);
   const time = {
     h: String(Math.floor(total / 3600)).padStart(2, '0'),
     m: String(Math.floor((total % 3600) / 60)).padStart(2, '0'),
     s: String(total % 60).padStart(2, '0'),
   };
-  return { active, price, time };
+  return { active: true, price, time };
 }
 
 function Check({ className = '' }: { className?: string }) {
@@ -203,27 +207,23 @@ export default function ZeroToLive() {
                 haven&apos;t been shown the door.
               </p>
 
-              {/* Flash countdown strip */}
-              {active ? (
-                <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-toko-yellow/30 bg-toko-yellow/10 px-4 py-3">
+              {/* Flash countdown strip — prominent, always-live timer */}
+              <div className="mt-7 rounded-2xl border border-toko-yellow/40 bg-toko-yellow/10 p-4 sm:p-5">
+                <p className="flex flex-wrap items-center gap-x-2 text-sm font-bold text-white sm:text-base">
                   <span className="text-lg" aria-hidden="true">⚡</span>
-                  <span className="text-sm text-white/85">
-                    <strong className="font-bold text-white">{PRICE_FLASH}</strong> flash rate —
-                    save {PRICE_SAVINGS}. Ends in{' '}
-                    <span className="font-bold tabular-nums text-toko-yellow-light">
-                      {time.h}:{time.m}:{time.s}
-                    </span>
-                    , then {PRICE_FULL}.
-                  </span>
+                  Flash price <span className="text-toko-yellow-light">— save {PRICE_SAVINGS}</span>
+                </p>
+                <div className="mt-3 flex items-center gap-2.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-white/55">Ends&nbsp;in</span>
+                  <div className="flex items-center gap-1.5">
+                    <TimeSeg v={time.h} label="hrs" />
+                    <span className="pb-4 text-2xl font-bold text-white/30">:</span>
+                    <TimeSeg v={time.m} label="min" />
+                    <span className="pb-4 text-2xl font-bold text-white/30">:</span>
+                    <TimeSeg v={time.s} label="sec" />
+                  </div>
                 </div>
-              ) : (
-                <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-                  <span className="text-sm text-white/75">
-                    Seats are filling fast — lock yours at{' '}
-                    <strong className="font-bold text-white">{PRICE_FULL}</strong> before they&apos;re gone.
-                  </span>
-                </div>
-              )}
+              </div>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
@@ -280,7 +280,7 @@ export default function ZeroToLive() {
                         {time.h}:{time.m}:{time.s}
                       </p>
                       <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-white/60">
-                        {PRICE_FLASH} ends
+                        left at {PRICE_FLASH}
                       </p>
                     </>
                   ) : (
@@ -361,7 +361,7 @@ export default function ZeroToLive() {
                 <p className="text-sm font-semibold uppercase tracking-widest text-toko-green-light">Ready?</p>
                 <p className="mt-3 text-2xl font-extrabold leading-tight">Claim one of {SEATS} seats.</p>
                 <p className="mt-2 text-white/70">
-                  {active ? `Flash rate ${PRICE_FLASH} — before it's ${PRICE_FULL}.` : `Founding seats at ${PRICE_FULL}.`}
+                  {`Flash price ${PRICE_FLASH} — was ${PRICE_FULL}.`}
                 </p>
               </div>
               <span className="relative mt-6 inline-flex items-center gap-2 font-bold text-toko-green-light">
@@ -446,40 +446,28 @@ export default function ZeroToLive() {
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(124,179,66,0.25),transparent_45%),radial-gradient(circle_at_90%_90%,rgba(33,150,243,0.2),transparent_45%)]" />
               <div className="relative grid gap-8 p-8 sm:p-12 md:grid-cols-[1.1fr_1fr] md:items-center">
                 <div>
-                  {active ? (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-toko-yellow/15 px-4 py-1.5 text-sm font-bold text-toko-yellow-light ring-1 ring-inset ring-toko-yellow/30">
-                      ⚡ Flash rate · {FLASH_WINDOW_HOURS} hours only
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-bold text-white/80 ring-1 ring-inset ring-white/15">
-                      Limited to {SEATS} seats
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-2 rounded-full bg-toko-yellow/15 px-4 py-1.5 text-sm font-bold text-toko-yellow-light ring-1 ring-inset ring-toko-yellow/30">
+                    ⚡ Limited-time flash price
+                  </span>
 
                   <div className="mt-5 flex items-end gap-3">
                     <span className="font-heading text-6xl font-extrabold leading-none">{price}</span>
                     {active && <span className="mb-1 text-xl font-semibold text-white/40 line-through">{PRICE_FULL}</span>}
                   </div>
 
-                  {active ? (
-                    <>
-                      <p className="mt-3 text-white/70">
-                        Save {PRICE_SAVINGS} today. Your price returns to {PRICE_FULL} when the timer
-                        hits zero — {SEATS} seats, a real cap.
-                      </p>
-                      <div className="mt-6 flex items-center gap-2.5">
-                        <TimeSeg v={time.h} label="hrs" />
-                        <span className="pb-5 text-2xl font-bold text-white/30">:</span>
-                        <TimeSeg v={time.m} label="min" />
-                        <span className="pb-5 text-2xl font-bold text-white/30">:</span>
-                        <TimeSeg v={time.s} label="sec" />
-                      </div>
-                    </>
-                  ) : (
-                    <p className="mt-3 text-white/70">
-                      {SEATS} seats total — a real cap, not a marketing one. When they&apos;re gone, they&apos;re gone.
-                    </p>
-                  )}
+                  <p className="mt-3 text-white/70">
+                    Save {PRICE_SAVINGS} off the {PRICE_FULL} regular price — only {SEATS} seats, a real cap.
+                  </p>
+                  <div className="mt-6">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-white/55">Flash price ends in</span>
+                    <div className="mt-2 flex items-center gap-2.5">
+                      <TimeSeg v={time.h} label="hrs" />
+                      <span className="pb-5 text-2xl font-bold text-white/30">:</span>
+                      <TimeSeg v={time.m} label="min" />
+                      <span className="pb-5 text-2xl font-bold text-white/30">:</span>
+                      <TimeSeg v={time.s} label="sec" />
+                    </div>
+                  </div>
 
                   <dl className="mt-6 space-y-3 border-t border-white/10 pt-6 text-sm">
                     <div className="flex items-center gap-3">
@@ -588,14 +576,8 @@ export default function ZeroToLive() {
         <div className="section-container relative z-10 text-center">
           <h2 className="mx-auto max-w-3xl text-balance">{SEATS} seats. One weekend. A live app with your name on it.</h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/70">
-            {active ? (
-              <>
-                Pay {PRICE_FLASH} if you register in the next{' '}
-                <span className="font-bold tabular-nums text-toko-yellow-light">{time.h}:{time.m}:{time.s}</span> — then it&apos;s {PRICE_FULL}.
-              </>
-            ) : (
-              <>Founding seats at {PRICE_FULL}. When the {SEATS} are gone, they&apos;re gone.</>
-            )}
+            Just {PRICE_FLASH} — {PRICE_SAVINGS} off the {PRICE_FULL} regular price. Flash price ends in{' '}
+            <span className="font-bold tabular-nums text-toko-yellow-light">{time.h}:{time.m}:{time.s}</span>.
           </p>
           <button
             type="button"
