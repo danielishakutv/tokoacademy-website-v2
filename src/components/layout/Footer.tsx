@@ -132,7 +132,16 @@ export default function Footer() {
         <div className="section-container py-6">
           <div className="flex flex-col gap-4 text-sm text-toko-gray-400">
             <p>Toko Academy Ltd. — Registered with the Corporate Affairs Commission of Nigeria, 2025 (CAC).<br />No. 1A Bekaji Road, Adjacent to YEDC S/C Office, Jimeta, Yola, Adamawa State, Nigeria.<br />+234 808 825 6055  •  +234 812 856 1493  •  info@tokoacademy.org</p>
-            <p>© {currentYear} Toko Academy Ltd. All rights reserved.</p>
+            {/*
+              The year is read from the clock, so the copy baked in at build
+              time and the copy rendered in the browser disagree from the first
+              of January until the next deploy — a hydration mismatch that
+              would appear on every page of the site and go unnoticed, because
+              nobody rebuilds a static site on New Year's Day to check.
+              suppressHydrationWarning tells React this one difference is
+              expected rather than a bug.
+            */}
+            <p suppressHydrationWarning>© {currentYear} Toko Academy Ltd. All rights reserved.</p>
           </div>
           <div className="flex flex-col md:flex-row justify-center items-center gap-6 text-sm text-toko-gray-400 mt-4">
             <div className="flex gap-6">
