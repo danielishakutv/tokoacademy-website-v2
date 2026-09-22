@@ -1,12 +1,8 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { IconWrapper } from '@/components/IconWrapper';
 
-const Icon = dynamic(() => import('@iconify/react').then((mod) => ({ default: mod.Icon })), {
-  ssr: false,
-  loading: () => null,
-});
 
 export default function ServicesSection() {
   const services = [
@@ -62,14 +58,14 @@ export default function ServicesSection() {
               className="bg-white/5 backdrop-blur-sm p-8 rounded-lg border border-white/10 
                          hover:bg-white/10 hover:border-toko-green transition-all duration-300"
             >
-              <Icon icon={service.icon} className="w-14 h-14 mb-4 text-toko-green" aria-hidden />
+              <IconWrapper icon={service.icon} className="w-14 h-14 mb-4 text-toko-green" aria-hidden />
               <h3 className="text-2xl font-bold mb-3">{service.title}</h3>
               <p className="text-toko-gray-300 mb-6">{service.description}</p>
               
               <ul className="space-y-2 mb-6">
                 {service.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <Icon icon="material-symbols:check-small-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
+                    <IconWrapper icon="material-symbols:check-small-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
                     <span className="text-toko-gray-300">{feature}</span>
                   </li>
                 ))}

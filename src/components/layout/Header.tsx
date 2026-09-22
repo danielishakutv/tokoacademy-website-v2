@@ -108,12 +108,25 @@ export default function Header() {
           <div className="flex justify-between items-center">
             {/* Logo */}
             <Link href="/" className="flex items-center">
+              {/*
+                Was a 2,991px-wide, 131KB PNG loaded from an absolute URL left
+                over from the WordPress site — to be drawn 48 pixels tall. Now
+                a 445px copy in this repo at 20KB, sized for a high-density
+                screen and nothing more. Dimensions are declared so the header
+                does not shift as it loads.
+              */}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img 
-                src="https://tokoacademy.org/logo/ta_logo_png.png" 
-                alt="Toko Academy" 
-                className={`transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
+              <img
+                src="/logo/toko-academy.png"
+                alt="Toko Academy"
+                width={445}
+                height={144}
+                className={`w-auto transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
                 loading="eager"
+                // The logo is in the first screenful; it should not queue behind
+                // anything else.
+                fetchPriority="high"
+                decoding="async"
               />
             </Link>
 

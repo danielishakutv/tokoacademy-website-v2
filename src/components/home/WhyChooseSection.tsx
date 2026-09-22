@@ -1,12 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
+import { IconWrapper } from '@/components/IconWrapper';
+
 import { statistics } from '@/data/testimonials';
 
-const Icon = dynamic(() => import('@iconify/react').then((mod) => ({ default: mod.Icon })), {
-  ssr: false,
-  loading: () => null,
-});
 
 export default function WhyChooseSection() {
   const features = [
@@ -84,7 +81,7 @@ export default function WhyChooseSection() {
               className="p-6 rounded-lg border-2 border-toko-gray-200 hover:border-toko-green 
                          hover:shadow-toko transition-all duration-300"
             >
-              <Icon icon={feature.icon} className="w-12 h-12 mb-4 text-toko-green" aria-hidden />
+              <IconWrapper icon={feature.icon} className="w-12 h-12 mb-4 text-toko-green" aria-hidden />
               <h3 className="text-xl font-bold text-toko-gray-900 mb-3">
                 {feature.title}
               </h3>

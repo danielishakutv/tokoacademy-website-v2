@@ -14,11 +14,14 @@ export default function Footer() {
           {/* About Column */}
           <div className="lg:col-span-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="https://tokoacademy.org/logo/ta_logo_png.png" 
-              alt="Toko Academy" 
-              className="h-12 mb-4 brightness-0 invert"
+            <img
+              src="/logo/toko-academy.png"
+              alt="Toko Academy"
+              width={445}
+              height={144}
+              className="mb-4 h-12 w-auto brightness-0 invert"
               loading="lazy"
+              decoding="async"
             />
             <p className="text-toko-gray-300 mb-4">
               Empowering individuals and organizations with industry-relevant digital skills to thrive in the digital age.

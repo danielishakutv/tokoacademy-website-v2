@@ -1,13 +1,9 @@
 'use client';
 
-import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { IconWrapper } from '@/components/IconWrapper';
 import { kidsCourses } from '@/data/courses';
 
-const Icon = dynamic(() => import('@iconify/react').then((mod) => ({ default: mod.Icon })), {
-  ssr: false,
-  loading: () => null,
-});
 
 export default function KidsSection() {
   return (
@@ -49,7 +45,7 @@ export default function KidsSection() {
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {course.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2 text-toko-gray-600">
-                      <Icon icon="material-symbols:check-small-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
+                      <IconWrapper icon="material-symbols:check-small-rounded" className="w-5 h-5 text-toko-green mt-0.5" aria-hidden />
                       <span>{feature}</span>
                     </li>
                   ))}
