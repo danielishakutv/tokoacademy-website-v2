@@ -8,10 +8,12 @@ import {
   formatPrice,
   deliveryLabel,
   countLessons,
+  thumbnailUrl,
   LEGACY_SLUGS,
   MISSPELT_SLUGS,
   type DlcCourse,
 } from '@/lib/dlc';
+import CourseThumbnail from '@/components/CourseThumbnail';
 import EnrolPanel from './EnrolPanel';
 
 /**
@@ -54,9 +56,12 @@ export async function generateMetadata({
   params: { id: string };
 }): Promise<Metadata> {
   const course = await getCourse(params.id);
+  // Titles here are the course name alone: the root layout's title template
+  // (`%s | Toko Academy`) adds the academy's name, so repeating it produces
+  // "Python Programming - Toko Academy | Toko Academy" in the tab and in search.
   if (!course) {
     return {
-      title: 'Course not available - Toko Academy',
+      title: 'Course not available',
       description: 'This course is no longer offered. See the courses Toko Academy runs today.',
       robots: { index: false, follow: true },
     };
@@ -65,9 +70,12 @@ export async function generateMetadata({
   // A legacy address points its ranking at the real one rather than competing
   // with it for the same content.
   const canonical = `${SITE}/courses/${course.slug}`;
+  // Absolute, because a social card is fetched by Facebook's or Twitter's
+  // servers, which have no idea what a path relative to our host means.
+  const shareImage = thumbnailUrl(course.thumbnailUrl) ?? `${SITE}/images/courses/default_course_image.webp`;
 
   return {
-    title: `${course.title} - Toko Academy`,
+    title: course.title,
     description: course.description,
     keywords: [course.title, 'Toko Academy', 'training Nigeria', 'digital skills', course.school?.name ?? ''].filter(Boolean),
     alternates: { canonical },
@@ -76,20 +84,13 @@ export async function generateMetadata({
       description: course.description,
       url: canonical,
       type: 'website',
-      images: [
-        {
-          url: course.thumbnailUrl ?? `${SITE}/images/courses/default_course_image.webp`,
-          width: 1200,
-          height: 630,
-          alt: course.title,
-        },
-      ],
+      images: [{ url: shareImage, width: 1200, height: 630, alt: course.title }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${course.title} - Toko Academy`,
       description: course.description,
-      images: [course.thumbnailUrl ?? `${SITE}/images/courses/default_course_image.webp`],
+      images: [shareImage],
     },
   };
 }
@@ -281,6 +282,14 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
             {/* Sidebar */}
             <div>
               <div className="sticky top-24 bg-toko-gray-50 rounded-lg p-8">
+                <div className="mb-6">
+                  <CourseThumbnail
+                    id={course.slug}
+                    title={course.title}
+                    src={thumbnailUrl(course.thumbnailUrl)}
+                    priority
+                  />
+                </div>
                 <div className="mb-6">
                   <span className="text-4xl font-bold text-toko-magenta">{priceLabel}</span>
                   <p className="text-toko-gray-600 mt-2">{deliveryLabel(course.deliveryMode)}</p>

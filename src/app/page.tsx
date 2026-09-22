@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import PartnerLogosStrip from '@/components/PartnerLogosStrip';
 import CourseThumbnail from '@/components/CourseThumbnail';
-import { getCourses, formatPrice, deliveryLabel, type DlcCourseCard } from '@/lib/dlc';
+import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
 
 /**
  * The courses on the front page are now the courses that exist.
@@ -282,6 +282,7 @@ export default async function Home() {
                 <CourseThumbnail
                   id={course.slug}
                   title={course.title}
+                  src={thumbnailUrl(course.thumbnailUrl)}
                   duration={course.hours > 0 ? `${course.hours} hrs` : ''}
                   courseId={course.slug}
                 />

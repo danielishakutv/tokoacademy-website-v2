@@ -181,3 +181,43 @@ export function deliveryLabel(mode: string): string {
 export function countLessons(curriculum: DlcCourse['curriculum']): number {
   return curriculum.reduce((total, section) => total + section.lessons.length, 0);
 }
+
+/**
+ * A thumbnail address this site can actually load.
+ *
+ * The platform stores uploaded thumbnails as `/uploads/thumbnails/….webp` —
+ * relative, and correct on learn.tokoacademy.org. Served from this site that
+ * same string resolves to `https://tokoacademy.org/uploads/…`, which does not
+ * exist, so every uploaded thumbnail was a broken image. Anything already
+ * absolute is left alone.
+ */
+export function thumbnailUrl(url: string | null): string | null {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${API}${url.startsWith('/') ? '' : '/'}${url}`;
+}
+
+/**
+ * A stable colour for a course with no picture.
+ *
+ * Better than one shared placeholder on every card: the tiles stay visually
+ * distinct, and — the reason this exists — it draws with CSS instead of
+ * requesting an image that is not there. The old component guessed at
+ * `/images/courses/<slug>.jpg`, then `.png`, then a default, so every card
+ * without an upload fired two 404s before settling. The service worker then
+ * cached those 404s, which is why images stayed broken until a hard refresh.
+ */
+const TILES = [
+  'from-toko-green/20 to-toko-blue/20',
+  'from-toko-blue/20 to-toko-magenta/20',
+  'from-toko-magenta/20 to-toko-yellow/30',
+  'from-toko-yellow/30 to-toko-green/20',
+  'from-toko-blue/25 to-toko-green/15',
+  'from-toko-magenta/15 to-toko-blue/25',
+];
+
+export function tileGradient(slug: string): string {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i += 1) hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  return TILES[hash % TILES.length];
+}

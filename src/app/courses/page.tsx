@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconWrapper } from '@/components/IconWrapper';
-import { getCourses, formatPrice, deliveryLabel, type DlcCourseCard } from '@/lib/dlc';
+import CourseThumbnail from '@/components/CourseThumbnail';
+import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
 
 /**
  * Everything Toko Academy actually teaches.
@@ -202,19 +203,14 @@ function CourseCard({ course }: { course: DlcCourseCard }) {
       id={course.slug}
       className="card p-6 flex flex-col scroll-mt-32 hover:shadow-toko-lg transition-shadow group"
     >
-      {course.thumbnailUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={course.thumbnailUrl}
-          alt=""
-          className="mb-4 h-40 w-full rounded-lg object-cover"
-          loading="lazy"
+      <div className="mb-4">
+        <CourseThumbnail
+          id={course.slug}
+          title={course.title}
+          src={thumbnailUrl(course.thumbnailUrl)}
+          duration={course.hours > 0 ? `${course.hours} hrs` : undefined}
         />
-      ) : (
-        <div className="mb-4 h-40 w-full rounded-lg bg-gradient-to-br from-toko-green/10 to-toko-blue/10 flex items-center justify-center">
-          <IconWrapper icon="material-symbols:school-rounded" className="w-12 h-12 text-toko-green" ariaHidden />
-        </div>
-      )}
+      </div>
 
       <h3 className="text-xl font-bold text-toko-gray-900 mb-2 group-hover:text-toko-green transition-colors">
         {course.title}
@@ -225,11 +221,8 @@ function CourseCard({ course }: { course: DlcCourseCard }) {
         <span className="px-3 py-1 bg-toko-blue/10 text-toko-blue text-sm font-medium rounded">
           {deliveryLabel(course.deliveryMode)}
         </span>
-        {course.hours > 0 && (
-          <span className="px-3 py-1 bg-toko-green/10 text-toko-green text-sm font-medium rounded">
-            {course.hours} hrs
-          </span>
-        )}
+        {/* Hours are on the thumbnail badge already — saying it twice on one
+            card reads as a mistake. */}
         {course.hasCertificate && (
           <span className="px-3 py-1 bg-toko-magenta/10 text-toko-magenta text-sm font-medium rounded">
             Certificate
