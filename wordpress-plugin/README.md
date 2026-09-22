@@ -30,9 +30,17 @@ The plugin needs a token that's allowed to trigger the deploy.
 
 1. GitHub → your avatar → **Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token**.
 2. **Repository access:** *Only select repositories* → `danielishakutv/tokoacademy-website-v2`.
-3. **Permissions → Repository permissions → Contents:** **Read and write**.
-   *(This is what authorizes the deploy trigger — no other permission is needed.)*
+3. **Permissions → Repository permissions → Actions:** **Read and write**.
+   *(This is the right to start the deploy workflow, and nothing else.)*
 4. Set a long expiry, generate, and **copy the token** (starts with `github_pat_...`).
+
+> **If you already have a token with `Contents: Read and write`**, it keeps working —
+> the plugin falls back to the old trigger automatically. But narrow it when you can.
+> `Contents: Read and write` is also the permission to **push code into this
+> repository**, and that code is what the deploy workflow builds and publishes to the
+> live server. A token with that scope, sitting in the WordPress database, means anyone
+> who gets into WordPress can change the website's source. `Actions: Read and write`
+> can only press the button.
 
 Then add it to WordPress one of two ways:
 
@@ -50,8 +58,13 @@ Then add it to WordPress one of two ways:
 
 ## Notes
 
-- The token only has `Contents: write` on this one repo — it cannot touch anything else.
-- If you rotate the token, update it in the same place.
+- The token is scoped to this one repository. With `Actions: Read and write` all it can
+  do there is start a workflow run.
+- If you rotate the token, update it in the same place. Leaving the field blank on save
+  keeps the token you already have; **Forget saved token** removes it. Removing it in
+  WordPress does not revoke it — do that on GitHub too.
+- The settings page never shows the saved token back to you, only the last four
+  characters, so opening the page does not hand a copy to whoever is looking at it.
 - The workflow still deploys on every code push and once a day as a safety net, so the
   site can never drift more than 24h even if a trigger is ever missed.
 - To watch other post types too, a theme/plugin can use the

@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { fetchGalleryAlbumBySlug, fetchGalleryAlbums } from '@/lib/wordpress';
 import AlbumClient from './client';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 type AlbumPageProps = {
   params: { slug: string };
@@ -80,7 +81,7 @@ export default async function AlbumPage({ params }: AlbumPageProps) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <AlbumClient album={album} />
     </>

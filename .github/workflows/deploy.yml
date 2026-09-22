@@ -19,15 +19,31 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+# The only thing this workflow needs from GitHub is the right to read its own
+# code. Everything that touches production goes over SSH with a deploy key, not
+# with GITHUB_TOKEN. Stating that here means a compromised dependency pulled in
+# by `npm ci` cannot use the job's token to push code or open releases, whatever
+# the repository's default token permissions happen to be.
+permissions:
+  contents: read
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      # Actions are pinned to a commit, not a tag. A tag is a movable label: if
+      # an action's repository were ever compromised, `@v7` would quietly start
+      # running new code — inside a job that holds the production SSH key.
+      # A commit hash cannot be moved. Update these deliberately.
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Don't leave GITHUB_TOKEN sitting in .git/config for the rest of the
+          # job. Nothing after this step talks to GitHub over git.
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 20
           cache: npm
@@ -38,16 +54,38 @@ jobs:
       - name: Build static site (fetches fresh WordPress content)
         run: npm run build
 
+      # A build that produced nothing is not a deploy, it is an outage waiting
+      # to be rsynced. Stop here rather than upload a half-written tree.
+      - name: Verify the build actually produced a site
+        run: |
+          test -s out/index.html || { echo "out/index.html is missing or empty — refusing to deploy" >&2; exit 1; }
+          pages=$(find out -name 'index.html' | wc -l)
+          echo "exported $pages page(s)"
+          [ "$pages" -ge 10 ] || { echo "only $pages page(s) exported — that is not a complete build" >&2; exit 1; }
+
       - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          # umask first: the key file is never briefly world-readable.
+          ( umask 077; printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key )
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            # Pinned host key. The runner then refuses to hand the deploy key to
+            # anything that is not the real server.
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            # Fallback: trust whatever answers on the day. This is how the
+            # workflow has always behaved; set the SSH_KNOWN_HOSTS secret to
+            # stop trusting a stranger who answers on the server's address.
+            echo "::warning::SSH_KNOWN_HOSTS is not set — accepting the host key unverified (see docs/SECURITY-REVIEW.md)"
+            ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
+          chmod 600 ~/.ssh/known_hosts
 
       # Additive deploy: uploads/overwrites this site's files only.
       # NEVER add --delete here — public_html contains other sites that must not be touched.
@@ -59,8 +97,11 @@ jobs:
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           upload() {
-            rsync -avz \
-              -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            # --chmod pins what lands on the server (dirs 755, files 644) instead
+            # of inheriting whatever umask the runner happened to have, so a
+            # world-writable file can never be published by accident.
+            rsync -avz --chmod=D755,F644 \
+              -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
               out/ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
           }
           # Retry up to 3 times so a one-off network/SSH blip self-heals

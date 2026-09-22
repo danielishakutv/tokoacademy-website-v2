@@ -1,3 +1,4 @@
+import sanitizeHtml from 'sanitize-html';
 type GraphQLResponse<T> = {
   data?: T;
   errors?: Array<{ message: string }>;
@@ -161,9 +162,75 @@ function decodeHtmlEntities(value: string): string {
   });
 }
 
+/**
+ * Plain text from a fragment of WordPress HTML.
+ *
+ * The order here is the whole point, and it used to be the wrong way round:
+ * tags were removed first and entities decoded afterwards. A title containing
+ * `&lt;/script&gt;` therefore passed the strip untouched — there is no tag in
+ * it to remove — and was then decoded into a real `</script>` on the way out.
+ * The step meant to make it safe was the step that armed it, and the result
+ * was written into every JSON-LD block on the site.
+ *
+ * Decoding first, then stripping, then decoding once more closes both
+ * directions: an encoded tag becomes a real tag and is removed, and an entity
+ * that only appears after the strip is still resolved for display.
+ */
 function stripHtml(value: string) {
-  const withoutTags = value.replace(/<[^>]*>/g, '');
+  const decoded = decodeHtmlEntities(value);
+  const withoutTags = decoded.replace(/<[^>]*>/g, '');
   return decodeHtmlEntities(withoutTags).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * An article's body, with anything that could execute taken out.
+ *
+ * This HTML is written by whoever can publish in WordPress and is rendered
+ * into tokoacademy.org with `dangerouslySetInnerHTML`. Without this, a WordPress
+ * author — or anyone who gets into WordPress — has script execution on the
+ * apex domain, and a Content-Security-Policy cannot save us: Next's own inline
+ * hydration script forces `script-src 'unsafe-inline'`, which is the very
+ * thing that would need to be forbidden.
+ *
+ * Sanitising happens here, at build time, once per post — not in the browser.
+ * The site is a static export, so what ships is already clean and no visitor
+ * pays for the work.
+ *
+ * The allow-list is what an article legitimately contains. Embeds are limited
+ * to YouTube's no-cookie host: an `<iframe>` pointing anywhere is a hole, and
+ * naming the one place editors actually embed from costs them nothing.
+ */
+export function sanitiseArticleHtml(html: string): string {
+  if (!html) return '';
+  return sanitizeHtml(html, {
+    allowedTags: [
+      'p', 'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'small',
+      'h2', 'h3', 'h4', 'h5', 'h6',
+      'ul', 'ol', 'li', 'blockquote', 'q', 'cite',
+      'a', 'img', 'figure', 'figcaption',
+      'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'caption',
+      'code', 'pre', 'span', 'div', 'iframe',
+    ],
+    allowedAttributes: {
+      a: ['href', 'title', 'target', 'rel'],
+      img: ['src', 'srcset', 'alt', 'title', 'width', 'height', 'loading', 'decoding'],
+      iframe: ['src', 'title', 'width', 'height', 'allow', 'allowfullscreen', 'loading'],
+      th: ['colspan', 'rowspan', 'scope'],
+      td: ['colspan', 'rowspan'],
+      '*': ['class'],
+    },
+    // No `javascript:` and no `data:` documents; images may still be data URIs.
+    allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+    allowedSchemesByTag: { img: ['http', 'https', 'data'] },
+    allowedIframeHostnames: ['www.youtube-nocookie.com', 'www.youtube.com', 'player.vimeo.com'],
+    // A link from a post is a link to somewhere we do not control.
+    transformTags: {
+      a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer nofollow' }, true),
+    },
+    // Style attributes are a well-trodden route to overlaying the page.
+    allowedStyles: {},
+    disallowedTagsMode: 'discard',
+  });
 }
 
 function stripImagesFromHtml(value: string) {
@@ -197,7 +264,7 @@ function mapPostToArticle(post: WordPressPost): NewsArticle {
     readTime: calculateReadTime(post.content || post.excerpt || ''),
     image: imageUrl.startsWith('http') ? imageUrl : DEFAULT_IMAGE,
     imageAlt,
-    contentHtml: post.content || '',
+    contentHtml: sanitiseArticleHtml(post.content || ''),
   };
 }
 
@@ -462,7 +529,7 @@ export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
       }),
       image: event.image,
       imageAlt: event.imageAlt,
-      contentHtml: event.description,
+      contentHtml: sanitiseArticleHtml(event.description),
       contentHtmlWithoutImages: event.description,
       images: [],
       links: [],
@@ -491,7 +558,7 @@ export async function fetchEventPosts(limit = 24): Promise<EventPost[]> {
         }),
         image: event.image,
         imageAlt: event.imageAlt,
-        contentHtml: event.description,
+        contentHtml: sanitiseArticleHtml(event.description),
         contentHtmlWithoutImages: event.description,
         images: [],
         links: [],
@@ -518,7 +585,7 @@ export async function fetchEventPostBySlug(slug: string): Promise<EventPost | nu
       }),
       image: staticEvent.image,
       imageAlt: staticEvent.imageAlt,
-      contentHtml: staticEvent.description,
+      contentHtml: sanitiseArticleHtml(staticEvent.description),
       contentHtmlWithoutImages: staticEvent.description,
       images: [],
       links: [],

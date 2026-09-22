@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { fetchEventPosts } from '@/lib/wordpress';
 import EventsClient from './client';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 export const metadata: Metadata = {
   title: 'Events | Toko Academy',
@@ -70,7 +71,7 @@ export default async function EventsPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
       <EventsClient events={events} />
     </>
   );

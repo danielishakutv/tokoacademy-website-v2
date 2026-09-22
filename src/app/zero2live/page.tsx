@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import ZeroToLive from './ZeroToLive';
 import { HERO_IMG, PRICE_NUMBER } from './config';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 export const metadata: Metadata = {
   title: 'Zero to Live — Build a Real App With AI in One Weekend',
@@ -59,7 +60,7 @@ export default function ZeroToLivePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
       <ZeroToLive />
     </>
   );

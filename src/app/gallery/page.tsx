@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { fetchGalleryAlbums } from '@/lib/wordpress';
 import GalleryClient from './client';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 export const metadata: Metadata = {
   title: 'Photo Gallery | Toko Academy',
@@ -58,7 +59,7 @@ export default async function GalleryPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <GalleryClient albums={albums} />
     </>

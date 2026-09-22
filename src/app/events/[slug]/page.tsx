@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchEventPostBySlug, fetchEventPosts } from '@/lib/wordpress';
 import EventGalleryLightbox from './gallery-lightbox';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 type EventDetailPageProps = {
   params: { slug: string };
@@ -81,7 +82,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
 
       <section className="relative overflow-hidden bg-toko-gray-900 pb-16 pt-44 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(33,150,243,0.20),transparent_35%),radial-gradient(circle_at_10%_20%,rgba(124,179,66,0.18),transparent_35%)]" />
