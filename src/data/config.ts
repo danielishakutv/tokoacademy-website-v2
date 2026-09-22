@@ -46,31 +46,31 @@ export const navigation: NavigationItem[] = [
         megaMenu: [
           {
             name: 'Digital Literacy & Productivity',
-            href: '/courses?school=digital-literacy',
+            href: '/courses#school-digital-literacy',
             description: 'Practical digital skills for everyday work and government functions.',
             image: 'https://tokoacademy.org/og-image.png',
           },
           {
             name: 'Software Engineering',
-            href: '/courses?school=software-engineering',
+            href: '/courses#school-software-engineering',
             description: 'Development programmes for aspiring software creators and builders.',
             image: 'https://tokoacademy.org/og-image.png',
           },
           {
             name: 'AI & Emerging Technologies',
-            href: '/courses?school=ai-emerging-tech',
+            href: '/courses#school-ai-emerging-technologies',
             description: 'AI, automation, and innovation training for the future of work.',
             image: 'https://tokoacademy.org/og-image.png',
           },
           {
             name: 'Data Science & Analytics',
-            href: '/courses?school=data-science',
+            href: '/courses#school-data-science',
             description: 'Data-driven skills for decision-making and evidence-based insights.',
             image: 'https://tokoacademy.org/og-image.png',
           },
           {
             name: 'Digital Media & Creative Tech',
-            href: '/courses?school=digital-media',
+            href: '/courses#school-digital-media-creative-tech',
             description: 'Creative technology training for digital marketing and design.',
             image: 'https://tokoacademy.org/og-image.png',
           },
@@ -94,13 +94,13 @@ export const navigation: NavigationItem[] = [
           },
           {
             name: 'Youth Bootcamps',
-            href: '/courses?audience=youth-bootcamps',
+            href: '/courses#school-kids-youth',
             description: 'Intensive bootcamps for young learners ready to jumpstart their tech journey.',
             image: 'https://tokoacademy.org/og-image.png',
           },
           {
             name: 'Professional Upskilling',
-            href: '/courses?audience=professionals',
+            href: '/courses',
             description: 'Flexible upskilling courses for working professionals.',
             image: 'https://tokoacademy.org/og-image.png',
           },

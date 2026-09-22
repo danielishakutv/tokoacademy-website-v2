@@ -2,16 +2,36 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import PartnerLogosStrip from '@/components/PartnerLogosStrip';
 import CourseThumbnail from '@/components/CourseThumbnail';
-import featuredCourses from '@/data/featured-courses.json';
+import { getCourses, formatPrice, deliveryLabel, type DlcCourseCard } from '@/lib/dlc';
 
-type FeaturedCourse = {
-  id: string;
-  title: string;
-  description: string;
-  duration: string;
-  level: string;
-  category: string;
-};
+/**
+ * The courses on the front page are now the courses that exist.
+ *
+ * This section rendered six entries from `src/data/featured-courses.json`,
+ * hand-maintained and out of date: it advertised "UI/UX Design", which the
+ * academy no longer runs, and "Website Development", which had been split into
+ * two separate courses. A visitor clicking either reached a page for something
+ * they could not buy.
+ *
+ * One course per school, so the six tiles show the range of what is taught
+ * rather than six variations of the same thing — and so the selection maintains
+ * itself as the catalogue changes.
+ */
+function onePerSchool(courses: DlcCourseCard[], limit = 6): DlcCourseCard[] {
+  const seen = new Set<string>();
+  const picked: DlcCourseCard[] = [];
+  const bySchoolName = [...courses].sort((a, b) =>
+    (a.school?.name ?? 'zzz').localeCompare(b.school?.name ?? 'zzz') || b.enrolledCount - a.enrolledCount,
+  );
+  for (const course of bySchoolName) {
+    const key = course.school?.slug ?? 'none';
+    if (seen.has(key)) continue;
+    seen.add(key);
+    picked.push(course);
+    if (picked.length === limit) break;
+  }
+  return picked;
+}
 
 function InlineIcon({ className }: { className?: string }) {
   return (
@@ -146,7 +166,9 @@ const stories = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const featured = onePerSchool(await getCourses());
+
   return (
     <>
       <section className="relative overflow-hidden pb-20 pt-36 text-white md:pb-28 md:pt-48">
@@ -255,16 +277,28 @@ export default function Home() {
             </p>
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {(featuredCourses as FeaturedCourse[]).map((course) => (
-              <article key={course.id} className="card flex flex-col rounded-2xl border border-toko-gray-200 bg-white p-6 transition-shadow duration-300 hover:shadow-toko-lg">
-                <CourseThumbnail id={course.id} title={course.title} duration={course.duration} courseId={course.id} />
+            {featured.map((course) => (
+              <article key={course.slug} className="card flex flex-col rounded-2xl border border-toko-gray-200 bg-white p-6 transition-shadow duration-300 hover:shadow-toko-lg">
+                <CourseThumbnail
+                  id={course.slug}
+                  title={course.title}
+                  duration={course.hours > 0 ? `${course.hours} hrs` : ''}
+                  courseId={course.slug}
+                />
                 <h3 className="mt-5 text-xl text-toko-gray-900 md:text-2xl">{course.title}</h3>
                 <p className="mt-3 text-sm text-toko-gray-600 md:text-base">{course.description}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded bg-toko-blue/10 px-3 py-1 text-xs font-medium text-toko-blue">{course.level}</span>
-                  <span className="rounded bg-toko-magenta/10 px-3 py-1 text-xs font-medium text-toko-magenta">{course.category}</span>
+                  <span className="rounded bg-toko-blue/10 px-3 py-1 text-xs font-medium text-toko-blue">
+                    {deliveryLabel(course.deliveryMode)}
+                  </span>
+                  {course.school && (
+                    <span className="rounded bg-toko-magenta/10 px-3 py-1 text-xs font-medium text-toko-magenta">
+                      {course.school.name}
+                    </span>
+                  )}
                 </div>
-                <Link href={`/courses/${course.id}`} className="mt-6 inline-flex items-center text-sm font-semibold text-toko-green transition-colors hover:text-toko-green-dark md:text-base">
+                <div className="mt-4 text-lg font-bold text-toko-gray-900">{formatPrice(course.price)}</div>
+                <Link href={`/courses/${course.slug}`} className="mt-6 inline-flex items-center text-sm font-semibold text-toko-green transition-colors hover:text-toko-green-dark md:text-base">
                   View course →
                 </Link>
               </article>
@@ -367,7 +401,10 @@ export default function Home() {
           <p className="text-sm uppercase tracking-[0.2em] text-white/80">Take the Next Step</p>
           <h2 className="mt-3 text-white">Start Your Journey or Build One With Us</h2>
           <div className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
-            <Link href="/register" className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-bold text-toko-green transition-colors hover:bg-toko-gray-100 sm:text-lg">
+            {/* Was href="/register" — a route this site does not have, so the
+                one call-to-action on the front page 404'd unless the old PHP app
+                happened to answer on that path. */}
+            <Link href="/courses" className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-bold text-toko-green transition-colors hover:bg-toko-gray-100 sm:text-lg">
               Apply Now
             </Link>
             <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/45 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-white/10 sm:text-lg">
