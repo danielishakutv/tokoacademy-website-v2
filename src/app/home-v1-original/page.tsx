@@ -6,6 +6,7 @@ import KidsSection from '@/components/home/KidsSection';
 import ServicesSection from '@/components/home/ServicesSection';
 import CTABanner from '@/components/home/CTABanner';
 import { Suspense } from 'react';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 export const metadata: Metadata = {
   title: 'Toko Academy - Skills for Tomorrow | Digital Skills Training in Nigeria',
@@ -71,7 +72,7 @@ export default function HomeV1Original() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       
       <Suspense fallback={null}>

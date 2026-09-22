@@ -2,33 +2,40 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconWrapper } from '@/components/IconWrapper';
 import { externalLinks } from '@/data/config';
+import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'About Us - Empowering Digital Skills Education',
-  description: 'Learn about Toko Academy\'s mission to empower individuals and organizations with industry-relevant digital skills. Meet our expert team and discover our vision for digital education in Africa.',
-  keywords: ['about Toko Academy', 'digital skills training Nigeria', 'tech education Africa', 'mission and vision', 'educational values', 'skilled educators'],
-  alternates: {
-    canonical: 'https://tokoacademy.org/about',
+export const metadata: Metadata = pageMetadata({
+  path: '/about',
+  // The root layout appends " | Toko Academy", so the name is never repeated here.
+  title: 'About Us — Our Mission, Vision and Story',
+  description:
+    'Toko Academy exists to make quality digital skills education reachable in Nigeria. Read our mission, our vision, and the story behind how we teach.',
+  socialTitle: 'About Toko Academy — Mission, Vision and Story',
+  socialDescription:
+    'Why we started, what we believe, and the values behind every programme we run in Jimeta-Yola and beyond.',
+  image: {
+    url: `${SITE_URL}/images/hero/our-ceo-daniel-ishaku-speaking.jpg`,
+    alt: 'Daniel Ishaku, founder of Toko Academy, speaking at a training event',
   },
-  openGraph: {
-    title: 'About Toko Academy - Empowering Digital Skills Education',
-    description: 'Discover our mission, vision, and the expert team behind Toko Academy\'s success in digital skills training.',
-    url: 'https://tokoacademy.org/about',
-    type: 'website',
-    images: [{
-      url: 'https://tokoacademy.org/images/hero/our-ceo-daniel-ishaku-speaking.jpg',
-      width: 1200,
-      height: 630,
-      alt: 'About Toko Academy'
-    }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'About Toko Academy - Empowering Digital Skills Education',
-    description: 'Discover our mission, vision, and the expert team behind Toko Academy\'s success.',
-    images: ['https://tokoacademy.org/images/hero/our-ceo-daniel-ishaku-speaking.jpg'],
-  },
-};
+  keywords: ['about Toko Academy', 'digital skills training Nigeria', 'tech education Africa', 'mission and vision', 'Jimeta Yola tech academy'],
+});
+
+// "About" is a top-level hub in the site navigation; this is the page it points
+// at. `AboutPage` with `mainEntity` pointing at the organisation is the whole
+// purpose of the type — it tells a crawler that this page IS the description of
+// Toko Academy, rather than one more page that happens to mention it.
+const entityJsonLd = pageEntityJsonLd({
+  path: '/about',
+  type: 'AboutPage',
+  name: 'About Toko Academy',
+  description:
+    'Toko Academy’s mission, vision, values and story — a digital skills training academy in Jimeta-Yola, Adamawa State, Nigeria.',
+  isAboutOrganisation: true,
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+  ],
+});
 
 export default function AboutPage() {
   const team = [
@@ -74,6 +81,8 @@ export default function AboutPage() {
 
   return (
     <>
+      <script {...jsonLdScript(entityJsonLd)} />
+
       {/* Hero Section */}
       <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-green to-toko-blue text-white">
         <div className="section-container">

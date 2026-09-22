@@ -1,19 +1,33 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Thematic Areas - Strategic Digital Skills Programs',
-  description: 'Explore Toko Academy\'s eight thematic areas aligned with the Sustainable Development Goals for inclusive digital skills, workforce development, and community resilience.',
-  alternates: {
-    canonical: 'https://tokoacademy.org/thematic-areas',
+export const metadata: Metadata = pageMetadata({
+  path: '/thematic-areas',
+  title: 'Our Eight Thematic Areas, Aligned to the SDGs',
+  description:
+    'The eight pillars our programmes are built on, from digital literacy and software engineering to gender inclusion, public sector capacity and green skills.',
+  socialTitle: 'Eight Thematic Areas, Aligned to the SDGs | Toko Academy',
+  socialDescription:
+    'How our work maps to the UN Sustainable Development Goals — the pillars, the focus areas, and the principles that cut across all of them.',
+  image: {
+    url: `${SITE_URL}/images/hero/practical-mentorship-approach-classes.jpg`,
+    alt: 'A Toko Academy mentor working with learners in a practical class',
   },
-  openGraph: {
-    title: 'Thematic Areas - Toko Academy',
-    description: 'Discover our eight thematic pillars and how they align to the UN Sustainable Development Goals.',
-    url: 'https://tokoacademy.org/thematic-areas',
-    type: 'website',
-  },
-};
+});
+
+// Thematic Areas sits under About in the site navigation.
+const entityJsonLd = pageEntityJsonLd({
+  path: '/thematic-areas',
+  name: 'Toko Academy Thematic Areas',
+  description:
+    'The eight thematic pillars behind Toko Academy’s programmes and how each maps to the UN Sustainable Development Goals.',
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Thematic Areas', path: '/thematic-areas' },
+  ],
+});
 
 const thematicAreas = [
   {
@@ -124,6 +138,8 @@ const alignmentMatrix = [
 export default function ThematicAreasPage() {
   return (
     <>
+      <script {...jsonLdScript(entityJsonLd)} />
+
       <section className="pt-40 pb-16 bg-gradient-to-br from-toko-gray-900 via-toko-blue to-toko-green text-white md:pt-52 md:pb-20">
         <div className="section-container">
           <div className="mx-auto max-w-4xl text-center">

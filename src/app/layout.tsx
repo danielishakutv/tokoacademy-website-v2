@@ -5,11 +5,14 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import MatomoAnalytics from '@/components/MatomoAnalytics'
+import { SITE_URL, siteJsonLd, jsonLdScript } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://tokoacademy.org'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Toko Academy - Skills for Tomorrow | Digital Skills Training in Nigeria',
+    // `default` is only used by a page that sets no title of its own.
+    // `template` appends the site name, so page titles must NOT repeat it.
+    default: 'Toko Academy — Digital Skills Training in Nigeria',
     template: '%s | Toko Academy'
   },
   description: 'Toko Academy empowers individuals and organizations with industry-relevant digital skills. Learn Web Development, Data Analysis, AI, Digital Marketing, and more. Trusted by 2K+ learners globally.',
@@ -25,7 +28,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_NG',
-    url: 'https://tokoacademy.org',
+    url: `${SITE_URL}/`,
     title: 'Toko Academy - Skills for Tomorrow',
     description: 'Empower yourself with industry-relevant digital skills. Learn from expert instructors with hands-on training for real-world success.',
     siteName: 'Toko Academy',
@@ -78,7 +81,20 @@ export default function RootLayout({
         <link rel="preconnect" href="https://tokoacademy.org" />
         <link rel="preconnect" href="https://wp.tokoacademy.org" />
         <link rel="dns-prefetch" href="https://app.tokoacademy.org" />
-        <meta name="theme-color" content="#7CB342" />
+        {/* Matches `toko-green.DEFAULT` in tailwind.config.ts, which was
+            deepened from the logo's #7CB342 to clear WCAG contrast. */}
+        <meta name="theme-color" content="#4A7C2A" />
+        {/*
+          Who we are, once, for the whole site. Every page inherits it, so
+          search engines and AI assistants can resolve "Toko Academy" to one
+          entity with a verified address, contact points and social profiles
+          rather than guessing from page copy.
+
+          No web fonts are loaded anywhere on this site — Tailwind's `sans` and
+          `heading` families are a system-ui stack (see tailwind.config.ts), so
+          there is no render-blocking third-party font request to remove.
+        */}
+        <script {...jsonLdScript(siteJsonLd)} />
       </head>
       <body>
         <ServiceWorkerRegister />

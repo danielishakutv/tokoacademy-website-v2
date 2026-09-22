@@ -1,0 +1,82 @@
+# Toko Academy
+
+> Toko Academy is a digital skills training academy based in Jimeta-Yola, Adamawa
+> State, Nigeria. It teaches software engineering, data analysis, artificial
+> intelligence, cybersecurity, digital marketing and foundational digital
+> literacy to young people, working professionals, children and public
+> institutions — mostly in North-East Nigeria, and online.
+
+Tagline: "Skills for Tomorrow".
+
+Toko Academy runs three kinds of work from one place:
+
+- **Open programmes** anyone can enrol on, delivered blended (in person in
+  Jimeta-Yola plus online) or fully self-paced.
+- **Children and youth programmes** for ages 6–18, including Scratch
+  programming, web basics and holiday bootcamps.
+- **Institutional training** for companies, government agencies, regulators and
+  development organisations, designed around the client's own objectives and
+  delivered on site or remotely.
+
+Programmes are organised into six schools: Digital Literacy, Software
+Engineering, AI & Emerging Technologies, Data Science & Analytics, Digital Media
+& Creative Tech, and Kids & Youth. Teaching is project-based and certificated.
+Delivery is in English.
+
+The academy's wider programming is framed around eight thematic areas mapped to
+the UN Sustainable Development Goals, covering digital literacy, advanced
+technology and software engineering, data and evidence-based decision-making,
+workforce development and entrepreneurship, children and youth technology
+education, gender equality and inclusion, public sector capacity building, and
+climate and green digital skills.
+
+Location: No. 1A Bekaji Road, adjacent to the YEDC S/C Office, Jimeta, Yola,
+Adamawa State, Nigeria.
+Email: info@tokoacademy.org
+Phone: +234 808 825 6055, +234 812 856 1493
+
+## Core pages
+
+- [Toko Academy home](https://tokoacademy.org/): What the academy does and who it serves.
+- [About](https://tokoacademy.org/about/): Mission, vision, values and the story behind the academy.
+- [Courses](https://tokoacademy.org/courses/): The full catalogue, grouped by school, with current fees, duration and delivery mode on each course page.
+- [Class schedules](https://tokoacademy.org/schedules/): When cohorts and classes run.
+- [Kids & teens](https://tokoacademy.org/kids/): Coding and computer programmes for ages 6–18, with parent FAQs.
+- [Corporate training](https://tokoacademy.org/corporate/): Tailored workforce training and IT consultation for organisations and government.
+- [Partners](https://tokoacademy.org/partners/): How partnerships work, and who the academy already works with.
+- [Impact](https://tokoacademy.org/impact/): Outcome figures, the monitoring and evaluation framework, and case studies.
+- [Thematic areas](https://tokoacademy.org/thematic-areas/): The eight programme pillars and their SDG alignment.
+- [Contact](https://tokoacademy.org/contact/): Phone, email, address and enquiry form.
+
+## Programmes currently offered
+
+Each links to its page, where the current fee, hours and delivery mode are
+listed. Fees are not repeated here so that this file cannot go out of date.
+
+- [Digital Foundations](https://tokoacademy.org/courses/digital-foundations/): Core digital literacy and productivity for workplaces and public offices.
+- [Python Programming](https://tokoacademy.org/courses/python-programming/): Programming from first principles through to building working applications.
+- [Web Development Foundations](https://tokoacademy.org/courses/web-development-foundations/): Self-paced introduction to building for the web.
+- [JavaScript Fundamentals](https://tokoacademy.org/courses/javascript-fundamentals/): Self-paced JavaScript, from beginner to modern JavaScript.
+- [Full Stack Web Development](https://tokoacademy.org/courses/web-development/): Front end through back end, building and shipping complete applications.
+- [Cybersecurity Fundamentals](https://tokoacademy.org/courses/cybersecurity-fundamentals/): Security foundations for professionals and institutional teams.
+- [AI Essentials](https://tokoacademy.org/courses/ai-essentials/): Practical everyday use of AI tools for work and study.
+- [AI Chatbots & Workflow Automation](https://tokoacademy.org/courses/ai-powered-chatbots/): Building chatbots and automating real business workflows with AI.
+- [Data Analysis & Visualization](https://tokoacademy.org/courses/data-analysis-visualization/): Turning data into decisions, with analysis and visualisation tooling.
+- [Digital Marketing and Content Creation](https://tokoacademy.org/courses/digital-marketing/): Marketing, content and creative production for the digital economy.
+- [Scratch Programming](https://tokoacademy.org/courses/scratch-programming/): Block-based programming for children and young learners.
+- [Zero to Live](https://tokoacademy.org/zero2live/): A two-day, in-person workshop in Jimeta-Yola where participants build an app with AI and put it live at a real domain.
+
+## News and media
+
+- [Newsroom](https://tokoacademy.org/news/): Announcements, press releases and articles.
+- [Events](https://tokoacademy.org/events/): Past and upcoming events, including TEDxYola.
+- [Gallery](https://tokoacademy.org/gallery/): Photographs from training sessions, bootcamps and community programmes.
+
+## Optional
+
+- [Learning platform](https://learn.tokoacademy.org/): The Digital Learning Centre, where enrolled learners take their courses.
+- [Enrol](https://tokoacademy.org/register): Registration for open programmes.
+- [Safeguarding policy](https://tokoacademy.org/safeguarding/): Child protection and safeguarding commitments.
+- [Privacy policy](https://tokoacademy.org/privacy/)
+- [Terms of use](https://tokoacademy.org/terms/)
+- [Fuller description for AI assistants](https://tokoacademy.org/llms-full.txt): A longer version of this file.

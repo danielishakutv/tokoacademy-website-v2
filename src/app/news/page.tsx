@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchNewsArticles, getNewsCategories } from '@/lib/wordpress';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 export const metadata: Metadata = {
   title: 'News & Insights - Toko Academy',
@@ -56,7 +57,7 @@ export default async function NewsPage() {
       'name': 'Toko Academy',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://tokoacademy.org/logo/ta_logo_png.png'
+        'url': 'https://tokoacademy.org/logo/toko-academy.png'
       }
     },
     'blogPost': articles.slice(0, 10).map(article => ({
@@ -77,7 +78,7 @@ export default async function NewsPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       
       {/* Hero */}

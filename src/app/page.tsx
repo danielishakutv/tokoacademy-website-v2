@@ -3,6 +3,40 @@ import Link from 'next/link';
 import PartnerLogosStrip from '@/components/PartnerLogosStrip';
 import CourseThumbnail from '@/components/CourseThumbnail';
 import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import { fetchNewsArticles, fetchEventPosts, type NewsArticle, type EventPost } from '@/lib/wordpress';
+
+/**
+ * WordPress, but never at the cost of the home page.
+ *
+ * `fetchNewsArticles` and `fetchEventPosts` throw when WordPress is
+ * unreachable — and it has been: the build runs on a GitHub runner, and
+ * wp.tokoacademy.org's firewall has blocked those before. On a dedicated news
+ * page a failure is arguably worth failing the build over. On the home page it
+ * is not: better to ship a home page without its news strip than to ship no
+ * site at all.
+ */
+async function newsOrNothing(limit: number): Promise<NewsArticle[]> {
+  try {
+    return (await fetchNewsArticles(limit)).slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+async function eventsOrNothing(limit: number): Promise<EventPost[]> {
+  try {
+    return (await fetchEventPosts(limit)).slice(0, limit);
+  } catch {
+    return [];
+  }
+}
+
+const readableDate = (value: string) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? ''
+    : date.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 /**
  * The courses on the front page are now the courses that exist.
@@ -44,11 +78,22 @@ function InlineIcon({ className }: { className?: string }) {
 
 export const metadata: Metadata = {
   title: 'Digital Skills & Professional Growth - Toko Academy',
+  // 160 characters. The previous one ran to 183 and was cut off mid-sentence
+  // in results pages, and said nothing about where we are or what we teach —
+  // "practical learning pathways" describes every training provider alive.
   description:
-    'Explore practical learning pathways for youths, children, and professionals. Build industry-relevant skills with government and organizational partnerships creating measurable impact.',
-  keywords: ['digital skills', 'professional training', 'youth education', 'corporate training', 'skills development'],
+    'Digital skills training in Yola, Abuja and online: software engineering, data, AI, cybersecurity and digital literacy for professionals, youth and institutions.',
+  keywords: [
+    'digital skills training Nigeria',
+    'tech training Yola',
+    'digital skills Adamawa',
+    'corporate IT training Nigeria',
+    'coding classes for children Nigeria',
+  ],
   alternates: {
-    canonical: 'https://tokoacademy.org',
+    // With a trailing slash: `trailingSlash: true` means the server 301s the
+    // slashless form, so a canonical without it points at a redirect.
+    canonical: 'https://tokoacademy.org/',
   },
   openGraph: {
     title: 'Digital Skills & Professional Growth - Toko Academy',
@@ -167,7 +212,12 @@ const stories = [
 ];
 
 export default async function Home() {
-  const featured = onePerSchool(await getCourses());
+  const [courses, latestNews, upcomingEvents] = await Promise.all([
+    getCourses(),
+    newsOrNothing(3),
+    eventsOrNothing(3),
+  ]);
+  const featured = onePerSchool(courses);
 
   return (
     <>
@@ -375,27 +425,119 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_460px]">
-        <div className="section-container">
-          <div className="grid grid-cols-1 items-center gap-8 rounded-2xl border border-toko-gray-200 bg-gradient-to-r from-white via-toko-gray-50 to-white p-6 md:grid-cols-2 md:p-10">
-            <div>
-              <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Impact Updates</p>
-              <h2 className="mt-3 text-toko-gray-900">Follow Our Latest News and Events</h2>
-              <p className="mt-4 text-sm text-toko-gray-600 md:text-base">
-                See how our programs, partnerships, and events are creating meaningful change across communities.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link href="/events" className="rounded-xl border border-toko-gray-300 px-5 py-3 text-center font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green">
-                View Events
-              </Link>
-              <Link href="/news" className="rounded-xl border border-toko-gray-300 px-5 py-3 text-center font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green">
-                View Newsroom
-              </Link>
-            </div>
+      {/*
+        What we are actually doing, rather than two buttons inviting you to go
+        and look. This block used to be a heading and a pair of links — nothing
+        to read, and nothing to make anybody click. Showing the work is what
+        keeps a visitor on the site.
+
+        Both strips disappear entirely when there is nothing to show, so an
+        empty newsroom or a WordPress outage leaves a shorter page rather than
+        an empty promise.
+      */}
+      {(latestNews.length > 0 || upcomingEvents.length > 0) && (
+        <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_900px]">
+          <div className="section-container space-y-16">
+            {latestNews.length > 0 && (
+              <div>
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                  <div className="max-w-2xl">
+                    <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Newsroom</p>
+                    <h2 className="mt-3 text-toko-gray-900">What we have been doing</h2>
+                  </div>
+                  <Link
+                    href="/news"
+                    className="font-semibold text-toko-green transition-colors hover:text-toko-green-dark"
+                  >
+                    All news →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {latestNews.map((article) => (
+                    <Link
+                      key={article.slug}
+                      href={`/news/${article.slug}`}
+                      className="card group flex flex-col overflow-hidden rounded-2xl border border-toko-gray-200 bg-white transition-shadow duration-300 hover:shadow-toko-lg"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={article.image}
+                        alt={article.imageAlt || ''}
+                        className="h-44 w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        width={640}
+                        height={360}
+                      />
+                      <div className="flex flex-1 flex-col p-5">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-toko-gray-500">
+                          <span className="rounded bg-toko-green/10 px-2 py-0.5 font-medium text-toko-green">
+                            {article.category}
+                          </span>
+                          {readableDate(article.date) && <span>{readableDate(article.date)}</span>}
+                          {article.readTime && <span>· {article.readTime}</span>}
+                        </div>
+                        <h3 className="mt-3 text-lg font-bold text-toko-gray-900 transition-colors group-hover:text-toko-green">
+                          {article.title}
+                        </h3>
+                        <p className="mt-2 line-clamp-3 text-sm text-toko-gray-600">{article.excerpt}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {upcomingEvents.length > 0 && (
+              <div>
+                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+                  <div className="max-w-2xl">
+                    <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Events</p>
+                    <h2 className="mt-3 text-toko-gray-900">Where to find us</h2>
+                  </div>
+                  <Link
+                    href="/events"
+                    className="font-semibold text-toko-green transition-colors hover:text-toko-green-dark"
+                  >
+                    All events →
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {upcomingEvents.map((event) => (
+                    <Link
+                      key={event.slug}
+                      href={`/events/${event.slug}`}
+                      className="card group flex gap-4 rounded-2xl border border-toko-gray-200 bg-white p-5 transition-shadow duration-300 hover:shadow-toko-lg"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={event.image}
+                        alt={event.imageAlt || ''}
+                        className="h-20 w-20 shrink-0 rounded-lg object-cover"
+                        loading="lazy"
+                        decoding="async"
+                        width={160}
+                        height={160}
+                      />
+                      <div className="min-w-0">
+                        {readableDate(event.date) && (
+                          <p className="text-xs text-toko-gray-500">{readableDate(event.date)}</p>
+                        )}
+                        <h3 className="mt-1 font-bold text-toko-gray-900 transition-colors group-hover:text-toko-green">
+                          {event.title}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 text-sm text-toko-gray-600">{event.excerpt}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="bg-gradient-to-br from-toko-green to-toko-blue py-20 text-white md:py-24 [content-visibility:auto] [contain-intrinsic-size:1px_420px]">
         <div className="section-container text-center">

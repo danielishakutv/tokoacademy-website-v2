@@ -33,11 +33,45 @@ export type NavigationItem = {
   }>;
 };
 
+/**
+ * The main menu.
+ *
+ * Restructured from seven top-level items to four, for two reasons.
+ *
+ * Seven is more than anyone reads. "Thematic Areas", "Impact" and "Partners"
+ * each sat at the top level competing with "Programs", which is what people
+ * actually come for — and all three answer the same question, which is "who
+ * are these people and are they any good". They now sit under About, where
+ * somebody looking for them will look.
+ *
+ * And four of the old links went nowhere useful. "Press Releases" and "Toko in
+ * the News" pointed at `/news?category=…`, but the site is a static export and
+ * `/news` reads no query parameters at all — so both landed on the same
+ * unfiltered page as "Newsroom". Three menu entries for one page is not a
+ * choice, it is a maze. The newsroom already merges those categories, so the
+ * menu now says so.
+ *
+ * The two dropdown parents also carried `href: '#'`. The header renders a
+ * parent as a toggle button rather than a link, so nothing was broken by it —
+ * but a placeholder sitting in the data invites somebody to render it one day
+ * and ship a dead link. Each parent now names the page its children belong to,
+ * and each group opens with a link to that page so the section is reachable in
+ * one tap.
+ */
 export const navigation: NavigationItem[] = [
-  { name: 'About', href: '/about' },
+  {
+    name: 'About',
+    href: '/about',
+    dropdown: [
+      { name: 'Who we are', href: '/about' },
+      { name: 'Our impact', href: '/impact' },
+      { name: 'Thematic areas', href: '/thematic-areas' },
+      { name: 'Partners', href: '/partners' },
+    ],
+  },
   {
     name: 'Programs',
-    href: '#',
+    href: '/courses',
     dropdown: [
       { name: 'All Programs', href: '/courses' },
       {
@@ -112,22 +146,21 @@ export const navigation: NavigationItem[] = [
           },
         ],
       },
+      { name: 'Kids & Youth', href: '/kids' },
+      { name: 'Corporate & Government', href: '/corporate' },
       { name: 'Class Schedules', href: '/schedules' },
     ],
   },
-  { name: 'Thematic Areas', href: '/thematic-areas' },
-  { name: 'Impact', href: '/impact' },
   {
-    name: 'News & Media',
-    href: '#',
+    name: 'Newsroom',
+    href: '/news',
     dropdown: [
-      { name: 'Newsroom', href: '/news' },
-      { name: 'Press Releases', href: '/news?category=press-release' },
-      { name: 'Toko in the News', href: '/news?category=in-the-news' },
+      // One entry, because there is one page. Press releases and press
+      // coverage are categories the newsroom already shows together.
+      { name: 'Latest news', href: '/news' },
       { name: 'Events', href: '/events' },
       { name: 'Gallery', href: '/gallery' },
     ],
   },
-  { name: 'Partners', href: '/partners' },
   { name: 'Contact', href: '/contact' },
 ];

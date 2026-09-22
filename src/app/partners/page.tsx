@@ -1,30 +1,42 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import PartnerLogosWall from '@/components/PartnerLogosWall';
+import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Partners - Collaborate for Lasting Impact',
+export const metadata: Metadata = pageMetadata({
+  path: '/partners',
+  title: 'Partner With Us — Collaborate for Impact',
   description:
-    'Partner with Toko Academy to empower youths, children, and professionals through practical digital skills programs and measurable community impact.',
-  alternates: {
-    canonical: 'https://tokoacademy.org/partners',
+    'We work with government, NGOs and private sector teams to co-design digital skills programmes with measurable outcomes. Here is how a partnership starts.',
+  socialTitle: 'Partner With Toko Academy — Collaborate for Impact',
+  socialDescription:
+    'Build practical learning pathways with us across government, development organisations and industry, from discovery call to delivery.',
+  image: {
+    url: `${SITE_URL}/images/hero/commissioner-for-women-affairs.jpg`,
+    alt: 'Toko Academy partners at a joint programme event',
   },
-  openGraph: {
-    title: 'Partners - Collaborate for Lasting Impact | Toko Academy',
-    description:
-      'Build meaningful partnerships with Toko Academy across government, organizations, and private sector teams.',
-    url: 'https://tokoacademy.org/partners',
-    type: 'website',
-    images: [
-      {
-        url: 'https://tokoacademy.org/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Toko Academy Partnerships',
-      },
-    ],
-  },
-};
+});
+
+/*
+ * This page used to declare a second `Organization` whose `url` was /partners
+ * — telling a search engine that Toko Academy, the organisation, lives at the
+ * partnerships page. That competes with the real entity and splits it in two.
+ * The canonical Organization is now declared once, in the root layout, and this
+ * page describes itself and points back to it by id.
+ *
+ * Partners sits under About in the site navigation.
+ */
+const entityJsonLd = pageEntityJsonLd({
+  path: '/partners',
+  name: 'Partner With Toko Academy',
+  description:
+    'Partnership opportunities with Toko Academy for government agencies, development organisations, and private sector collaborators.',
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Partners', path: '/partners' },
+  ],
+});
 
 const collaborationAreas = [
   {
@@ -67,18 +79,9 @@ const processSteps = [
 ];
 
 export default function PartnersPage() {
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Toko Academy',
-    url: 'https://tokoacademy.org/partners',
-    description:
-      'Partnership opportunities with Toko Academy for government agencies, organizations, and private sector collaborators.',
-  };
-
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script {...jsonLdScript(entityJsonLd)} />
 
       <section className="relative overflow-hidden bg-gradient-to-br from-toko-gray-900 via-toko-blue to-toko-green pb-20 pt-40 text-white md:pb-24 md:pt-52">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(255,255,255,0.12),transparent_40%),radial-gradient(circle_at_85%_10%,rgba(255,255,255,0.08),transparent_35%)]" />

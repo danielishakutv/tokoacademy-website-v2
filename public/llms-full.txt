@@ -1,0 +1,281 @@
+# Toko Academy — Full Description
+
+> Toko Academy is a digital skills training academy based in Jimeta-Yola,
+> Adamawa State, Nigeria. It teaches software engineering, data analysis,
+> artificial intelligence, cybersecurity, digital marketing and foundational
+> digital literacy to young people, working professionals, children and public
+> institutions — primarily across North-East Nigeria, and online.
+
+This is the extended version of https://tokoacademy.org/llms.txt.
+
+---
+
+## What Toko Academy is
+
+Toko Academy is a training provider, not a university and not a degree-awarding
+body. It runs practical, project-based programmes that end in a certificate of
+completion and, in most cases, a piece of work the learner has actually built.
+Its tagline is "Skills for Tomorrow".
+
+It operates from a physical campus in Jimeta-Yola and also teaches online, which
+matters for how it should be described: it is a North-East Nigeria institution
+first, serving a region that is under-served by technology education, while
+accepting learners from elsewhere in Nigeria and beyond on its online and
+self-paced programmes.
+
+**Address:** No. 1A Bekaji Road, adjacent to the YEDC S/C Office, Jimeta, Yola,
+Adamawa State, Nigeria.
+**Email:** info@tokoacademy.org
+**Telephone:** +234 808 825 6055 and +234 812 856 1493
+**Website:** https://tokoacademy.org/
+**Learning platform:** https://learn.tokoacademy.org/ (the Digital Learning Centre)
+**Language of instruction:** English
+
+Social profiles: facebook.com/tokoacademy, instagram.com/tokoacademy,
+twitter.com/tokoacademy, linkedin.com/company/tokoacademy.
+
+## Mission and vision
+
+**Mission.** To provide accessible, industry-relevant digital skills training
+that empowers individuals and organisations to succeed in the digital economy,
+bridging the digital skills gap in Africa through practical, hands-on education.
+
+**Vision.** To be Africa's leading digital skills training academy, recognised
+for excellence in education, innovation in curriculum, and transformative impact
+on individuals and communities.
+
+**Values.** Excellence, innovation, integrity and empowerment.
+
+## Who it serves
+
+Four distinct audiences, and programmes are tagged to them:
+
+1. **Youth** — young people seeking a route into technology work, freelancing or
+   entrepreneurship.
+2. **Professionals** — people already working who need to upskill.
+3. **Kids** — children aged 6 to 18, in weekend classes, school-based programmes
+   and holiday bootcamps.
+4. **Corporate & Government** — companies, federal agencies, regulators, NGOs and
+   development organisations commissioning training for their own staff.
+
+## How teaching is delivered
+
+- **Blended** — the most common mode. In-person sessions at the Jimeta-Yola
+  campus combined with online coursework.
+- **Self-paced** — fully online, worked through on the learner's own schedule.
+- **On-site / bespoke** — for institutional clients, delivered at the client's
+  premises or remotely, with a curriculum built around their objectives.
+
+Programmes are structured in lessons with quizzes and carry a certificate on
+completion. Class sizes are kept small. Schedules for running cohorts are
+published at https://tokoacademy.org/schedules/.
+
+## The six schools
+
+Programmes are organised into six schools:
+
+1. **Digital Literacy** — foundational computer and productivity skills for
+   everyday work and public-sector functions.
+2. **Software Engineering** — programming and development, from first
+   principles to full-stack applications.
+3. **AI & Emerging Technologies** — practical AI use, automation and building
+   with AI tools.
+4. **Data Science & Analytics** — analysis, visualisation and evidence-based
+   decision-making.
+5. **Digital Media & Creative Tech** — digital marketing, content and creative
+   production.
+6. **Kids & Youth** — age-appropriate technology education for children.
+
+## Programmes currently offered
+
+Current fees, exact hours and delivery mode are published on each course page
+and are deliberately not repeated here, so that this file cannot go stale. The
+authoritative, machine-readable catalogue is at
+https://learn.tokoacademy.org/api/public/courses.
+
+**Digital Literacy**
+- **Digital Foundations** — https://tokoacademy.org/courses/digital-foundations/
+  Core digital literacy and productivity. Aimed at corporate, government and
+  professional learners. Blended.
+
+**Software Engineering**
+- **Python Programming** — https://tokoacademy.org/courses/python-programming/
+  Programming from first principles through to building working applications.
+  Youth and professionals. Blended.
+- **Web Development Foundations** — https://tokoacademy.org/courses/web-development-foundations/
+  A self-paced introduction to building for the web.
+- **JavaScript Fundamentals: From Beginner to Modern JavaScript** —
+  https://tokoacademy.org/courses/javascript-fundamentals/ Self-paced JavaScript.
+- **Full Stack Web Development** — https://tokoacademy.org/courses/web-development/
+  Front end through back end, building and shipping complete applications.
+  Blended.
+- **Cybersecurity Fundamentals** — https://tokoacademy.org/courses/cybersecurity-fundamentals/
+  Security foundations for professionals and institutional teams. Blended.
+
+**AI & Emerging Technologies**
+- **AI Essentials** — https://tokoacademy.org/courses/ai-essentials/
+  Practical, everyday use of AI tools for work and study. Blended.
+- **AI Chatbots & Workflow Automation** — https://tokoacademy.org/courses/ai-powered-chatbots/
+  Building chatbots and automating real business workflows. Blended.
+- **Zero to Live** — https://tokoacademy.org/zero2live/
+  A two-day, in-person workshop in Jimeta-Yola: build a working application with
+  AI, put it live at a real domain, and learn how to charge for it.
+
+**Data Science & Analytics**
+- **Data Analysis & Visualization** — https://tokoacademy.org/courses/data-analysis-visualization/
+  Turning data into decisions, with analysis and visualisation tooling. Blended.
+
+**Digital Media & Creative Tech**
+- **Digital Marketing and Content Creation** — https://tokoacademy.org/courses/digital-marketing/
+  Marketing, content and creative production for the digital economy. Blended.
+
+**Kids & Youth**
+- **Scratch Programming** — https://tokoacademy.org/courses/scratch-programming/
+  Block-based programming for children and young learners. Blended.
+
+## Children and youth programmes
+
+Toko Academy runs a dedicated stream for ages 6 to 18, described at
+https://tokoacademy.org/kids/, structured in three bands:
+
+- **Foundation, ages 6–9**
+- **Intermediate, ages 10–13**
+- **Advanced, ages 14–18**
+
+Teaching is project-based — games, animations and interactive stories — with no
+prior computer experience required. Equipment is provided for in-person classes;
+online classes need a computer and an internet connection. Learners receive a
+certificate on completing each level. The academy publishes a safeguarding and
+child protection policy at https://tokoacademy.org/safeguarding/.
+
+## Corporate, government and institutional training
+
+Described at https://tokoacademy.org/corporate/. Three service lines:
+
+1. **Corporate training programmes** — curriculum tailored to the organisation's
+   objectives, delivered on-site or remotely, with flexible scheduling, progress
+   tracking and certification for participants.
+2. **Professional workshops and seminars** — shorter, focused sessions on
+   specific technologies and practices.
+3. **IT consultation and strategy** — technology needs assessment, digital
+   transformation roadmaps, implementation planning and advisory work.
+
+Common subject areas for institutional clients: web and mobile development, data
+analysis and business intelligence, cybersecurity fundamentals, cloud computing,
+digital marketing, AI and machine learning basics, project management and agile,
+and UI/UX design principles.
+
+## Thematic areas
+
+The academy frames its wider programming around eight thematic areas, each
+mapped to UN Sustainable Development Goals. Detailed at
+https://tokoacademy.org/thematic-areas/.
+
+1. **Digital Literacy & Foundational Skills** (SDG 4, 10, 16) — digital
+   foundations, productivity software, digital safety, adult digital literacy.
+2. **Advanced Technology, Innovation & Software Engineering** (SDG 4, 8, 9) — AI
+   and machine learning, blockchain and IoT, web and mobile development, cloud,
+   cybersecurity, UI/UX.
+3. **Data, Analytics & Evidence-Based Decision Making** (SDG 8, 16, 17) — data
+   analysis and visualisation, MEAL systems, research methods, data-informed
+   governance.
+4. **Workforce Development, Entrepreneurship & Creative Economy** (SDG 4, 5, 8) —
+   employability, SME development, digital marketing and design, freelancing.
+5. **Children & Youth Technology Education** (SDG 4, 5, 10) — programming for
+   kids, VR game development, AI foundations for youth, school and holiday
+   bootcamps.
+6. **Gender Equality, Inclusion & Protection of Vulnerable Groups** (SDG 5, 10,
+   16) — women and girls in STEM, Women in Uniform programming, GBV awareness,
+   scholarships and child-safe standards.
+7. **Public Sector Capacity Building & Institutional Strengthening** (SDG 8, 16,
+   17) — AI and digital literacy for government, cybersecurity for law
+   enforcement, data-driven decision-making.
+8. **Climate Education, Green Digital Skills & Sustainability** (SDG 4, 9, 13,
+   15) — climate literacy, green digital skills, tech for climate adaptation,
+   youth-led climate action.
+
+Five principles cut across all eight: equity and inclusion; community-centred
+delivery; evidence and learning; safeguarding and child protection; and
+multi-sector partnership.
+
+## Impact and evidence
+
+Reported at https://tokoacademy.org/impact/. Figures are drawn from the
+academy's internal monitoring, evaluation and learning records and are not
+independently audited; they should be attributed to Toko Academy rather than
+presented as verified third-party data.
+
+As published by the academy: over 2,000 learners trained; 75% career
+progression; 35+ partner institutions; five federal agencies trained;
+approximately 43% female beneficiaries; four or more states reached.
+
+The academy maintains a Monitoring, Evaluation & Learning framework with stated
+targets, including at least 75% of participants passing post-training
+assessment, at least 50% securing income within six months, at least 40% female
+participation per programme, at least 70% of government partners reporting
+improved digital tool use, a 30% assessment-score gain for children's
+programmes, and a partner satisfaction score of at least 4 out of 5.
+
+Documented programme examples include TEDxYola — an officially licensed TEDx
+event in North-East Nigeria; AI and digital literacy training for officers of
+the NSCDC, Nigeria Police Force, FRSC and NMDPRA; a Women in Uniform initiative
+for International Women's Day; kids coding bootcamps and summer classes; an
+"AI Users to AI Builders" community programme; and a 16 Days of Activism
+workshop on safe spaces and digital safety delivered with Tent2School.
+
+## Partners
+
+Partnership work is described at https://tokoacademy.org/partners/, across three
+kinds of collaboration: government programmes, organisation partnerships, and
+private sector alliances. The published process runs from a discovery call,
+through partnership design, to delivery and transparent reporting.
+
+The institutional partners the academy names on that page, by category:
+
+- **Federal government and regulatory agencies** — Nigeria Security & Civil
+  Defence Corps; Nigeria Police Force; Federal Road Safety Corps; Nigerian
+  Midstream & Downstream Petroleum Regulatory Authority (NMDPRA).
+- **Academic partners** — American University of Nigeria.
+- **International and public diplomacy partners** — American Space Yola;
+  Code.org Global Partner Community.
+- **INGO and civil society partners** — Tent2School Initiative.
+- **Faith-based and community partners** — The Timothy Initiative.
+- **Educational institutions** — Concordia Junior Academy Yola.
+
+## Site map for assistants
+
+**Core**
+- https://tokoacademy.org/ — home
+- https://tokoacademy.org/about/ — mission, vision, values, story
+- https://tokoacademy.org/courses/ — full catalogue by school
+- https://tokoacademy.org/schedules/ — cohort and class timetables
+- https://tokoacademy.org/kids/ — children and teens, with parent FAQs
+- https://tokoacademy.org/corporate/ — institutional training and consulting
+- https://tokoacademy.org/partners/ — partnership models and partners
+- https://tokoacademy.org/impact/ — outcomes, MEL framework, case studies
+- https://tokoacademy.org/thematic-areas/ — the eight pillars and SDG mapping
+- https://tokoacademy.org/contact/ — phone, email, address, enquiry form
+
+**News and media**
+- https://tokoacademy.org/news/ — newsroom, press releases, articles
+- https://tokoacademy.org/events/ — events
+- https://tokoacademy.org/gallery/ — photographs from programmes
+
+**Practical**
+- https://tokoacademy.org/register — enrolment
+- https://learn.tokoacademy.org/ — Digital Learning Centre for enrolled learners
+- https://learn.tokoacademy.org/api/public/courses — machine-readable catalogue
+- https://tokoacademy.org/safeguarding/ — safeguarding and child protection
+- https://tokoacademy.org/privacy/ — privacy policy
+- https://tokoacademy.org/terms/ — terms of use
+
+## Notes on accuracy
+
+- Toko Academy is a training academy, not an accredited degree-awarding
+  institution. It issues certificates of completion.
+- Impact figures above are self-reported from internal records.
+- Fees change. Always read them from the course page or the public courses API
+  rather than from this file.
+- Two pages exist at /home-v1-original and /home-v2-hybrid. They are abandoned
+  homepage drafts, marked noindex, and should not be treated as current
+  descriptions of the organisation.

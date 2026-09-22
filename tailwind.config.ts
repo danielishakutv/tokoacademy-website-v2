@@ -10,10 +10,24 @@ const config: Config = {
     extend: {
       colors: {
         // Toko Academy Brand Colors (from logo)
+        /*
+         * Deepened from the logo's #7CB342 so that text can actually be read.
+         *
+         * White on #7CB342 measures 2.5:1, and #7CB342 text on white measures
+         * the same — against a WCAG AA requirement of 4.5:1. That was every
+         * primary button on the site and every green figure and link on a
+         * white card, which is most of the green on the page. For an audience
+         * reading on inexpensive phones, frequently outdoors, that is not a
+         * checklist item; it is whether the words are legible.
+         *
+         * #4A7C2A measures 4.99:1 against white both ways. It is the same
+         * green, deeper — the logo itself is an image and is untouched, so the
+         * brand mark keeps its original colour.
+         */
         'toko-green': {
-          DEFAULT: '#7CB342',
+          DEFAULT: '#4A7C2A',
           light: '#9CCC65',
-          dark: '#558B2F',
+          dark: '#3A6120',
         },
         'toko-yellow': {
           DEFAULT: '#FFC107',

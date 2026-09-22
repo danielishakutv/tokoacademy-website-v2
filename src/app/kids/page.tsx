@@ -3,16 +3,37 @@ import Link from 'next/link';
 import { IconWrapper } from '@/components/IconWrapper';
 import { kidsCourses } from '@/data/courses';
 import { externalLinks } from '@/data/config';
+import { pageMetadata, pageEntityJsonLd, faqJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Kids & Teens Programs - Coding & Computer Training for Young Learners',
-  description: 'Fun, interactive coding classes and CBT programs for children ages 6-18. Weekend coding classes, Scratch programming, and computer literacy training. Build tech skills early!',
-  openGraph: {
-    title: 'Kids & Teens Tech Programs - Toko Academy',
-    description: 'Engaging coding and computer training programs designed specifically for young learners ages 6-18.',
-    url: 'https://tokoacademy.org/kids',
+// The old title ran to 70 characters before the site name was appended, so
+// Google truncated it mid-phrase. This one leaves room for the template.
+export const metadata: Metadata = pageMetadata({
+  path: '/kids',
+  title: 'Kids & Teens Coding Classes (Ages 6–18)',
+  description:
+    'Hands-on coding and computer classes for children aged 6 to 18. Scratch, web basics and digital literacy in small groups, taught in person and online.',
+  socialTitle: 'Kids & Teens Coding Classes, Ages 6–18 | Toko Academy',
+  socialDescription:
+    'Fun, project-based technology programmes for young learners — Scratch, web basics and computer literacy, in small classes with personal attention.',
+  image: {
+    url: `${SITE_URL}/images/hero/kids-coding.jpg`,
+    alt: 'Children learning to code at a Toko Academy class',
   },
-};
+});
+
+// "Kids & Youth" sits under the Programs menu in src/data/config.ts, and
+// Programs itself resolves to /courses.
+const entityJsonLd = pageEntityJsonLd({
+  path: '/kids',
+  name: 'Kids & Teens Programmes',
+  description:
+    'Coding and computer training from Toko Academy for children and teenagers aged 6 to 18, taught in small groups in person and online.',
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'Programs', path: '/courses' },
+    { name: 'Kids & Youth', path: '/kids' },
+  ],
+});
 
 export default function KidsPage() {
   const benefits = [
@@ -69,6 +90,14 @@ export default function KidsPage() {
 
   return (
     <>
+      <script {...jsonLdScript(entityJsonLd)} />
+      {/*
+        Built from the very same `faqs` array rendered further down the page, so
+        the markup can never describe questions a visitor cannot read. If a
+        question is removed from the page it disappears from the markup with it.
+      */}
+      <script {...jsonLdScript(faqJsonLd(faqs))} />
+
       {/* Hero Section */}
       <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-magenta to-toko-yellow text-white">
         <div className="section-container">

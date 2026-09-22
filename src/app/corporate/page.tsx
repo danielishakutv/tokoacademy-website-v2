@@ -2,16 +2,37 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconWrapper } from '@/components/IconWrapper';
 import { externalLinks } from '@/data/config';
+import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Corporate Training - Upskill Your Workforce',
-  description: 'Customized corporate training programs and IT consultation services. Empower your organization with cutting-edge digital skills training. On-site and remote options available.',
-  openGraph: {
-    title: 'Corporate Training & IT Consultation - Toko Academy',
-    description: 'Transform your workforce with tailored digital skills training and strategic IT consulting.',
-    url: 'https://tokoacademy.org/corporate',
+// Previously had no canonical and no Twitter card at all.
+export const metadata: Metadata = pageMetadata({
+  path: '/corporate',
+  title: 'Corporate Training & IT Consultation',
+  description:
+    'Tailored digital skills training for teams, agencies and institutions — delivered on site or remotely, built around your objectives, and certificated.',
+  socialTitle: 'Corporate Training & IT Consultation | Toko Academy',
+  socialDescription:
+    'Upskill your workforce with a curriculum designed around your business objectives, plus strategic IT consulting and digital transformation support.',
+  image: {
+    url: `${SITE_URL}/images/hero/professional-courses.jpg`,
+    alt: 'Professionals in a Toko Academy corporate training session',
   },
-};
+});
+
+// "Corporate & Government" sits under the Programs menu in src/data/config.ts,
+// and Programs itself resolves to /courses — so this trail is how a visitor
+// actually reaches the page, not a hierarchy invented for the markup.
+const entityJsonLd = pageEntityJsonLd({
+  path: '/corporate',
+  name: 'Corporate Training & IT Consultation',
+  description:
+    'Tailored digital skills training and IT consultation from Toko Academy for companies, government agencies and development organisations.',
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'Programs', path: '/courses' },
+    { name: 'Corporate & Government', path: '/corporate' },
+  ],
+});
 
 export default function CorporatePage() {
   const services = [
@@ -113,6 +134,8 @@ export default function CorporatePage() {
 
   return (
     <>
+      <script {...jsonLdScript(entityJsonLd)} />
+
       {/* Hero Section */}
       <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-blue to-toko-green text-white">
         <div className="section-container">

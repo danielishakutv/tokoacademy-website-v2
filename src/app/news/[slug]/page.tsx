@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { fetchNewsArticleBySlug, fetchNewsArticles } from '@/lib/wordpress';
+import { jsonLdHtml } from '@/lib/json-ld';
 
 const categoryStyles: Record<string, string> = {
   'Press Release': 'bg-toko-green/10 text-toko-green',
@@ -82,7 +83,7 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
       'name': 'Toko Academy',
       'logo': {
         '@type': 'ImageObject',
-        'url': 'https://tokoacademy.org/logo/ta_logo_png.png'
+        'url': 'https://tokoacademy.org/logo/toko-academy.png'
       }
     },
     'mainEntityOfPage': {
@@ -96,7 +97,7 @@ export default async function NewsDetailPage({ params }: { params: { slug: strin
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       
       {/* Hero */}

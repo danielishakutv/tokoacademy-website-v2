@@ -1,19 +1,41 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Impact - Measurable Digital Skills Outcomes',
-  description: 'See Toko Academy\'s impact figures, MEL framework, case studies, and beneficiary results from 2023 to 2026.',
-  alternates: {
-    canonical: 'https://tokoacademy.org/impact',
+// No specific years in the description: a meta description outlives the cohort
+// it was written about, and "2023 to 2026" starts reading as stale the moment
+// the calendar turns.
+export const metadata: Metadata = pageMetadata({
+  path: '/impact',
+  title: 'Our Impact — Outcomes, Evidence, Case Studies',
+  description:
+    'Learners trained, career progression, partner institutions and federal agencies reached — with the monitoring and evaluation framework behind every figure.',
+  socialTitle: 'Our Impact — Real Numbers, Documented | Toko Academy',
+  socialDescription:
+    'Impact metrics, MEL framework and case studies from our work with communities, schools and government agencies across North-East Nigeria.',
+  image: {
+    url: `${SITE_URL}/images/hero/training-military-officers.jpg`,
+    alt: 'Toko Academy delivering digital skills training to uniformed officers',
   },
-  openGraph: {
-    title: 'Impact - Toko Academy',
-    description: 'Explore our verified impact metrics, case studies, and monitoring framework for digital skills programming.',
-    url: 'https://tokoacademy.org/impact',
-    type: 'website',
-  },
-};
+});
+
+// Impact sits under About in the site navigation.
+//
+// Note what is NOT in this markup: the 2,000+ learners, the 75% and the 35+
+// partners. The owner stands behind those figures from offline records and they
+// belong in the page copy — but there is no audited source to cite, and putting
+// them into structured data restates them to a search engine as verified fact.
+const entityJsonLd = pageEntityJsonLd({
+  path: '/impact',
+  name: 'Toko Academy Impact',
+  description:
+    'Outcome figures, the monitoring and evaluation framework, and case studies from Toko Academy’s digital skills programmes.',
+  breadcrumbs: [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Our Impact', path: '/impact' },
+  ],
+});
 
 const metrics = [
   { title: 'Learners Trained', value: '2,000+' },
@@ -82,6 +104,8 @@ const testimonials = [
 export default function ImpactPage() {
   return (
     <>
+      <script {...jsonLdScript(entityJsonLd)} />
+
       <section className="pt-40 pb-16 bg-gradient-to-br from-toko-gray-900 via-toko-blue to-toko-green text-white md:pt-52 md:pb-20">
         <div className="section-container">
           <div className="mx-auto max-w-4xl text-center">
