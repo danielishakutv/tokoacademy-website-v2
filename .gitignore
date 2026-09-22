@@ -21,6 +21,9 @@
 .DS_Store
 *.pem
 
+# Private working notes — contains server login details; never commit
+personal_private_note.md
+
 # Debug
 npm-debug.log*
 yarn-debug.log*

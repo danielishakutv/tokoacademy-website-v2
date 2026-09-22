@@ -4,7 +4,6 @@ import WhyChooseSection from '@/components/home/WhyChooseSection';
 import CoursesSection from '@/components/home/CoursesSection';
 import KidsSection from '@/components/home/KidsSection';
 import ServicesSection from '@/components/home/ServicesSection';
-import TestimonialsSection from '@/components/home/TestimonialsSection';
 import CTABanner from '@/components/home/CTABanner';
 import { Suspense } from 'react';
 
@@ -15,6 +14,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://tokoacademy.org/home-v1-original',
   },
+  // An abandoned homepage draft. It is still reachable, but it is not the
+  // homepage and should not compete with it in search results.
+  robots: { index: false, follow: false },
 };
 
 export default function HomeV1Original() {
@@ -87,9 +89,12 @@ export default function HomeV1Original() {
       <Suspense fallback={null}>
         <ServicesSection />
       </Suspense>
-      <Suspense fallback={null}>
-        <TestimonialsSection />
-      </Suspense>
+      {/*
+        The testimonials section is not rendered: the quotes behind it are
+        named personas nobody can vouch for. `src/data/testimonials.ts` and
+        `TestimonialsSection` are left on disk, unreferenced, until there are
+        real, attributable quotes to put in their place.
+      */}
       <Suspense fallback={null}>
         <CTABanner />
       </Suspense>

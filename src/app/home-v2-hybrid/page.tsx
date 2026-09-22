@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://tokoacademy.org/home-v2-hybrid',
   },
+  // An abandoned homepage draft. It is still reachable, but it is not the
+  // homepage and should not compete with it in search results.
+  robots: { index: false, follow: false },
   openGraph: {
     title: 'Digital Skills & Professional Growth - Toko Academy',
     description:

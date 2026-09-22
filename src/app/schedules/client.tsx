@@ -7,7 +7,8 @@ type Schedule = {
   id: string;
   courseCode: string;
   courseName: string;
-  instructor: string;
+  /** Null where the record had only a placeholder; see `page.tsx`. */
+  instructor: string | null;
   mode: string;
   dayOfWeek: string;
   startTime: string;
@@ -15,14 +16,13 @@ type Schedule = {
   location: string;
   startDate: string;
   endDate: string;
-  capacity: number;
-  enrolled: number;
   color: string;
 };
 
 type ViewMode = 'weekly' | 'monthly';
 
 const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 
 const colorClasses: Record<string, { bg: string; text: string; border: string; badge: string }> = {
   'toko-green': {
@@ -129,16 +129,6 @@ export default function SchedulesClient({ schedules }: { schedules: Schedule[] }
     });
     return Array.from(months).sort();
   }, [schedules]);
-
-  const getAvailabilityBadge = (schedule: Schedule) => {
-    const spotsLeft = schedule.capacity - schedule.enrolled;
-    if (spotsLeft === 0) {
-      return <span className="px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded">Full</span>;
-    } else if (spotsLeft <= 3) {
-      return <span className="px-2 py-1 bg-orange-500 text-white text-xs font-semibold rounded">{spotsLeft} spots left</span>;
-    }
-    return <span className="px-2 py-1 bg-green-500 text-white text-xs font-semibold rounded">Available</span>;
-  };
 
   return (
     <>
@@ -270,9 +260,11 @@ export default function SchedulesClient({ schedules }: { schedules: Schedule[] }
                                     <h3 className={`text-lg font-bold ${colors.text} mb-1`}>
                                       {schedule.courseName}
                                     </h3>
-                                    <p className="text-sm text-toko-gray-700 font-medium mb-1">
-                                      {schedule.instructor}
-                                    </p>
+                                    {schedule.instructor && (
+                                      <p className="text-sm text-toko-gray-700 font-medium mb-1">
+                                        {schedule.instructor}
+                                      </p>
+                                    )}
                                     <div className="flex flex-wrap gap-2 text-xs text-toko-gray-600">
                                       <span className="flex items-center gap-1">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,9 +284,11 @@ export default function SchedulesClient({ schedules }: { schedules: Schedule[] }
                                   <h3 className={`text-lg font-bold ${colors.text} mb-1`}>
                                     {schedule.courseName}
                                   </h3>
-                                  <p className="text-sm text-toko-gray-700 font-medium mb-1">
-                                    {schedule.instructor}
-                                  </p>
+                                  {schedule.instructor && (
+                                    <p className="text-sm text-toko-gray-700 font-medium mb-1">
+                                      {schedule.instructor}
+                                    </p>
+                                  )}
                                   <div className="flex flex-wrap gap-2 text-xs text-toko-gray-600">
                                     <span className="flex items-center gap-1">
                                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,7 +303,6 @@ export default function SchedulesClient({ schedules }: { schedules: Schedule[] }
                                 </div>
                               </div>
                               <div className="flex sm:flex-col gap-2 sm:items-end">
-                                {getAvailabilityBadge(schedule)}
                                 <Link
                                   href={`/courses/${schedule.courseCode.toLowerCase()}`}
                                   className="text-sm font-semibold text-toko-blue hover:underline whitespace-nowrap"
@@ -356,12 +349,11 @@ export default function SchedulesClient({ schedules }: { schedules: Schedule[] }
                               <h4 className={`font-bold ${colors.text} text-sm mb-1`}>
                                 {schedule.courseName}
                               </h4>
-                              <p className="text-xs text-toko-gray-600 mb-2">
-                                {schedule.instructor}
-                              </p>
-                              <div className="flex items-center justify-between">
-                                {getAvailabilityBadge(schedule)}
-                              </div>
+                              {schedule.instructor && (
+                                <p className="text-xs text-toko-gray-600">
+                                  {schedule.instructor}
+                                </p>
+                              )}
                             </div>
                           );
                         })}

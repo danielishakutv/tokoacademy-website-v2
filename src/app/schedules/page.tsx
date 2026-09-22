@@ -29,6 +29,37 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Names that are not a person. Several records carry "Expert Instructors"
+ * where an instructor's name belongs — a placeholder that was being printed
+ * on the timetable as though somebody had been assigned to teach the class.
+ */
+const PLACEHOLDER_INSTRUCTORS = new Set([
+  'expert instructors',
+  'expert instructor',
+  'tba',
+  'tbc',
+]);
+
+function realInstructor(name: string | undefined): string | null {
+  const trimmed = (name ?? '').trim();
+  if (!trimmed || PLACEHOLDER_INSTRUCTORS.has(trimmed.toLowerCase())) return null;
+  return trimmed;
+}
+
+/**
+ * The stored records also carry a `capacity` and an `enrolled` count that
+ * nothing tracks — they drove a "spots left" badge that was invented rather
+ * than counted. The page no longer shows either, and no longer sends them to
+ * the browser: what a timetable needs is the time, the place and the course.
+ */
 export default function SchedulesPage() {
-  return <SchedulesClient schedules={schedulesData.schedules} />;
+  const schedules = schedulesData.schedules.map(
+    ({ capacity: _capacity, enrolled: _enrolled, instructor, ...schedule }) => ({
+      ...schedule,
+      instructor: realInstructor(instructor),
+    })
+  );
+
+  return <SchedulesClient schedules={schedules} />;
 }
