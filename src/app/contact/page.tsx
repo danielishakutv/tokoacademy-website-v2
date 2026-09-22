@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { contactInfo } from '@/data/config';
+import { captchaSiteKey } from '@/lib/enquiries';
+import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
   title: 'Contact Us - Get in Touch with Toko Academy',
@@ -28,7 +30,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  // Read once at build time. No key configured means no captcha widget and no
+  // third-party script — the form still works on its honeypot and the server's
+  // rate limit.
+  const siteKey = await captchaSiteKey();
+
   return (
     <>
       {/* Hero Section */}
@@ -174,21 +181,10 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Contact Form Placeholder */}
-            <div className="card p-8">
-              <h2 className="text-3xl font-bold text-toko-gray-900 mb-6">Send Us a Message</h2>
-              <div className="bg-toko-gray-50 border-2 border-dashed border-toko-gray-300 rounded-lg p-12 text-center">
-                <svg className="w-16 h-16 text-toko-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <p className="text-lg text-toko-gray-600 mb-4">
-                  For inquiries, please contact us directly via phone, email, or WhatsApp.
-                </p>
-                <p className="text-sm text-toko-gray-500">
-                  We typically respond within 24 hours during business days.
-                </p>
-              </div>
-            </div>
+            {/* A real form, at last. The dashed box that stood here asked
+                people to phone or email instead — which is not a contact page,
+                it is an apology for not having one. */}
+            <ContactForm siteKey={siteKey} />
           </div>
         </div>
       </section>
