@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import PartnerLogosStrip from '@/components/PartnerLogosStrip';
 import CourseThumbnail from '@/components/CourseThumbnail';
+import Picture from '@/components/ui/Picture';
+import HeroSlider, { type HeroSlide } from '@/components/home/HeroSlider';
+import SectionHeading from '@/components/home/SectionHeading';
 import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
 import { fetchNewsArticles, fetchEventPosts, type NewsArticle, type EventPost } from '@/lib/wordpress';
 
@@ -67,14 +70,16 @@ function onePerSchool(courses: DlcCourseCard[], limit = 6): DlcCourseCard[] {
   return picked;
 }
 
-function InlineIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className} aria-hidden>
-      <circle cx="12" cy="12" r="8" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m-4-4h8" />
-    </svg>
-  );
-}
+/**
+ * Stagger classes, looked up rather than built.
+ *
+ * `reveal-delay-1` and friends live in `globals.css` under `@layer utilities`,
+ * which means Tailwind strips any of them it cannot find spelled out in the
+ * source. A template literal would produce the right class at runtime and an
+ * empty stylesheet at build time, so the names are written out in full here.
+ */
+const STAGGER = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5'];
+const stagger = (index: number) => STAGGER[index % STAGGER.length];
 
 export const metadata: Metadata = {
   title: 'Digital Skills & Professional Growth - Toko Academy',
@@ -119,6 +124,10 @@ export const metadata: Metadata = {
   },
 };
 
+/*
+ * Owner-confirmed. Nothing here is rounded up, restated or "improved" — the
+ * four figures below are the only numbers on this page that claim anything.
+ */
 const impactStats = [
   { label: 'Learners Trained', value: '2,000+' },
   { label: 'Programmes Delivered', value: '20+' },
@@ -126,42 +135,68 @@ const impactStats = [
   { label: 'Career Progression', value: '75%' },
 ];
 
+/*
+ * The four audiences, each with a photograph of that audience.
+ *
+ * The `id`s are load-bearing: `#parents`, `#students`, `#professionals` and
+ * `#organizations` have been linkable since the first version of this page and
+ * may be in somebody's newsletter. They survive the redesign even though the
+ * selector row that used to point at them has gone — with the cards themselves
+ * visible a few hundred pixels down, a row of buttons that scrolls you to them
+ * was furniture.
+ */
 const pathways = [
   {
     id: 'parents',
-    title: 'Children Programs',
-    audience: 'For Parents and Guardians',
+    title: "Children's Programmes",
+    audience: 'For parents and guardians',
     summary:
-      'Creative, safe, and practical digital learning pathways for children to build confidence early.',
+      'Creative, safe and practical digital learning pathways for children to build confidence early.',
     href: '/kids',
-    cta: 'Explore Children Programs',
+    cta: "Explore children's programmes",
+    image: '/images/home/pathway-children-club.jpg',
+    alt: 'Children working at laptops in a Toko Academy coding club',
+    brief:
+      'Four or five children at laptops in the Yola lab, an instructor crouched at their level. Shoot from their eye height, faces lit and visible, screens showing their own work.',
   },
   {
     id: 'students',
     title: 'Youth Bootcamps',
-    audience: 'For Students and Young Adults',
+    audience: 'For students and young adults',
     summary:
       'Project-based training that turns curiosity into practical, career-relevant tech skills.',
     href: '/courses',
-    cta: 'Explore Youth Pathways',
+    cta: 'Explore youth pathways',
+    image: '/images/home/pathway-youth-bootcamp.jpg',
+    alt: 'Young adults working together on a project during a Toko Academy bootcamp',
+    brief:
+      'Three or four young adults around one laptop, mid-argument about the work. Natural light, no posing, whiteboard or sticky notes in the background.',
   },
   {
     id: 'professionals',
     title: 'Professional Upskilling',
-    audience: 'For Working Professionals',
+    audience: 'For working professionals',
     summary:
       'Flexible training for professionals ready to upgrade digital capabilities and stay competitive.',
     href: '/courses',
-    cta: 'Advance Your Skills',
+    cta: 'Advance your skills',
+    image: '/images/home/pathway-professional-class.jpg',
+    alt: 'Working professionals in an evening class at Toko Academy',
+    brief:
+      'Adults in work clothes at an evening or weekend session, laptops open, one person asking a question. Warm indoor light, room clearly in use.',
   },
   {
     id: 'organizations',
     title: 'Corporate and Institutional Training',
-    audience: 'For Organizations and Government',
+    audience: 'For organisations and government',
     summary:
-      'Tailored capacity-building programs co-designed for workforce development and lasting impact.',
+      'Tailored capacity-building programmes co-designed for workforce development and lasting impact.',
     href: '/corporate',
-    cta: 'See Training Solutions',
+    cta: 'See training solutions',
+    image: '/images/home/pathway-institutional-training.jpg',
+    alt: 'A Toko Academy facilitator leading a training session for an institutional cohort',
+    brief:
+      'A facilitator at the front of a full room of staff from one institution — badges, uniforms or branded banner visible so the client is identifiable. Wide, from the back corner.',
   },
 ];
 
@@ -169,7 +204,7 @@ const differentiators = [
   {
     title: 'Industry-Relevant Learning',
     description:
-      'Every program is structured around practical competencies that learners can apply immediately.',
+      'Every programme is structured around practical competencies that learners can apply immediately.',
   },
   {
     title: 'Inclusive Access',
@@ -179,36 +214,15 @@ const differentiators = [
   {
     title: 'Measurable Outcomes',
     description:
-      'Our approach emphasizes clear progress, performance, and long-term advancement.',
+      'Our approach emphasises clear progress, performance and long-term advancement.',
   },
 ];
 
 const partnerTypes = [
   'Government Agencies',
   'Educational Institutions',
-  'Development Organizations',
+  'Development Organisations',
   'Private Sector Partners',
-];
-
-const stories = [
-  {
-    quote:
-      'I moved from beginner to building real projects and presenting my work confidently in just a few months.',
-    author: 'Program Graduate',
-    impact: 'Built portfolio projects and transitioned into client-facing work.',
-  },
-  {
-    quote:
-      'The structure made it easy to balance work and learning, and the outcomes were visible almost immediately.',
-    author: 'Working Professional',
-    impact: 'Applied new digital skills directly to improve team productivity.',
-  },
-  {
-    quote:
-      'Our collaboration produced stronger digital literacy outcomes and better readiness among beneficiaries.',
-    author: 'Partner Organization',
-    impact: 'Scaled community-facing training through joint implementation.',
-  },
 ];
 
 export default async function Home() {
@@ -219,116 +233,223 @@ export default async function Home() {
   ]);
   const featured = onePerSchool(courses);
 
+  /*
+   * The hero.
+   *
+   * These four use photographs that are already in the repository — real
+   * rooms, real cohorts, taken in Yola. A hero built out of four placeholders
+   * would have answered the brief on paper and shown the owner nothing, and
+   * the complaint was precisely that there are no pictures. Every other slot
+   * on the page is a placeholder waiting for a photograph, and says so.
+   *
+   * Each slide's title is an `h1`. Four of them in one document is legal HTML
+   * and understood by search engines; the alternative — one real heading and
+   * three paragraphs dressed up to look like it — would mean hard-coding the
+   * heading size in three places, which is exactly what the new type scale is
+   * there to prevent. Only the current slide is exposed to assistive
+   * technology, so a screen reader is read one heading, not four.
+   */
+  const slides: HeroSlide[] = [
+    {
+      id: 'programmes',
+      eyebrow: 'Skills for Tomorrow',
+      title: 'Practical digital skills, taught in Yola and online.',
+      blurb:
+        'Software engineering, data, AI, cybersecurity and digital literacy — structured around what you will actually be asked to do at work.',
+      href: '/courses',
+      cta: 'Explore programmes',
+      media: (
+        <Picture
+          src="/images/hero/professional-courses.jpg"
+          alt="Adult learners around a table of laptops in a Toko Academy classroom in Yola, watching a session on a wall screen"
+          brief="A full class in progress, seen from the back corner: laptops open, the screen lit, faces turned towards the front."
+          aspect="aspect-[4/3]"
+          sizes="(max-width: 1024px) 100vw, 560px"
+          priority
+        />
+      ),
+    },
+    {
+      id: 'mentorship',
+      eyebrow: 'How we teach',
+      title: 'You learn it by building it, beside someone who has.',
+      blurb:
+        'Cohorts are project-based and mentored in the room — an instructor at your shoulder while the work is still unfinished.',
+      href: '/about',
+      cta: 'See how we teach',
+      media: (
+        <Picture
+          src="/images/hero/practical-mentorship-approach-classes.jpg"
+          alt="A Toko Academy instructor leaning over a learner's laptop while classmates follow along"
+          brief="Close, over the shoulder: an instructor pointing at something on a learner's screen, other learners watching."
+          aspect="aspect-[4/3]"
+          sizes="(max-width: 1024px) 100vw, 560px"
+        />
+      ),
+    },
+    {
+      id: 'children',
+      eyebrow: 'For parents and guardians',
+      title: 'Children who build things, not just watch screens.',
+      blurb:
+        'Coding classes where children design their own games, present the work to the room, and leave able to explain how it runs.',
+      href: '/kids',
+      cta: "Explore children's programmes",
+      media: (
+        <Picture
+          src="/images/hero/kids-coding.jpg"
+          alt="A young girl presenting the game she has built, shown on a large screen beside her"
+          brief="A child standing beside the screen showing her own project, mid-sentence. Shot at her eye level, not looking down at her."
+          aspect="aspect-[4/3]"
+          sizes="(max-width: 1024px) 100vw, 560px"
+        />
+      ),
+    },
+    {
+      id: 'institutions',
+      eyebrow: 'For organisations and government',
+      title: 'Capacity building, designed with the institution.',
+      blurb:
+        'We co-design and deliver training with agencies, security services, schools and development partners across Nigeria.',
+      href: '/corporate',
+      cta: 'See training solutions',
+      media: (
+        <Picture
+          src="/images/hero/training-military-officers.jpg"
+          alt="Police, army and paramilitary officers seated in an auditorium during a Toko Academy training session"
+          brief="A full auditorium of an institutional cohort, shot wide from the side so the room and the uniforms both read."
+          aspect="aspect-[4/3]"
+          sizes="(max-width: 1024px) 100vw, 560px"
+        />
+      ),
+    },
+  ];
+
   return (
     <>
-      <section className="relative overflow-hidden pb-20 pt-36 text-white md:pb-28 md:pt-48">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(124,179,66,0.45),transparent_45%),radial-gradient(circle_at_85%_25%,rgba(33,150,243,0.35),transparent_48%),linear-gradient(135deg,#1f2937,#0f172a)]" />
+      {/*
+        `.reveal` starts at zero opacity and is switched on by an observer in
+        the root layout. That is the right trade for a page with JavaScript and
+        the wrong one for a page without it — a visitor whose script never
+        arrives would get a hero and then nothing. Two lines of CSS that only a
+        scriptless browser ever parses close that hole.
+      */}
+      <noscript>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: '.reveal{opacity:1 !important;transform:none !important}',
+          }}
+        />
+      </noscript>
+
+      <HeroSlider slides={slides} />
+
+      {/* Impact --------------------------------------------------------- */}
+      <section className="section-padding relative overflow-hidden bg-surface-sunken">
         <div className="section-container relative z-10">
-          <div className="mx-auto max-w-5xl text-center lg:text-left">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-yellow mb-4">Skills for Tomorrow</p>
-            <h1 className="text-balance text-4xl font-bold leading-[1.08] sm:text-5xl md:text-6xl lg:max-w-4xl">
-              Building Africa&apos;s Digital Future — One Community at a Time.
-            </h1>
-            <p className="mt-6 max-w-3xl text-balance text-base text-white/90 sm:text-lg md:text-xl lg:text-2xl">
-              Toko Academy Ltd. is a Nigerian-incorporated digital skills and workforce development organisation training individuals, institutions, and communities for the digital economy. Headquartered in Yola, Adamawa State, with national virtual reach.
-            </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center sm:gap-4 lg:justify-start">
-              <Link href="/courses" className="btn-primary w-full text-center sm:w-auto">
-                Explore Programmes →
-              </Link>
-              <Link
-                href="/partners"
-                className="inline-flex w-full items-center justify-center rounded border border-white/40 px-8 py-4 text-base font-bold text-white transition-colors duration-300 hover:bg-white/10 sm:w-auto sm:text-lg"
+          <SectionHeading
+            className="reveal"
+            eyebrow="Impact so far"
+            title="What the work has added up to"
+            lead="Built through sustained collaboration, practical training and outcomes we can point to — across learners, schools and institutions."
+          />
+
+          <div className="mt-12 grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:gap-14">
+            <Picture
+              className="reveal"
+              src="/images/home/impact-cohort-yola.jpg"
+              alt="A Toko Academy cohort together at the end of a programme in Yola"
+              brief="The whole cohort outside the Yola campus on their last day — wide, everyone's face visible, late-afternoon light."
+              aspect="aspect-[4/3]"
+              sizes="(max-width: 1024px) 100vw, 520px"
+            />
+
+            {/*
+              Hairlines rather than four floating cards. The figures belong to
+              one claim, and a 1px grid says that; four separate boxes with
+              four shadows says "spreadsheet", which is what the owner was
+              looking at and disliking. The grid is drawn by a background
+              colour showing through a one-pixel gap.
+            */}
+            <dl className="reveal reveal-delay-1 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line">
+              {impactStats.map((item) => (
+                <div key={item.label} className="bg-surface p-6 sm:p-8">
+                  <dt className="text-sm text-ink-muted">{item.label}</dt>
+                  <dd className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-brand sm:text-4xl">
+                    {item.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      {/* Pathways ------------------------------------------------------- */}
+      <section className="section-padding bg-surface">
+        <div className="section-container">
+          <SectionHeading
+            className="reveal"
+            eyebrow="Pathways by audience"
+            title="Clear routes for every learner and partner"
+            lead="Four ways in. Each one is a different room, a different pace and a different promise."
+          />
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+            {pathways.map((pathway, index) => (
+              <article
+                id={pathway.id}
+                key={pathway.id}
+                // The header is fixed, so an anchor that lands flush at the top
+                // of the viewport lands underneath it.
+                className={`card reveal ${stagger(index)} flex scroll-mt-28 flex-col overflow-hidden md:scroll-mt-36`}
               >
-                Partner With Us →
+                <Picture
+                  src={pathway.image}
+                  alt={pathway.alt}
+                  brief={pathway.brief}
+                  aspect="aspect-[16/10]"
+                  rounded={false}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 600px"
+                />
+                <div className="flex flex-1 flex-col p-6 sm:p-7">
+                  <p className="eyebrow">{pathway.audience}</p>
+                  <h3 className="mt-2">{pathway.title}</h3>
+                  <p className="mt-3 text-ink-muted">{pathway.summary}</p>
+                  <div className="mt-auto pt-6">
+                    <Link
+                      href={pathway.href}
+                      className="link-hover inline-flex items-center gap-1.5 text-sm font-semibold text-brand sm:text-base"
+                    >
+                      {pathway.cta}
+                      <span aria-hidden>&rarr;</span>
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured courses ------------------------------------------------ */}
+      <section className="section-padding bg-surface-sunken">
+        <div className="section-container">
+          <SectionHeading
+            className="reveal"
+            eyebrow="Featured courses"
+            title="Programmes you can start with"
+            lead="One course from each school, so this is a cross-section of what is taught rather than six versions of the same thing."
+            action={
+              <Link href="/courses" className="btn-secondary">
+                View all courses
               </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+            }
+          />
 
-      <section className="border-b border-toko-gray-200 bg-white py-10 md:py-12 [content-visibility:auto] [contain-intrinsic-size:1px_540px]">
-        <div className="section-container">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Audience Selector</p>
-              <h2 className="mt-3 text-2xl text-toko-gray-900 md:text-3xl">How can we support you today?</h2>
-            </div>
-            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-2 xl:grid-cols-4">
-              <a href="#parents" className="rounded-xl border border-toko-gray-300 px-4 py-3 text-center text-sm font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green md:text-base">
-                Parent / Guardian
-              </a>
-              <a href="#students" className="rounded-xl border border-toko-gray-300 px-4 py-3 text-center text-sm font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green md:text-base">
-                Student / Youth
-              </a>
-              <a href="#professionals" className="rounded-xl border border-toko-gray-300 px-4 py-3 text-center text-sm font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green md:text-base">
-                Professional
-              </a>
-              <a href="#organizations" className="rounded-xl border border-toko-gray-300 px-4 py-3 text-center text-sm font-semibold text-toko-gray-800 transition-colors hover:border-toko-green hover:text-toko-green md:text-base">
-                Organization / Government
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding bg-toko-gray-50 [content-visibility:auto] [contain-intrinsic-size:1px_640px]">
-        <div className="section-container">
-          <div className="mb-10 max-w-3xl md:mb-12">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Impact Snapshot</p>
-            <h2 className="mt-3 text-toko-gray-900">Credibility You Can See Quickly</h2>
-            <p className="mt-4 text-base text-toko-gray-600 md:text-lg">
-              Built through sustained collaboration, practical training, and measurable outcomes across learners and institutions.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 md:gap-5 lg:grid-cols-4">
-            {impactStats.map((item) => (
-              <article key={item.label} className="card rounded-2xl border border-toko-gray-200 p-5 md:p-6">
-                <p className="text-2xl font-bold text-toko-green sm:text-3xl md:text-4xl">{item.value}</p>
-                <p className="mt-2 text-xs text-toko-gray-600 sm:text-sm md:text-base">{item.label}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_760px]">
-        <div className="section-container">
-          <div className="mb-12 max-w-3xl">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Pathways by Audience</p>
-            <h2 className="mt-3 text-toko-gray-900">Clear Routes for Every Learner and Partner</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
-            {pathways.map((pathway) => (
-              <article id={pathway.id} key={pathway.id} className="card rounded-2xl border border-toko-gray-200 p-6 transition-shadow duration-300 hover:shadow-toko-lg md:p-7">
-                <InlineIcon className="h-10 w-10 text-toko-blue" />
-                <p className="mt-4 text-sm uppercase tracking-[0.18em] text-toko-gray-500">{pathway.audience}</p>
-                <h3 className="mt-3 text-xl text-toko-gray-900 md:text-2xl">{pathway.title}</h3>
-                <p className="mt-3 text-sm text-toko-gray-600 md:text-base">{pathway.summary}</p>
-                <Link
-                  href={pathway.href}
-                  className="mt-5 inline-flex items-center text-sm font-semibold text-toko-green transition-colors hover:text-toko-green-dark md:text-base"
-                >
-                  {pathway.cta}
-                </Link>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding bg-toko-gray-50 [content-visibility:auto] [contain-intrinsic-size:1px_900px]">
-        <div className="section-container">
-          <div className="mb-12 max-w-3xl">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Featured Courses</p>
-            <h2 className="mt-3 text-toko-gray-900">Programs You Can Start With</h2>
-            <p className="mt-4 text-base text-toko-gray-600 md:text-lg">
-              A snapshot of in-demand training programs delivered through Toko Academy. View all courses for the full catalog.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featured.map((course) => (
-              <article key={course.slug} className="card flex flex-col rounded-2xl border border-toko-gray-200 bg-white p-6 transition-shadow duration-300 hover:shadow-toko-lg">
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {featured.map((course, index) => (
+              <article key={course.slug} className={`card reveal ${stagger(index)} flex flex-col p-5 sm:p-6`}>
                 <CourseThumbnail
                   id={course.slug}
                   title={course.title}
@@ -336,91 +457,126 @@ export default async function Home() {
                   duration={course.hours > 0 ? `${course.hours} hrs` : ''}
                   courseId={course.slug}
                 />
-                <h3 className="mt-5 text-xl text-toko-gray-900 md:text-2xl">{course.title}</h3>
-                <p className="mt-3 text-sm text-toko-gray-600 md:text-base">{course.description}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <span className="rounded bg-toko-blue/10 px-3 py-1 text-xs font-medium text-toko-blue">
+
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">
                     {deliveryLabel(course.deliveryMode)}
                   </span>
                   {course.school && (
-                    <span className="rounded bg-toko-magenta/10 px-3 py-1 text-xs font-medium text-toko-magenta">
+                    <span className="rounded-full border border-line px-3 py-1 text-xs font-medium text-ink-muted">
                       {course.school.name}
                     </span>
                   )}
                 </div>
-                <div className="mt-4 text-lg font-bold text-toko-gray-900">{formatPrice(course.price)}</div>
-                <Link href={`/courses/${course.slug}`} className="mt-6 inline-flex items-center text-sm font-semibold text-toko-green transition-colors hover:text-toko-green-dark md:text-base">
-                  View course →
-                </Link>
+
+                <h3 className="mt-4">{course.title}</h3>
+                <p className="mt-3 line-clamp-3 text-sm text-ink-muted sm:text-base">{course.description}</p>
+
+                <div className="mt-auto">
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+                    <span className="font-semibold text-ink">{formatPrice(course.price)}</span>
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      className="link-hover inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+                    >
+                      View course
+                      <span aria-hidden>&rarr;</span>
+                    </Link>
+                  </div>
+                </div>
               </article>
             ))}
           </div>
-          <div className="mt-12 text-center">
-            <Link href="/courses" className="btn-primary inline-flex">
-              View All Courses
-            </Link>
+        </div>
+      </section>
+
+      {/* Why Toko Academy ------------------------------------------------ */}
+      {/*
+        The one dark slab on the page. It is here rather than at the top
+        because a page that opens dark and stays dark is a brochure; a single
+        inverted section two thirds of the way down is a change of tone at the
+        point where somebody is deciding whether to believe us.
+      */}
+      <section className="section-padding relative overflow-hidden bg-surface-inverted">
+        <div className="section-container relative z-10">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+            <Picture
+              className="reveal"
+              src="/images/home/approach-instructor-and-learner.jpg"
+              alt="A Toko Academy instructor working through a problem with a learner"
+              brief="One instructor, one learner, one screen, mid-explanation. Tight enough that you can read both faces."
+              aspect="aspect-[4/3]"
+              sizes="(max-width: 1024px) 100vw, 560px"
+            />
+
+            <div>
+              <SectionHeading
+                inverted
+                className="reveal"
+                eyebrow="Why Toko Academy"
+                title="Focused, inclusive and results-driven"
+                lead="Three things we hold to, on every programme, for every audience."
+              />
+
+              <ol className="reveal reveal-delay-1 mt-8 border-t border-ink-inverted/15">
+                {differentiators.map((item, index) => (
+                  <li
+                    key={item.title}
+                    className="flex gap-5 border-b border-ink-inverted/15 py-6"
+                  >
+                    <span className="mt-1 text-sm font-semibold tabular-nums text-ink-inverted/45">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h3 className="text-ink-inverted">{item.title}</h3>
+                      <p className="mt-2 text-ink-inverted/70">{item.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </section>
 
       <PartnerLogosStrip limit={12} showViewAll={true} />
 
-      <section className="section-padding bg-toko-gray-900 text-white [content-visibility:auto] [contain-intrinsic-size:1px_620px]">
+      {/* Partnership ----------------------------------------------------- */}
+      <section className="section-padding bg-surface-sunken">
         <div className="section-container">
-          <div className="max-w-3xl mb-12">
-            <p className="text-sm uppercase tracking-[0.2em] text-white/70">Why Toko Academy</p>
-            <h2 className="mt-3">Focused, Inclusive, and Results-Driven</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6">
-            {differentiators.map((item) => (
-              <article key={item.title} className="rounded-2xl border border-white/15 bg-white/5 p-6 md:p-7">
-                <InlineIcon className="h-10 w-10 text-toko-yellow" />
-                <h3 className="mt-4 text-xl md:text-2xl">{item.title}</h3>
-                <p className="mt-3 text-sm text-white/85 md:text-base">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_640px]">
-        <div className="section-container">
-          <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2">
-            <div className="max-w-2xl">
-              <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Partnership Ecosystem</p>
-              <h2 className="mt-3 text-toko-gray-900">Built With Government and Organizations</h2>
-              <p className="mt-4 text-base text-toko-gray-600 md:text-lg">
-                We co-design and deliver capacity-building programs that align with community needs, workforce demands, and long-term development goals.
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
+            <div className="reveal">
+              <p className="eyebrow text-brand">Partnership ecosystem</p>
+              <h2 className="mt-3">Built with government and organisations</h2>
+              <p className="prose-measure mt-4 text-base text-ink-muted sm:text-lg">
+                We co-design and deliver capacity-building programmes that align with community needs,
+                workforce demands and long-term development goals.
               </p>
-              <Link href="/contact" className="mt-7 inline-flex items-center rounded-xl bg-toko-blue px-6 py-3 font-semibold text-white transition-colors hover:bg-toko-blue-dark">
-                Become a Partner
+
+              <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {partnerTypes.map((type) => (
+                  <li
+                    key={type}
+                    className="rounded-xl border border-line bg-surface px-4 py-3 text-sm font-semibold text-ink sm:text-base"
+                  >
+                    {type}
+                  </li>
+                ))}
+              </ul>
+
+              <Link href="/contact" className="btn-primary mt-8">
+                Become a partner
               </Link>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {partnerTypes.map((type) => (
-                <div key={type} className="rounded-2xl border border-toko-gray-200 bg-toko-gray-50 p-5 text-sm font-semibold text-toko-gray-800 md:text-base">
-                  {type}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section className="section-padding bg-toko-gray-50 [content-visibility:auto] [contain-intrinsic-size:1px_620px]">
-        <div className="section-container">
-          <div className="max-w-3xl mb-12">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Stories and Results</p>
-            <h2 className="mt-3 text-toko-gray-900">Proof Through Human Outcomes</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:gap-6">
-            {stories.map((story, index) => (
-              <article key={index} className="card rounded-2xl border border-toko-gray-200 p-6 md:p-7">
-                <p className="text-sm italic text-toko-gray-700 md:text-base">&ldquo;{story.quote}&rdquo;</p>
-                <p className="mt-5 font-semibold text-toko-gray-900">{story.author}</p>
-                <p className="mt-2 text-sm text-toko-gray-600">{story.impact}</p>
-              </article>
-            ))}
+            <Picture
+              className="reveal reveal-delay-1"
+              src="/images/home/partnership-signing.jpg"
+              alt="Toko Academy and a partner institution at the signing of a training agreement"
+              brief="Two or three people at a table signing or shaking hands, both organisations' banners behind them. Landscape, room visible."
+              aspect="aspect-[4/3]"
+              sizes="(max-width: 1024px) 100vw, 560px"
+            />
           </div>
         </div>
       </section>
@@ -436,29 +592,31 @@ export default async function Home() {
         an empty promise.
       */}
       {(latestNews.length > 0 || upcomingEvents.length > 0) && (
-        <section className="section-padding bg-white [content-visibility:auto] [contain-intrinsic-size:1px_900px]">
-          <div className="section-container space-y-16">
+        <section className="section-padding bg-surface">
+          <div className="section-container space-y-16 lg:space-y-20">
             {latestNews.length > 0 && (
               <div>
-                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-                  <div className="max-w-2xl">
-                    <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Newsroom</p>
-                    <h2 className="mt-3 text-toko-gray-900">What we have been doing</h2>
-                  </div>
-                  <Link
-                    href="/news"
-                    className="font-semibold text-toko-green transition-colors hover:text-toko-green-dark"
-                  >
-                    All news →
-                  </Link>
-                </div>
+                <SectionHeading
+                  className="reveal"
+                  eyebrow="Newsroom"
+                  title="What we have been doing"
+                  action={
+                    <Link
+                      href="/news"
+                      className="link-hover inline-flex items-center gap-1.5 font-semibold text-brand"
+                    >
+                      All news
+                      <span aria-hidden>&rarr;</span>
+                    </Link>
+                  }
+                />
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  {latestNews.map((article) => (
+                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {latestNews.map((article, index) => (
                     <Link
                       key={article.slug}
                       href={`/news/${article.slug}`}
-                      className="card group flex flex-col overflow-hidden rounded-2xl border border-toko-gray-200 bg-white transition-shadow duration-300 hover:shadow-toko-lg"
+                      className={`card reveal ${stagger(index)} group flex flex-col overflow-hidden`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -471,17 +629,15 @@ export default async function Home() {
                         height={360}
                       />
                       <div className="flex flex-1 flex-col p-5">
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-toko-gray-500">
-                          <span className="rounded bg-toko-green/10 px-2 py-0.5 font-medium text-toko-green">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                          <span className="rounded-full bg-brand-soft px-2.5 py-0.5 font-semibold text-brand">
                             {article.category}
                           </span>
                           {readableDate(article.date) && <span>{readableDate(article.date)}</span>}
                           {article.readTime && <span>· {article.readTime}</span>}
                         </div>
-                        <h3 className="mt-3 text-lg font-bold text-toko-gray-900 transition-colors group-hover:text-toko-green">
-                          {article.title}
-                        </h3>
-                        <p className="mt-2 line-clamp-3 text-sm text-toko-gray-600">{article.excerpt}</p>
+                        <h3 className="mt-3 transition-colors group-hover:text-brand">{article.title}</h3>
+                        <p className="mt-2 line-clamp-3 text-sm text-ink-muted">{article.excerpt}</p>
                       </div>
                     </Link>
                   ))}
@@ -491,31 +647,33 @@ export default async function Home() {
 
             {upcomingEvents.length > 0 && (
               <div>
-                <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-                  <div className="max-w-2xl">
-                    <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Events</p>
-                    <h2 className="mt-3 text-toko-gray-900">Where to find us</h2>
-                  </div>
-                  <Link
-                    href="/events"
-                    className="font-semibold text-toko-green transition-colors hover:text-toko-green-dark"
-                  >
-                    All events →
-                  </Link>
-                </div>
+                <SectionHeading
+                  className="reveal"
+                  eyebrow="Events"
+                  title="Where to find us"
+                  action={
+                    <Link
+                      href="/events"
+                      className="link-hover inline-flex items-center gap-1.5 font-semibold text-brand"
+                    >
+                      All events
+                      <span aria-hidden>&rarr;</span>
+                    </Link>
+                  }
+                />
 
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                  {upcomingEvents.map((event) => (
+                <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+                  {upcomingEvents.map((event, index) => (
                     <Link
                       key={event.slug}
                       href={`/events/${event.slug}`}
-                      className="card group flex gap-4 rounded-2xl border border-toko-gray-200 bg-white p-5 transition-shadow duration-300 hover:shadow-toko-lg"
+                      className={`card reveal ${stagger(index)} group flex gap-4 p-5`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={event.image}
                         alt={event.imageAlt || ''}
-                        className="h-20 w-20 shrink-0 rounded-lg object-cover"
+                        className="h-20 w-20 shrink-0 rounded-xl object-cover"
                         loading="lazy"
                         decoding="async"
                         width={160}
@@ -523,12 +681,10 @@ export default async function Home() {
                       />
                       <div className="min-w-0">
                         {readableDate(event.date) && (
-                          <p className="text-xs text-toko-gray-500">{readableDate(event.date)}</p>
+                          <p className="text-xs text-ink-muted">{readableDate(event.date)}</p>
                         )}
-                        <h3 className="mt-1 font-bold text-toko-gray-900 transition-colors group-hover:text-toko-green">
-                          {event.title}
-                        </h3>
-                        <p className="mt-1 line-clamp-2 text-sm text-toko-gray-600">{event.excerpt}</p>
+                        <h4 className="mt-1 transition-colors group-hover:text-brand">{event.title}</h4>
+                        <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{event.excerpt}</p>
                       </div>
                     </Link>
                   ))}
@@ -539,20 +695,48 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="bg-gradient-to-br from-toko-green to-toko-blue py-20 text-white md:py-24 [content-visibility:auto] [contain-intrinsic-size:1px_420px]">
-        <div className="section-container text-center">
-          <p className="text-sm uppercase tracking-[0.2em] text-white/80">Take the Next Step</p>
-          <h2 className="mt-3 text-white">Start Your Journey or Build One With Us</h2>
-          <div className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row sm:justify-center sm:gap-4">
-            {/* Was href="/register" — a route this site does not have, so the
-                one call-to-action on the front page 404'd unless the old PHP app
-                happened to answer on that path. */}
-            <Link href="/courses" className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-bold text-toko-green transition-colors hover:bg-toko-gray-100 sm:text-lg">
-              Apply Now
-            </Link>
-            <Link href="/contact" className="inline-flex items-center justify-center rounded-xl border border-white/45 px-8 py-4 text-base font-bold text-white transition-colors hover:bg-white/10 sm:text-lg">
-              Talk to Our Team
-            </Link>
+      {/* Closing call to action ------------------------------------------ */}
+      {/*
+        A panel rather than a full-bleed photograph. A hero-sized picture with
+        white text across it is unreadable the moment the photograph has not
+        arrived yet — and on this page most of them have not. Inside a panel
+        the copy owns its own background and the picture is free to be a
+        placeholder without taking the call to action down with it.
+      */}
+      <section className="section-padding bg-surface">
+        <div className="section-container">
+          <div className="reveal relative overflow-hidden rounded-3xl bg-surface-inverted">
+            <div className="relative z-10 grid gap-10 p-8 sm:p-12 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-14 lg:p-16">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-inverted/60">
+                  Take the next step
+                </p>
+                <h2 className="mt-3 text-ink-inverted">Start your journey, or build one with us</h2>
+                <p className="prose-measure mt-4 text-base text-ink-inverted/75 sm:text-lg">
+                  Pick a course and begin, or tell us what your organisation needs and we will design
+                  the programme around it.
+                </p>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  {/* Was href="/register" — a route this site does not have, so
+                      the one call-to-action on the front page 404'd unless the
+                      old PHP app happened to answer on that path. */}
+                  <Link href="/courses" className="btn-primary">
+                    Apply now
+                  </Link>
+                  <Link href="/contact" className="btn-secondary">
+                    Talk to our team
+                  </Link>
+                </div>
+              </div>
+
+              <Picture
+                src="/images/home/cta-graduation.jpg"
+                alt="Toko Academy learners at the close of a programme in Yola"
+                brief="Graduation or closing ceremony: certificates in hands, people mid-celebration. Landscape, crowd reading left to right."
+                aspect="aspect-[4/3]"
+                sizes="(max-width: 1024px) 100vw, 480px"
+              />
+            </div>
           </div>
         </div>
       </section>

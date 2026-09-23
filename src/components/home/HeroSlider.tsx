@@ -1,231 +1,313 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { externalLinks } from '@/data/config';
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type ReactNode,
+} from 'react';
 
-interface Slide {
-  id: number;
+/**
+ * The hero: four propositions, one at a time.
+ *
+ * Three decisions are worth explaining, because each of them is the reason a
+ * carousel usually goes wrong.
+ *
+ * **Every slide is rendered, stacked in one grid cell.** Not mounted and
+ * unmounted as it becomes current. A carousel that swaps its contents is a
+ * carousel whose container changes height when the copy is a line longer, and
+ * the whole page below it jumps. Here all four slides occupy `row-start-1
+ * col-start-1`, so the container is as tall as the tallest slide from the very
+ * first paint and never moves again. It also means the words of all four
+ * slides are in the HTML — readable by a search engine, and by anyone whose
+ * JavaScript never arrives.
+ *
+ * **It can be stopped, and it stops itself.** Moving content that runs for
+ * more than five seconds needs a way to pause it (WCAG 2.2.2), and dots are
+ * not that — they change the content, they do not stop it. So there is an
+ * explicit pause control. It also pauses while the pointer is over the hero or
+ * while focus is inside it, because reading something that slides away
+ * mid-sentence is the single most irritating thing a carousel does. And where
+ * reduced motion has been asked for it never advances at all: the control
+ * disappears, and the hero becomes a still image with dots.
+ *
+ * **The photographs come in as rendered nodes, not as paths.** `Picture` is a
+ * server component — it checks at build time whether the file is actually in
+ * `public/` and draws a labelled placeholder when it is not — and a server
+ * component cannot be imported into a client one. Passing the rendered element
+ * through as a prop is how the two live together: the page builds the picture,
+ * this component only moves it.
+ */
+
+export interface HeroSlide {
+  id: string;
+  eyebrow: string;
   title: string;
-  subtitle: string;
-  description: string;
-  image: string;
-  gradient: string;
+  blurb: string;
+  /** Where the primary button goes. */
+  href: string;
+  /** What the primary button says. */
+  cta: string;
+  /** Built by the page with `Picture`, so the placeholder logic still applies. */
+  media: ReactNode;
 }
 
-const slides: Slide[] = [
+const ADVANCE_MS = 6000;
+
+/**
+ * The slides used when nobody passes any.
+ *
+ * `src/app/home-v1-original/page.tsx` — an abandoned draft of this page, kept
+ * on disk and marked `noindex` — renders this component with no props, and
+ * that file is not ours to edit. Rather than leave its hero blank, the slides
+ * it used to carry live on here. The live home page passes its own set and
+ * never touches these.
+ */
+function LegacyFrame({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="aspect-[4/3] overflow-hidden rounded-2xl">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+    </div>
+  );
+}
+
+const legacySlides: HeroSlide[] = [
   {
-    id: 1,
-    title: 'Professional Courses for Career Growth',
-    subtitle: 'Industry-Leading Training',
-    description: 'Master in-demand digital skills with our comprehensive professional courses.',
-    image: '/images/hero/professional-courses.jpg',
-    gradient: 'from-toko-green/90 to-toko-blue/80'
+    id: 'legacy-professional',
+    eyebrow: 'Industry-leading training',
+    title: 'Professional courses for career growth',
+    blurb: 'Master in-demand digital skills with our comprehensive professional courses.',
+    href: '/courses',
+    cta: 'Explore programmes',
+    media: <LegacyFrame src="/images/hero/professional-courses.jpg" alt="A professional training session in progress" />,
   },
   {
-    id: 2,
-    title: 'Practical Mentorship Approach',
-    subtitle: 'Learn by Doing',
-    description: 'Hands-on training with expert mentors guiding you every step of the way.',
-    image: '/images/hero/practical-mentorship-approach-classes.jpg',
-    gradient: 'from-toko-blue/90 to-toko-magenta/80'
+    id: 'legacy-mentorship',
+    eyebrow: 'Learn by doing',
+    title: 'A practical mentorship approach',
+    blurb: 'Hands-on training with expert mentors guiding you every step of the way.',
+    href: '/courses',
+    cta: 'See how we teach',
+    media: (
+      <LegacyFrame
+        src="/images/hero/practical-mentorship-approach-classes.jpg"
+        alt="An instructor helping a learner at a laptop"
+      />
+    ),
   },
   {
-    id: 3,
-    title: 'Kids & Teens Coding Programs',
-    subtitle: 'Future Innovators',
-    description: 'Fun, interactive coding classes that build strong tech foundations for young learners.',
-    image: '/images/hero/kids-coding.jpg',
-    gradient: 'from-toko-magenta/90 to-toko-yellow/80'
+    id: 'legacy-kids',
+    eyebrow: 'Future innovators',
+    title: 'Coding programmes for children and teens',
+    blurb: 'Interactive classes that build strong technology foundations for young learners.',
+    href: '/kids',
+    cta: "Explore children's programmes",
+    media: <LegacyFrame src="/images/hero/kids-coding.jpg" alt="A child presenting a game she has built" />,
   },
   {
-    id: 4,
-    title: 'Specialized Corporate Training',
-    subtitle: 'Empower Your Workforce',
-    description: 'Custom training programs for government agencies, military, and organizations.',
-    image: '/images/hero/training-military-officers.jpg',
-    gradient: 'from-toko-yellow/90 to-toko-green/80'
+    id: 'legacy-corporate',
+    eyebrow: 'Empower your workforce',
+    title: 'Specialised corporate training',
+    blurb: 'Training programmes designed for government agencies, security services and organisations.',
+    href: '/corporate',
+    cta: 'See training solutions',
+    media: (
+      <LegacyFrame
+        src="/images/hero/training-military-officers.jpg"
+        alt="Uniformed officers seated during a training session"
+      />
+    ),
   },
-  {
-    id: 5,
-    title: 'Leadership in Digital Education',
-    subtitle: 'Trusted by Communities',
-    description: 'Partnering with community leaders to drive digital transformation across Nigeria.',
-    image: '/images/hero/commissioner-for-women-affairs.jpg',
-    gradient: 'from-toko-green/90 to-toko-blue/80'
-  },
-  {
-    id: 6,
-    title: 'Expert-Led Sessions',
-    subtitle: 'Learn From the Best',
-    description: 'Our CEO and industry experts deliver cutting-edge tech training and insights.',
-    image: '/images/hero/our-ceo-daniel-ishaku-speaking.jpg',
-    gradient: 'from-toko-blue/90 to-toko-magenta/80'
-  }
 ];
 
-export default function HeroSlider() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [mounted, setMounted] = useState(false);
+function Chevron({ back = false }: { back?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-4" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d={back ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7'} />
+    </svg>
+  );
+}
 
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, []);
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-    setIsAutoPlaying(false);
-  };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export default function HeroSlider({ slides = legacySlides }: { slides?: HeroSlide[] }) {
+  const count = slides.length;
+  const [current, setCurrent] = useState(0);
+  /** The visitor's own choice, made with the pause button. */
+  const [playing, setPlaying] = useState(true);
+  /** Temporary: the pointer is over the hero, or focus is inside it. */
+  const [held, setHeld] = useState(false);
+  /** Reduced motion. False on the server and on the first client render, so
+   *  the two agree; the effect below corrects it immediately after mount. */
+  const [still, setStill] = useState(false);
 
   useEffect(() => {
-    if (!isAutoPlaying || !mounted) return;
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setStill(query.matches);
+    sync();
+    query.addEventListener('change', sync);
+    return () => query.removeEventListener('change', sync);
+  }, []);
 
-    const interval = setInterval(nextSlide, 6000);
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, nextSlide, mounted]);
+  const go = useCallback(
+    (index: number) => setCurrent(((index % count) + count) % count),
+    [count],
+  );
+
+  useEffect(() => {
+    if (still || !playing || held || count < 2) return;
+    const timer = window.setInterval(() => setCurrent((slide) => (slide + 1) % count), ADVANCE_MS);
+    return () => window.clearInterval(timer);
+  }, [still, playing, held, count]);
+
+  // Arrow keys work whenever focus is anywhere inside the hero — on a dot, an
+  // arrow, or one of the slide's own links. The event bubbles up to here.
+  const onKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
+    if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      go(current + 1);
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      go(current - 1);
+    }
+  };
+
+  const pad = (value: number) => String(value).padStart(2, '0');
 
   return (
-    <div className="relative h-screen w-full overflow-hidden">
-      {/* Slides */}
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            mounted && index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-          }`}
-        >
-          {/* Background Image with Gradient Overlay */}
-          <div className="absolute inset-0">
-            {/* Background Image */}
-            <div 
-              className="absolute inset-0 bg-cover bg-top"
-              style={{
-                backgroundImage: `url('${slide.image}')`
-              }}
-            />
-            {/* Gradient Overlay */}
-            <div 
-              className={`absolute inset-0 bg-gradient-to-br ${slide.gradient} opacity-80`}
-            />
-            {/* Decorative Pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
-            </div>
-          </div>
+    <section
+      className="relative isolate overflow-hidden bg-surface pb-14 pt-28 sm:pb-20 md:pt-36 lg:pb-24 lg:pt-40"
+      aria-roledescription="carousel"
+      aria-label="What Toko Academy does"
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)}
+      onBlur={() => setHeld(false)}
+      onKeyDown={onKeyDown}
+    >
 
-          {/* Content */}
-          <div className="relative z-20 h-full flex items-center">
-            <div className="section-container">
-              <div className="max-w-4xl">
-                <div className="animate-slide-up">
-                  <p className="text-white/90 text-lg md:text-xl font-medium mb-4 uppercase tracking-wider">
-                    {slide.subtitle}
-                  </p>
-                  <h1 className="text-white font-bold text-4xl md:text-6xl lg:text-7xl mb-6 leading-tight">
-                    {slide.title}
-                  </h1>
-                  <p className="text-white/95 text-xl md:text-2xl mb-8 max-w-2xl">
-                    {slide.description}
-                  </p>
-                  
-                  {/* CTAs */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Link
-                      href="/register/"
-                      className="inline-block px-10 py-5 bg-white text-toko-green font-bold text-lg 
-                               rounded hover:bg-toko-gray-100 transition-all duration-300 
-                               focus:outline-none focus:ring-4 focus:ring-white/50 text-center
-                               shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-                    >
-                      Apply Now
+      <div className="section-container relative z-10">
+        <div className="grid">
+          {slides.map((slide, index) => {
+            const active = index === current;
+            return (
+              <div
+                key={slide.id}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${count}: ${slide.title}`}
+                aria-hidden={!active}
+                className={[
+                  // All slides share one grid cell — see the note at the top.
+                  'col-start-1 row-start-1 grid gap-6 transition-[opacity,transform] duration-700 ease-out',
+                  'lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-x-14 lg:gap-y-5',
+                  active ? 'opacity-100' : 'pointer-events-none translate-y-2 opacity-0',
+                ].join(' ')}
+              >
+                {/*
+                  On a phone this reads like a page of a magazine: kicker,
+                  headline, photograph, then the standfirst and the action. It
+                  puts a picture within the first screen, which was the whole
+                  complaint about the old page. On a wide screen the three
+                  blocks resolve into the usual two columns.
+                */}
+                <div className="lg:col-start-1 lg:row-start-1 lg:self-end">
+                  <p className="eyebrow text-brand">{slide.eyebrow}</p>
+                  <h1 className="mt-3">{slide.title}</h1>
+                </div>
+
+                <div className="relative lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+                  <div
+                    className="pointer-events-none absolute -inset-4 rounded-[2rem] bg-brand/10 blur-2xl"
+                    aria-hidden
+                  />
+                  {slide.media}
+                </div>
+
+                <div className="lg:col-start-1 lg:row-start-2 lg:self-start">
+                  <p className="prose-measure text-base text-ink-muted sm:text-lg">{slide.blurb}</p>
+                  <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    {/*
+                      A link inside a hidden slide must not be a tab stop. The
+                      slide is `aria-hidden`, and a focusable control inside an
+                      aria-hidden region is a trap: the ring is somewhere the
+                      screen reader cannot describe.
+                    */}
+                    <Link href={slide.href} className="btn-primary" tabIndex={active ? undefined : -1}>
+                      {slide.cta}
                     </Link>
-                    <Link
-                      href="/#courses"
-                      onClick={(e) => {
-                        const el = document.getElementById('courses');
-                        if (el) {
-                          e.preventDefault();
-                          setIsAutoPlaying(false);
-                          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                      }}
-                      className="inline-block px-10 py-5 bg-transparent text-white font-bold text-lg 
-                               border-2 border-white rounded hover:bg-white hover:text-toko-green 
-                               transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white/50 text-center
-                               transform hover:-translate-y-1"
-                    >
-                      View Courses
+                    <Link href="/contact" className="btn-secondary" tabIndex={active ? undefined : -1}>
+                      Talk to our team
                     </Link>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      ))}
 
-      {/* Navigation Arrows */}
-      {mounted && (
-        <>
-          <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/20 hover:bg-white/30 
-                       backdrop-blur-sm rounded-full transition-all duration-300 focus:outline-none 
-                       focus:ring-4 focus:ring-white/50"
-            aria-label="Previous slide"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4 border-t border-line pt-6 lg:mt-14">
+          <p className="text-sm font-semibold tabular-nums text-ink" aria-hidden>
+            {pad(current + 1)}
+            <span className="font-normal text-ink-muted"> / {pad(count)}</span>
+          </p>
 
-          <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-white/20 hover:bg-white/30 
-                       backdrop-blur-sm rounded-full transition-all duration-300 focus:outline-none 
-                       focus:ring-4 focus:ring-white/50"
-            aria-label="Next slide"
-          >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Slide Indicators */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-3">
-            {slides.map((_, index) => (
+          <div className="flex items-center gap-2">
+            {slides.map((slide, index) => (
               <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`transition-all duration-300 rounded-full focus:outline-none focus:ring-2 focus:ring-white/50 ${
-                  index === currentSlide
-                    ? 'w-12 h-3 bg-white'
-                    : 'w-3 h-3 bg-white/50 hover:bg-white/70'
+                key={slide.id}
+                type="button"
+                onClick={() => go(index)}
+                aria-label={`Show slide ${index + 1}: ${slide.title}`}
+                aria-current={index === current}
+                // `ink-subtle` rather than a hairline grey: an inactive dot is
+                // a control, and a control has to clear 3:1 against what is
+                // behind it or nobody can see there is anything to press.
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index === current ? 'w-9 bg-brand' : 'w-2 bg-ink-subtle hover:bg-ink'
                 }`}
-                aria-label={`Go to slide ${index + 1}`}
               />
             ))}
           </div>
-        </>
-      )}
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-2 text-white/80 animate-bounce">
-        <span className="text-sm uppercase tracking-wider">Scroll</span>
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
+          <div className="ml-auto flex items-center gap-2">
+            {/* No point offering to pause something that is not moving. */}
+            {!still && (
+              <button
+                type="button"
+                onClick={() => setPlaying((on) => !on)}
+                aria-label={playing ? 'Pause the slideshow' : 'Play the slideshow'}
+                className="flex size-9 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-brand hover:text-brand"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" className="size-3.5" aria-hidden>
+                  {playing ? (
+                    <path d="M8 5h3v14H8zm5 0h3v14h-3z" />
+                  ) : (
+                    <path d="M8 5l11 7-11 7z" />
+                  )}
+                </svg>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => go(current - 1)}
+              aria-label="Previous slide"
+              className="flex size-9 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-brand hover:text-brand"
+            >
+              <Chevron back />
+            </button>
+            <button
+              type="button"
+              onClick={() => go(current + 1)}
+              aria-label="Next slide"
+              className="flex size-9 items-center justify-center rounded-full border border-line text-ink-muted transition-colors hover:border-brand hover:text-brand"
+            >
+              <Chevron />
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

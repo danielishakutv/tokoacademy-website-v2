@@ -39,7 +39,10 @@ export type NewsArticle = {
   contentHtml: string;
 };
 
-const DEFAULT_IMAGE = '/images/hero/professional-courses.jpg';
+// Not a photograph on purpose — see public/images/placeholder-article.svg.
+// This used to be a real hero photo, which meant one picture of one class
+// appeared three times on the home page whenever two events lacked their own.
+const DEFAULT_IMAGE = '/images/placeholder-article.svg';
 const ALLOWED_NEWS_CATEGORY_SLUGS = ['in-the-news', 'newsroom', 'press-release'] as const;
 
 function hasAllowedNewsCategory(categories?: WordPressPost['categories']) {
