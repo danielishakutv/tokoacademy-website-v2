@@ -32,7 +32,11 @@
     /* Text, in descending prominence. */
     --ink: 22 24 26;
     --ink-muted: 82 89 96;
-    --ink-subtle: 122 130 138;
+    /* 4.74:1 on white. It was 122 130 138, which measures 3.90:1 — under the
+       4.5:1 standard, and this token carries the eyebrows, the dates and the
+       image captions. Small grey text on a bright phone screen outdoors is
+       precisely the case the standard exists for. */
+    --ink-subtle: 107 116 128;
     --ink-inverted: 250 250 249;
 
     --line: 229 231 229;

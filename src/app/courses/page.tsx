@@ -102,7 +102,7 @@ export default async function CoursesPage() {
           invisible, whereas being a few pixels below it shows a sliver of the
           page sliding past. */}
       {groups.length > 1 && (
-        <section className="sticky top-[60px] z-30 border-b border-line bg-surface/95 backdrop-blur md:top-[96px]">
+        <section className="sticky top-[60px] z-30 border-b border-line bg-surface/95 backdrop-blur md:top-[96px] lg:top-[100px]">
           <div className="section-container py-3">
             {/* Horizontal scroll rather than four wrapped rows of chips eating
                 a third of a 360px screen. */}

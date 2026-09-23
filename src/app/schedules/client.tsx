@@ -191,7 +191,7 @@ export default function SchedulesClient({
       {/* Controls. The offsets track the fixed header's height and are
           deliberately a few pixels short of it, so this bar tucks under its
           edge rather than leaving a sliver of the page sliding past. */}
-      <section className="sticky top-[60px] z-30 border-b border-line bg-surface/95 backdrop-blur md:top-[96px]">
+      <section className="sticky top-[60px] z-30 border-b border-line bg-surface/95 backdrop-blur md:top-[96px] lg:top-[100px]">
         <div className="section-container py-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             {/* View Mode */}
