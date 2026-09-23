@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { managedImage } from '@/lib/managed';
 
 /**
  * A photograph, or a clearly-marked space waiting for one.
@@ -70,7 +71,7 @@ function webpSrcSet(src: string): string | null {
   return parts.length ? parts.join(', ') : null;
 }
 
-export default function Picture({
+export default async function Picture({
   src,
   alt,
   brief,
@@ -80,11 +81,25 @@ export default function Picture({
   sizes = '(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 640px',
   rounded = true,
 }: PictureProps) {
-  const present = fileExists(src);
+  /*
+   * An upload from the Website screen in ta_admin wins over whatever this
+   * repository ships for the same slot. That is the whole mechanism: a
+   * photograph replaced in the admin appears here on the next publish, and
+   * reverting it in the admin brings the built-in one back — nothing is
+   * committed, nothing is deleted.
+   *
+   * Resolved at build time, so a visitor never waits on it.
+   */
+  const override = await managedImage(src);
+  const present = Boolean(override) || fileExists(src);
   const shape = `${aspect} ${rounded ? 'rounded-2xl' : ''} overflow-hidden`;
 
   if (present) {
-    const srcSet = webpSrcSet(src);
+    // An uploaded file is already WebP at a sensible width, so it needs no
+    // srcset of its own — and it is on another origin, where our generated
+    // variants do not exist.
+    const resolvedSrc = override?.url ?? src;
+    const srcSet = override ? null : webpSrcSet(src);
     return (
       <div className={`relative ${shape} ${className}`}>
         {/*
@@ -105,7 +120,7 @@ export default function Picture({
           {srcSet && <source type="image/webp" srcSet={srcSet} sizes={sizes} />}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={src}
+            src={resolvedSrc}
             alt={alt}
             sizes={sizes}
             loading={priority ? 'eager' : 'lazy'}
