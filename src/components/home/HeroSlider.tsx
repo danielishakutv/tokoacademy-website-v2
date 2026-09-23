@@ -261,10 +261,17 @@ export default function HeroSlider({ slides = legacySlides }: { slides?: HeroSli
                 onClick={() => go(index)}
                 aria-label={`Show slide ${index + 1}: ${slide.title}`}
                 aria-current={index === current}
-                // `ink-subtle` rather than a hairline grey: an inactive dot is
-                // a control, and a control has to clear 3:1 against what is
-                // behind it or nobody can see there is anything to press.
-                className={`h-2 rounded-full transition-all duration-300 ${
+                /*
+                  The dot is 8px; the thing you press is 44px.
+
+                  `before:` casts an invisible box around it — a thumb is about
+                  a centimetre across and an 8px target is a control only a
+                  mouse can use. The dot itself stays small because a row of
+                  fat buttons would compete with the headline it sits under.
+                */
+                className={`relative h-2 rounded-full transition-all duration-300
+                            before:absolute before:left-1/2 before:top-1/2 before:size-11
+                            before:-translate-x-1/2 before:-translate-y-1/2 before:content-[''] ${
                   index === current ? 'w-9 bg-brand' : 'w-2 bg-ink-subtle hover:bg-ink'
                 }`}
               />

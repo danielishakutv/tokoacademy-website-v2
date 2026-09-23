@@ -683,7 +683,12 @@ export default async function Home() {
                         {readableDate(event.date) && (
                           <p className="text-xs text-ink-muted">{readableDate(event.date)}</p>
                         )}
-                        <h4 className="mt-1 transition-colors group-hover:text-brand">{event.title}</h4>
+                        {/* h3, not h4. The section above it is an h2, so an
+                            h4 here skips a level — which to a screen reader
+                            sounds like a missing heading rather than a tidy
+                            size choice. Size comes from the global scale, not
+                            from the tag. */}
+                        <h3 className="mt-1 text-lg transition-colors group-hover:text-brand">{event.title}</h3>
                         <p className="mt-1 line-clamp-2 text-sm text-ink-muted">{event.excerpt}</p>
                       </div>
                     </Link>
