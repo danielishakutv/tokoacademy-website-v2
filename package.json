@@ -12,7 +12,9 @@
     "logs:pm2": "pm2 logs tokoacademy-web",
     "deploy:pm2": "git pull origin master && npm ci && npm run build && (pm2 reload tokoacademy-web --update-env || pm2 start ecosystem.config.cjs --env production)",
     "export": "next build && next export",
-    "lint": "next lint"
+    "lint": "next lint",
+    "shots": "node scripts/shot-list.mjs",
+    "visual": "node scripts/visual-check.mjs"
   },
   "dependencies": {
     "next": "^14.2.0",
