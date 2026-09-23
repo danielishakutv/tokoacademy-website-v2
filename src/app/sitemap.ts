@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { fetchNewsArticles, fetchGalleryAlbums, fetchEventPosts } from '@/lib/wordpress'
 import { getCourses } from '@/lib/dlc'
 import { canonical } from '@/lib/seo'
+import { managedPages } from '@/lib/managed'
 
 /**
  * The sitemap.
@@ -117,5 +118,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }))
 
-  return [...staticRoutes, ...courseRoutes, ...newsRoutes, ...galleryRoutes, ...eventRoutes]
+  /**
+   * Pages composed in ta_admin.
+   *
+   * Without this a page somebody publishes is real, reachable and completely
+   * undiscoverable — which looks from the outside exactly like the publish not
+   * having worked. Only published pages reach this list; the feed never sends
+   * drafts.
+   *
+   * The build date is the honest upper bound: the feed carries no per-page
+   * timestamp, and inventing one would be worse than a date we can defend.
+   */
+  const composed = await managedPages()
+  const composedRoutes: MetadataRoute.Sitemap = composed.map((page) => ({
+    url: canonical(`/p/${page.slug}`),
+    lastModified: BUILD_DATE,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [
+    ...staticRoutes,
+    ...courseRoutes,
+    ...newsRoutes,
+    ...galleryRoutes,
+    ...eventRoutes,
+    ...composedRoutes,
+  ]
 }
