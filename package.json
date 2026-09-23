@@ -14,7 +14,8 @@
     "export": "next build && next export",
     "lint": "next lint",
     "shots": "node scripts/shot-list.mjs",
-    "visual": "node scripts/visual-check.mjs"
+    "visual": "node scripts/visual-check.mjs",
+    "images": "node scripts/optimise-images.mjs"
   },
   "dependencies": {
     "next": "^14.2.0",
