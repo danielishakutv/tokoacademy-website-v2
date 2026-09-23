@@ -2,78 +2,296 @@
 @tailwind components;
 @tailwind utilities;
 
+/**
+ * Design foundation.
+ *
+ * Three problems this is answering.
+ *
+ * **Headings dwarfed the body copy.** h2 rendered at 48px against 16px text —
+ * a three-to-one jump. Large type is not the same as confident type; a page
+ * where every heading shouts reads as a template, and it pushes the actual
+ * content below the fold. The scale below is tighter and fluid: it grows with
+ * the viewport through clamp() rather than snapping between breakpoints, and
+ * the ratio between a heading and its paragraph stays close to 2:1.
+ *
+ * **There was no dark mode.** Colours are now tokens that flip, so a component
+ * written once works on both themes.
+ *
+ * **Nothing moved.** Motion here is restrained on purpose: things settle into
+ * place as you reach them, and nothing loops, bounces or demands attention.
+ */
+
 @layer base {
+  :root {
+    /* Surfaces, from furthest back to nearest front. */
+    --surface: 255 255 255;
+    --surface-sunken: 247 248 247;
+    --surface-raised: 255 255 255;
+    --surface-inverted: 17 20 18;
+
+    /* Text, in descending prominence. */
+    --ink: 22 24 26;
+    --ink-muted: 82 89 96;
+    --ink-subtle: 122 130 138;
+    --ink-inverted: 250 250 249;
+
+    --line: 229 231 229;
+    --line-strong: 209 213 209;
+
+    /* Brand. The green is the contrast-corrected one; see tailwind.config.ts. */
+    --brand: 74 124 42;
+    --brand-soft: 240 246 235;
+
+    --shadow-colour: 22 24 26;
+    --shadow-strength: 0.07;
+  }
+
+  :root.dark {
+    --surface: 13 15 14;
+    --surface-sunken: 9 11 10;
+    --surface-raised: 22 25 23;
+    --surface-inverted: 250 250 249;
+
+    --ink: 237 240 236;
+    --ink-muted: 163 171 165;
+    --ink-subtle: 124 133 127;
+    --ink-inverted: 17 20 18;
+
+    --line: 38 43 40;
+    --line-strong: 55 62 57;
+
+    /* Lifted on a dark ground: #4A7C2A is legible on white and muddy on black. */
+    --brand: 138 196 92;
+    --brand-soft: 26 36 20;
+
+    --shadow-colour: 0 0 0;
+    --shadow-strength: 0.5;
+  }
+
   html {
     @apply scroll-smooth;
+    /* Stops the page jolting sideways when a scrollbar appears. */
+    scrollbar-gutter: stable;
   }
-  
+
   body {
-    @apply bg-white text-toko-gray-900 antialiased;
+    background-color: rgb(var(--surface));
+    color: rgb(var(--ink));
+    @apply antialiased;
+    /* 17px on large screens: a comfortable reading size without zooming. */
+    font-size: 16px;
+    line-height: 1.65;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  @media (min-width: 1024px) {
+    body {
+      font-size: 17px;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-bold;
+    color: rgb(var(--ink));
+    line-height: 1.12;
+    /* Large type set at default tracking looks loose; this tightens as it grows. */
+    letter-spacing: -0.022em;
+    text-wrap: balance;
   }
 
-  h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl;
+  /*
+   * A fluid scale. The middle value is the one that matters — it interpolates
+   * against the viewport, so there is no step where a heading suddenly jumps a
+   * size. The upper bounds are deliberately below where they were.
+   */
+  h1 { font-size: clamp(2rem, 1.45rem + 2.4vw, 3.25rem); }     /* 32 → 52 */
+  h2 { font-size: clamp(1.625rem, 1.3rem + 1.5vw, 2.375rem); } /* 26 → 38 */
+  h3 { font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem); }  /* 20 → 26 */
+  h4 { font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }  /* 17 → 20 */
+  h5 { font-size: 1rem; }
+  h6 { font-size: 0.9375rem; }
+
+  /* Long-form paragraphs read better with a ceiling on line length. */
+  p { text-wrap: pretty; }
+
+  ::selection {
+    background-color: rgb(var(--brand) / 0.22);
+    color: rgb(var(--ink));
   }
 
-  h2 {
-    @apply text-3xl md:text-4xl lg:text-5xl;
+  /* A visible focus ring, because keyboard users exist and the default is invisible on green. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand));
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
-  h3 {
-    @apply text-2xl md:text-3xl lg:text-4xl;
-  }
-
-  h4 {
-    @apply text-xl md:text-2xl;
-  }
-
-  /* Reduce motion for users who prefer it */
   @media (prefers-reduced-motion: reduce) {
-    * {
+    *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-block px-8 py-4 bg-toko-green text-white font-bold text-lg 
-           rounded hover:bg-toko-green-dark transition-colors duration-300 
-           focus:outline-none focus:ring-4 focus:ring-toko-green/50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5
+           text-base font-semibold tracking-tight text-white
+           transition-all duration-200
+           focus:outline-none focus-visible:ring-4 focus-visible:ring-toko-green/40;
+    background-color: rgb(var(--brand));
+    box-shadow: 0 1px 2px rgb(var(--shadow-colour) / 0.18);
   }
+  .btn-primary:hover {
+    /* Lifts a couple of pixels rather than changing colour — quieter, and it
+       reads as a physical surface rather than a state change. */
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -8px rgb(var(--brand) / 0.55);
+  }
+  .btn-primary:active { transform: translateY(0); }
 
   .btn-secondary {
-    @apply inline-block px-8 py-4 bg-white text-toko-green font-bold text-lg 
-           border-2 border-toko-green rounded hover:bg-toko-green hover:text-white 
-           transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-toko-green/50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5
+           text-base font-semibold tracking-tight
+           transition-all duration-200
+           focus:outline-none focus-visible:ring-4 focus-visible:ring-toko-green/30;
+    color: rgb(var(--ink));
+    background-color: rgb(var(--surface-raised));
+    border: 1px solid rgb(var(--line-strong));
   }
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: rgb(var(--brand));
+    color: rgb(var(--brand));
+  }
+  .btn-secondary:active { transform: translateY(0); }
 
   .section-container {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
   }
 
   .section-padding {
-    @apply py-16 md:py-20 lg:py-24;
+    @apply py-16 md:py-20 lg:py-28;
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-toko hover:shadow-toko-lg 
-           transition-shadow duration-300;
+    background-color: rgb(var(--surface-raised));
+    border: 1px solid rgb(var(--line));
+    @apply rounded-2xl transition-all duration-300;
+  }
+  .card:hover {
+    border-color: rgb(var(--line-strong));
+    box-shadow: 0 18px 40px -24px rgb(var(--shadow-colour) / calc(var(--shadow-strength) * 3));
+    transform: translateY(-3px);
   }
 
   .link-hover {
-    @apply hover:text-toko-green transition-colors duration-300;
+    @apply transition-colors duration-200;
   }
+  .link-hover:hover { color: rgb(var(--brand)); }
+
+  /* An eyebrow: the small tracked label above a heading. */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase;
+    letter-spacing: 0.16em;
+    color: rgb(var(--ink-subtle));
+  }
+
+  /* The measure of a readable column. */
+  .prose-measure { max-width: 68ch; }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  .text-balance { text-wrap: balance; }
+
+  .surface { background-color: rgb(var(--surface)); }
+  .surface-sunken { background-color: rgb(var(--surface-sunken)); }
+  .surface-raised { background-color: rgb(var(--surface-raised)); }
+  .ink { color: rgb(var(--ink)); }
+  .ink-muted { color: rgb(var(--ink-muted)); }
+  .ink-subtle { color: rgb(var(--ink-subtle)); }
+  .border-line { border-color: rgb(var(--line)); }
+
+  /*
+   * Reveal on scroll.
+   *
+   * The element starts slightly low and transparent, and an observer adds
+   * `.is-visible` as it enters. Eight pixels, not eighty: the movement should
+   * be noticed only in its absence.
+   */
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Staggering: applied to children of a revealing group. */
+  .reveal-delay-1 { transition-delay: 70ms; }
+  .reveal-delay-2 { transition-delay: 140ms; }
+  .reveal-delay-3 { transition-delay: 210ms; }
+  .reveal-delay-4 { transition-delay: 280ms; }
+  .reveal-delay-5 { transition-delay: 350ms; }
+
+  /*
+   * A soft field of colour behind a section. Two blurred radial washes that
+   * drift with the pointer — the "shapes that respond to the mouse", kept to
+   * something you would only notice if you went looking.
+   */
+  .aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .aurora::before,
+  .aurora::after {
+    content: '';
+    position: absolute;
+    width: 46rem;
+    height: 46rem;
+    border-radius: 9999px;
+    filter: blur(90px);
+    opacity: 0.42;
+    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .aurora::before {
+    background: radial-gradient(circle, rgb(var(--brand) / 0.5), transparent 68%);
+    top: -18rem;
+    left: -12rem;
+    transform: translate3d(calc(var(--px, 0) * 26px), calc(var(--py, 0) * 20px), 0);
+  }
+  .aurora::after {
+    background: radial-gradient(circle, rgb(56 132 255 / 0.32), transparent 68%);
+    bottom: -20rem;
+    right: -14rem;
+    transform: translate3d(calc(var(--px, 0) * -22px), calc(var(--py, 0) * -16px), 0);
+  }
+  :root.dark .aurora::before { opacity: 0.3; }
+  :root.dark .aurora::after { opacity: 0.22; }
+
+  /* A faint grid, for sections that would otherwise be a flat slab. */
+  .grid-field {
+    background-image:
+      linear-gradient(rgb(var(--line) / 0.6) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--line) / 0.6) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, #000 30%, transparent 78%);
+  }
+
+  /* Glass, for anything floating over content. */
+  .glass {
+    background-color: rgb(var(--surface) / 0.72);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
   }
 }

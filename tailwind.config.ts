@@ -6,9 +6,44 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  /*
+   * Class-based, not media-based: the theme is a choice somebody makes and we
+   * remember, with the system preference as the starting point rather than the
+   * final word. `ThemeScript` in the root layout sets the class before the
+   * first paint, so there is no flash of the wrong theme.
+   */
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        /*
+         * Semantic tokens, defined as CSS variables in globals.css so they
+         * flip with the theme. New work should reach for these — `bg-surface`,
+         * `text-ink-muted` — rather than for a fixed grey, because a fixed
+         * grey is a colour that only works on one of the two themes.
+         *
+         * `<alpha-value>` is what lets `text-ink/70` keep working.
+         */
+        surface: {
+          DEFAULT: 'rgb(var(--surface) / <alpha-value>)',
+          sunken: 'rgb(var(--surface-sunken) / <alpha-value>)',
+          raised: 'rgb(var(--surface-raised) / <alpha-value>)',
+          inverted: 'rgb(var(--surface-inverted) / <alpha-value>)',
+        },
+        ink: {
+          DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
+          muted: 'rgb(var(--ink-muted) / <alpha-value>)',
+          subtle: 'rgb(var(--ink-subtle) / <alpha-value>)',
+          inverted: 'rgb(var(--ink-inverted) / <alpha-value>)',
+        },
+        line: {
+          DEFAULT: 'rgb(var(--line) / <alpha-value>)',
+          strong: 'rgb(var(--line-strong) / <alpha-value>)',
+        },
+        brand: {
+          DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
+          soft: 'rgb(var(--brand-soft) / <alpha-value>)',
+        },
         // Toko Academy Brand Colors (from logo)
         /*
          * Deepened from the logo's #7CB342 so that text can actually be read.
@@ -58,9 +93,15 @@ const config: Config = {
           900: '#111827',
         },
       },
+      /*
+       * One typeface, self-hosted by next/font and preloaded — no request to
+       * Google, no render-blocking stylesheet, and a system stack behind it so
+       * text is readable from the first paint whatever happens to the font.
+       * A variable font means every weight is one file.
+       */
       fontFamily: {
-        sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        heading: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+        heading: ['var(--font-display)', 'var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
       },
       spacing: {
         '18': '4.5rem',

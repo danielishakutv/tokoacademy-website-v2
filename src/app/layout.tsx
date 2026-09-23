@@ -1,11 +1,32 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister'
 import MatomoAnalytics from '@/components/MatomoAnalytics'
 import { SITE_URL, siteJsonLd, jsonLdScript } from '@/lib/seo'
+import ThemeScript from '@/components/ui/ThemeScript'
+import Cursor from '@/components/ui/Cursor'
+import Reveal from '@/components/ui/Reveal'
+
+/**
+ * One typeface, self-hosted and preloaded.
+ *
+ * next/font downloads it at build time and serves it from our own origin, so
+ * there is no request to Google, no render-blocking stylesheet and nothing
+ * that can leak a visitor to a third party. `display: swap` means text is
+ * readable in the system font from the first paint rather than invisible
+ * while the font arrives — which matters most on exactly the slow connections
+ * this audience is on.
+ */
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+  weight: ['400', '500', '600', '700', '800'],
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -76,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={jakarta.variable}>
       <head>
         <link rel="preconnect" href="https://tokoacademy.org" />
         <link rel="preconnect" href="https://wp.tokoacademy.org" />
@@ -90,14 +111,25 @@ export default function RootLayout({
           entity with a verified address, contact points and social profiles
           rather than guessing from page copy.
 
-          No web fonts are loaded anywhere on this site — Tailwind's `sans` and
-          `heading` families are a system-ui stack (see tailwind.config.ts), so
-          there is no render-blocking third-party font request to remove.
+          The typeface is self-hosted by next/font and preloaded, so there is
+          still no third-party font request — see the `jakarta` definition
+          above.
         */}
         <script {...jsonLdScript(siteJsonLd)} />
+        {/* Sets the theme before the first paint. Must stay blocking and in
+            <head>; an effect would run after the page had already been
+            painted in the wrong one. */}
+        <ThemeScript />
       </head>
       <body>
         <ServiceWorkerRegister />
+        {/* Draws over the native pointer on mouse-driven devices, and renders
+            nothing at all on touch screens or for anyone who has asked for
+            reduced motion. */}
+        <Cursor />
+        {/* One observer for every `.reveal` on the page, rather than a client
+            component wrapped around each section. */}
+        <Reveal />
         <Suspense fallback={null}>
           <MatomoAnalytics />
         </Suspense>

@@ -12,7 +12,20 @@ export const contactInfo = {
 };
 
 export const externalLinks = {
-  applyNow: 'https://tokoacademy.org/register',
+  /*
+   * The courses page, not the old PHP registration app.
+   *
+   * `/register` belongs to the legacy app that has been retired: its catalogue
+   * no longer matches what is taught, and enrolment now happens on the
+   * learning platform — instantly for a self-paced course, by application for a
+   * scheduled one. Sending somebody who pressed "Apply Now" to a form listing
+   * courses that no longer run was the last route into the old system.
+   *
+   * It points at the catalogue rather than straight at a form on purpose:
+   * "apply" means nothing until you have chosen what you are applying for, and
+   * each course page carries the right action for that course.
+   */
+  applyNow: '/courses',
   blog: 'https://tokoacademy.org/category/newsroom/',
   wordpressForm: 'https://tokoacademy.org/register'
 };
