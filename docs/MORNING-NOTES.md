@@ -1,245 +1,210 @@
-# Overnight work — 23 September 2026
+# The redesign — 23 September 2026
 
-Everything below is live on tokoacademy.org unless it says otherwise.
+Everything below is live on tokoacademy.org.
+
+The previous night's work (caching, SEO, security) is in
+`NOTES-2026-09-23-speed-seo-security.md`.
 
 ---
 
-## The headline
+## Where the site stands
 
-**Lighthouse performance went from 82 to 99 on desktop, 88 on mobile. SEO is
-100. First paint dropped from 1.8 seconds to 0.4.**
-
-| | Before | After |
+| | Desktop | Mobile |
 |---|---|---|
-| Performance (desktop) | 82 | **99** |
-| Performance (mobile) | — | **88** |
-| Accessibility | 96 | 96 |
-| Best practices | 96 | 93 ¹ |
-| SEO | 100 | **100** |
-| First Contentful Paint | 1.8 s | **0.4 s** |
-| Largest Contentful Paint | 1.8 s | **0.4 s** |
-| Speed Index | 2.2 s | **0.9 s** |
+| Performance | **98** | **88** |
+| Accessibility | **96** | **96** |
+| Best practices | 93 | 93 |
+| SEO | **100** | **100** |
+| First paint | **0.9 s** | 1.9 s |
+| Largest paint | **0.9 s** | 3.6 s |
+| Layout shift | **0** | **0** |
 
-¹ Best practices is held down by two errors Cloudflare causes, not us. See
-**Two things only you can do** below — fixing the first one should take this to
-100 as well.
-
----
-
-## Two things only you can do (both in Cloudflare, both big)
-
-I have no access to your Cloudflare dashboard. These are the two largest
-remaining wins on the site and neither can be done from code.
-
-### 1. Let Cloudflare cache your pages — this is the 1-second target
-
-Your server produces a page in **2 milliseconds**. Through Cloudflare it takes
-**560–930 milliseconds**. I measured both.
-
-The reason: `cf-cache-status: DYNAMIC` on every page. Cloudflare's default
-cache level does not store HTML, so every single visit — from Yola, from
-anywhere — travels to the server in Germany and back. Nothing is served from
-the edge.
-
-I have already fixed the origin's side of this. Your pages were being sent
-with `Cache-Control: no-store` and an expiry date of **1923**, left behind by a
-WordPress caching plugin from before the site was rebuilt. Cloudflare was being
-explicitly told never to cache. That is now corrected and Cloudflare is
-permitted to cache — it just needs telling to.
-
-**What to do:** Cloudflare dashboard → **Caching → Cache Rules** → Create rule.
-
-- Name: `Cache HTML`
-- When incoming requests match: `Hostname equals tokoacademy.org`
-- Then: **Eligible for cache**
-- Edge TTL: **Use cache-control header if present**, otherwise 1 hour
-- Browser TTL: **Respect origin**
-
-Expected effect for someone in the North East: roughly **600ms down to
-30–50ms** on every page. This is the single biggest speed change available to
-you, and it is bigger than everything I did in code combined.
-
-### 2. Turn off Rocket Loader — it is breaking React on every page
-
-Every page on your site logs two React errors. I traced them: they are not in
-your code. Cloudflare is injecting `rocket-loader.min.js` and rewriting your
-script tags in transit. I confirmed this by fetching the same page directly
-from your own server, which contains none of it.
-
-Rocket Loader is a known cause of React hydration failures, and it buys you
-nothing here — the site already defers its own JavaScript. The practical
-effect of the failure is that parts of each page are thrown away and rebuilt in
-the browser, which wastes time on exactly the slow connections you are trying
-to serve.
-
-**What to do:** Cloudflare dashboard → **Speed → Optimization → Content
-Optimization** → turn **Rocket Loader** off.
-
-While you are there, confirm **SSL/TLS mode is Full (strict)**. If it is
-Flexible, the Cloudflare-to-server leg is unencrypted.
+Desktop is under a second. Mobile is measured on Lighthouse's simulated slow
+4G with the processor deliberately slowed four times over — harsher than most
+real phones on most real connections.
 
 ---
 
-## What changed on the website
+## The four things you reported
 
-### Speed
+**Apply Now went to the old PHP form.** Fixed. It goes to your course
+catalogue now, because "apply" means nothing until somebody has chosen what
+they are applying for, and each course page carries the right action. It also
+opened in a new tab, which for your own page just breaks the back button.
 
-- **The caching disaster described above.** Every page was `no-store` with a
-  1923 expiry date. Also: assets that should be cached for a year were being
-  re-fetched every four hours, and a malformed `Expires` header was the only
-  one having any effect, because `mod_expires` is not even loaded on that
-  server. The Apache config now ships from the repository, so it is version
-  controlled rather than living only on a server.
-- **Icons were being fetched from a third party at runtime.** Every icon on the
-  site called `api.iconify.design` from the browser before it could appear, and
-  rendered an empty box until it answered. There are eleven icons. They are now
-  drawn directly in the HTML — no JavaScript, no network request, no third
-  party — and the library is gone from the project.
-- **The logo was a 2,991-pixel-wide, 131KB image** displayed at 48 pixels tall,
-  loaded from the old WordPress folder. It is now 20KB and lives in the repo.
-- **Images now declare their size**, so the page stops jumping as they load.
+**The footer repeated the address.** Fixed — the address and both phone
+numbers appeared twice, a few centimetres apart. Only the CAC registration
+line remains at the bottom.
 
-### Truth
+**The mobile menu did not open.** I drove a real browser at phone size and it
+*did* open — your phone was almost certainly holding a cached copy from the
+old service worker I replaced the night before. It has been rebuilt properly
+anyway: a full-height drawer that slides in, dims the page, locks scrolling
+the way iOS actually respects, closes on Escape or a tap outside, returns
+focus where it came from, and restores your scroll position exactly. It now
+also carries the phone numbers, email and social links — those lived in a bar
+hidden on phones, so the one device most likely to want to tap a number
+could not reach one.
 
-- The endless "flash sale" countdown and struck-through ₦50,000 on the
-  zero2live page are gone. The code comment said outright that the price never
-  reverts.
-- "Only 25 seats" — nothing counted seats. Gone.
-- "Spots left" on the schedules page came from `capacity: 25, enrolled: 18`
-  typed into a file, identical for every course. Gone, and stripped from the
-  page's data rather than merely hidden.
-- Four testimonials from named graduates who do not appear to exist no longer
-  render anywhere.
-- The **"15% OFF TODAY"** badge on course pages, which was calculated in the
-  browser and appeared every day of the year, is gone.
-- Your impact figures (2,000+, 75%, 35+) are untouched, as you asked.
-
-### Structure
-
-- **Menu: seven top-level items to four** — About, Programs, Newsroom, Contact.
-  Impact, Thematic Areas and Partners moved under About. "Press Releases" and
-  "Toko in the News" were separate menu items pointing at a page that cannot
-  filter, so all three landed in the same place; they are one Newsroom now.
-- **The home page shows your work instead of linking to it.** The block that
-  said "Follow Our Latest News and Events" contained two buttons and nothing
-  else. It now carries your three latest articles and three events, with
-  pictures and dates.
-- **Course thumbnails.** Six courses had images hotlinked from other people's
-  websites — Medium, a UK software firm, a US college. One was already broken.
-  Those are cleared (values saved on the server first). Six courses now show
-  your own uploads; the rest draw a clean branded tile until you add photos.
-
-### Readability
-
-Your brand green `#7CB342` gives **2.5:1** contrast with white text, against a
-standard of 4.5:1. That was every primary button and every green figure on the
-site. For people reading on cheap phones outdoors this is not a technicality.
-The UI green is now `#4A7C2A` — the same green, deeper — at **4.99:1**. Your
-logo is an image and keeps its original colour.
-
-### Security
-
-A full review is in `docs/SECURITY-REVIEW.md`. The serious findings:
-
-- **Anyone who could publish in WordPress could run code on tokoacademy.org.**
-  Article HTML went onto the page unfiltered. It is now sanitised when the site
-  is built; I tested it against inline scripts, `onerror` handlers,
-  `javascript:` links and hostile iframes.
-- **A related flaw in text handling** meant an encoded `</script>` in a post
-  title survived the safety step and was then turned back into real markup. The
-  step meant to make it safe was what armed it.
-- **Your GitHub token was printed into the WordPress settings page HTML.**
-  `type="password"` hides it on screen, not in view-source. **You need to
-  rotate that token** — see below.
-- Security headers added, plus a Content Security Policy in report-only mode so
-  it can be proved before it starts blocking anything.
-
-### Findability
-
-- Your organisation was **never described to search engines**. It is now, with
-  your real contact details, and the entity pages reference it properly.
-- Two robots files disagreed; one was blocking Google from your own JavaScript
-  and CSS. Fixed.
-- Sitemap went from 45 to 58 pages — your Impact and Thematic Areas pages were
-  missing entirely, as were all the course pages.
-- Canonical links all pointed at redirects. Fixed.
-- AI crawlers are now allowed by name, and `llms.txt` is published.
-
-### The DLC
-
-The learning platform's browser tab showed ta_admin's icon. It now carries the
-Toko Academy logo, same as the website, including the sizes a phone uses when
-someone pins the site to their home screen.
+**Headings dwarfed the body text.** You were right, and it was worse than it
+looked: `h2` rendered at 48px against 16px text, and several pages had
+invented their own sizes on top. There is now one fluid scale that grows with
+the screen rather than jumping between sizes, and every hand-set heading size
+has been stripped out. A heading sits about twice its paragraph, not three
+times.
 
 ---
 
-## Also for you
+## The redesign
 
-1. **Rotate the GitHub token** used by the WordPress deploy plugin — it has
-   been readable in that page's source. Create a new fine-grained token with
-   **Actions: Read and write** only, save it in the plugin, press "Deploy now
-   (test)", then **revoke the old one on GitHub**. Removing it from WordPress
-   does not revoke it.
-2. **Google Business Profile** for the Jimeta-Yola address. Probably the
-   single highest-value marketing action available and it cannot be done from
-   code — it drives map results and corroborates the address now in your
-   structured data.
-3. **Bing Webmaster Tools** — verify and submit the sitemap. This matters more
-   than it used to: ChatGPT's search leans on Bing's index.
-4. **Google Search Console** — submit the sitemap.
-5. **Course photos.** Six courses draw a branded tile because their images were
-   other people's property. Your gallery has real photographs of your own
-   workshops — those would be better than any stock image. Tell me which photo
-   suits which course and I will set them.
+**Dark and light themes.** A toggle in the header, starting from your system
+preference and remembering what you choose. The theme is set before the page
+paints, so there is no flash of the wrong one. Twenty-seven files moved onto
+colour tokens that flip, so this works on every page rather than on the few I
+touched by hand.
+
+**Pictures, everywhere.** This was the biggest complaint and it is the biggest
+change. There are now **21 image slots**; 8 already show photographs you
+had, and 13 show a labelled placeholder naming exactly what belongs there.
+
+**A hero slider** with four propositions, each with its own photograph. It
+pauses when you hover or focus it, has a real pause button, responds to arrow
+keys, and stops entirely for anyone who has asked their device for less
+motion. All four slides are in the page from the start, so there is no layout
+shift and search engines see all of them.
+
+**Movement, kept quiet.** Sections settle into place as you reach them —
+fourteen pixels, not eighty. Colour washes behind some sections drift very
+slightly with your pointer. There is a custom cursor: a dot that follows
+exactly and a ring that lags behind, growing over anything you can click. All
+of it disappears on touch screens and for reduced motion.
+
+**One typeface**, self-hosted so there is no request to Google and nothing
+that leaks your visitors to a third party.
+
+**The story pages were rewritten**, not restyled. `/impact` was six metric
+tiles and an eight-by-seven grid of dots; it now opens with "More than 2,000
+people have trained here. This is how we count." and states plainly that the
+figures are your own records, honestly kept, and not independently audited.
+The old page put a "≥75%" target row directly beside a "75%" headline, which
+invited the reader to read a target as a result. `/thematic-areas` became
+eight chapters with photographs instead of eight identical cards.
+`/about`, `/corporate`, `/kids` and `/partners` the same.
 
 ---
 
-## Content strategy
+## Images: 1.3MB down to 185KB
 
-`docs/CONTENT-STRATEGY.md` — about 15,000 words, researched rather than
-guessed. The short version:
+Your hero photographs were 1,294KB and a phone was downloading all of them at
+full size, because a static site does no image work for you. They are now
+646KB as originals, and every photograph also has 480, 960 and 1600px WebP
+copies generated beside it. A phone takes the 480 — **20KB instead of 228KB**
+for the main hero.
 
-**Three territories to own**
+Verified in a real browser rather than assumed: WebP is chosen every time, and
+the homepage's hero imagery is 185KB against 1,294KB before.
 
-1. **Digital skills in North-East Nigeria.** Nigerian tech content is almost
-   entirely Lagos and Abuja. The research found your home market is not
-   contested, it is *vacant* — a single Medium post currently ranks for
-   "learn coding in Yola". You are physically there and a Code.org Global
-   Partner for the region. This is a permanent advantage.
-2. **Practical AI for Nigerian workplaces and institutions.** You have already
-   trained NSCDC, NPF, FRSC, NMDPRA and NASSCO. Almost nobody in Nigeria can
-   write about that first-hand.
-3. **How Nigeria's digital-skills system actually works** — 3MTT, SIWES, NDE,
-   Adamawa Digital Academy. Serves students and grant officers at the same
-   time.
+Run **`npm run images`** after adding any photograph and it generates the
+copies. Originals are never touched.
 
-**The first six articles to write**
+---
 
-1. Digital Skills Training in Yola and Adamawa State: The Complete 2026 Guide
-2. Every Free Digital Skills Programme in Nigeria in 2026 (And How to Get In)
-3. What AI Training for a Nigerian Government Agency Actually Looks Like
-4. How Much Does Tech Training Cost in Nigeria in 2026? A Transparent Breakdown
-5. SIWES in a Tech Company: What Computer Science Students Actually Do
-6. Is a Coding Bootcamp Worth It in Nigeria? An Honest Answer
+## Getting photographs in
 
-The document contains 30 briefs in total, a keyword map, and — importantly — a
-section listing **statistics not to publish** because they could not be traced
-to a primary source, including one widely-circulated figure about computer use
-in Adamawa.
+Run **`npm run shots`**. It prints what is still needed, with the brief:
 
-One finding worth your attention: the document pushes back on standard "AI
-SEO" advice with evidence. Google's own documentation says its AI answers run
-off the normal search index and ignore `llms.txt`; a controlled study of 1,885
-pages found adding schema produced no measurable lift in AI citations. What
-does correlate is being mentioned by other people, publishing original data,
-and recency. Your own outcome data is the asset nobody else has.
+```
+/images/contact/entrance.jpg
+   what it shows : The entrance to Toko Academy on Bekaji Road, Jimeta-Yola
+   how to shoot  : The front of the building with the signage visible, shot
+                   in daylight from across the street. Landscape.
+   used on       : src/app/contact/page.tsx
+```
+
+Drop a file at that path, run `npm run images`, and it appears on the next
+build. No code changes, ever.
+
+`docs/IMAGE-GUIDE.md` has the full brief — what to shoot, how to light it,
+file sizes, and **a consent section you should read before photographing
+children**. That is a safeguarding matter with legal weight under the Nigeria
+Data Protection Act, not a formality.
+
+The ten photographs to take first are listed at the end of that guide. They
+cover the home page, About, Impact, Kids and Corporate — every page a
+first-time visitor opens.
+
+---
+
+## Your WordPress question
+
+**Don't build a Postgres CMS.** Full reasoning in
+`docs/DECISION-wordpress-vs-custom-backend.md`.
+
+A usable CMS is not a database table — it is drafts, media, revisions,
+scheduling, roles and previews. Rebuilding that is a quarter of engineering to
+arrive where you already are, plus a permanent maintenance bill, and your
+people already know WordPress.
+
+WordPress is not the problem. The problem is that a third category of content
+— the home page copy, About, Impact — is typed into the code, so changing a
+sentence needs a developer. That is the ta_admin editor you asked for a few
+days ago: about a week, not a quarter.
+
+---
+
+## Two things still only you can do
+
+Both in Cloudflare, and between them they are worth more than everything in
+this repository.
+
+**1. Browser Cache TTL is overriding the headers.** Cloudflare is now caching
+your pages — that part started working. But it is rewriting the browser cache
+to four hours, which means a visitor will not see a change for four hours
+after you publish. Set **Caching → Configuration → Browser Cache TTL** to
+**"Respect Existing Headers"**.
+
+**2. Turn off Rocket Loader.** Speed → Optimization → Content Optimization.
+It rewrites your scripts in transit and is a known cause of React breaking.
+Your site already defers its own JavaScript, so it buys you nothing.
+
+While you are there, confirm **SSL/TLS mode is Full (strict)**.
+
+---
+
+## Smaller things found on the way
+
+- Headings on dark sections were rendering **black on black** — the base
+  style beat the section's white. Two measured 1.00:1.
+- Primary buttons in dark mode had **white labels on pale green** at 2.07:1.
+  Now 8.94:1.
+- Muted text was 3.90:1 against a 4.5:1 standard — it carries your dates,
+  captions and section labels. Now 4.74:1.
+- A photo lightbox **locked page scrolling and never released it**.
+- Event cards had links inside links — invalid HTML, and the reason each
+  needed a workaround to behave.
+- `/schedules` wrote every class out twice, and its filter bar sat permanently
+  hidden behind the fixed header.
+- Articles with no picture fell back to a real photograph of a real class, so
+  that one image appeared three times on the home page.
+
+---
+
+## Tools left behind
+
+| Command | What it does |
+|---|---|
+| `npm run shots` | What still needs photographing, with briefs |
+| `npm run images` | Generates responsive WebP copies |
+| `npm run visual` | Screenshots every page in both themes at phone and desktop, and reports anything unreadable or overflowing |
+
+`npm run visual` is the one worth knowing about. A redesign is the one change
+a passing build cannot verify — everything can compile while the page is
+unreadable. It found both contrast bugs above.
 
 ---
 
 ## Not done
 
-**The MCP connectors** — letting the Claude app drive the DLC, ta_admin and the
-website with your approval. I mapped exactly how each system can authenticate a
-machine client and designed the tool surface, but did not build it; the website
-work was what you asked to see this morning and it took the night. It is the
-next thing I pick up.
+**The MCP connectors** — letting the Claude app drive the DLC, ta_admin and
+the website with your approval. Still mapped and designed, still not built.
+Two nights running the website has been the priority you set. It is next.
