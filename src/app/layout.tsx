@@ -10,6 +10,7 @@ import { SITE_URL, siteJsonLd, jsonLdScript } from '@/lib/seo'
 import ThemeScript from '@/components/ui/ThemeScript'
 import Cursor from '@/components/ui/Cursor'
 import Reveal from '@/components/ui/Reveal'
+import PointerField from '@/components/ui/PointerField'
 
 /**
  * One typeface, self-hosted and preloaded.
@@ -130,6 +131,9 @@ export default function RootLayout({
         {/* One observer for every `.reveal` on the page, rather than a client
             component wrapped around each section. */}
         <Reveal />
+        {/* Publishes the pointer position as CSS variables, which the
+            decorative washes drift against. Nothing on touch devices. */}
+        <PointerField />
         <Suspense fallback={null}>
           <MatomoAnalytics />
         </Suspense>
