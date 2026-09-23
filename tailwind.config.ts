@@ -43,6 +43,7 @@ const config: Config = {
         brand: {
           DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
           soft: 'rgb(var(--brand-soft) / <alpha-value>)',
+          ink: 'rgb(var(--brand-ink) / <alpha-value>)',
         },
         // Toko Academy Brand Colors (from logo)
         /*

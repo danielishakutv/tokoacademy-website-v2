@@ -12,7 +12,7 @@ type Props = {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const inputClass =
-  'w-full rounded-lg border border-toko-gray-300 px-3 py-2.5 text-toko-gray-900 outline-none transition focus:border-toko-green focus:ring-2 focus:ring-toko-green/30';
+  'w-full rounded-lg border border-line-strong bg-surface-raised px-3 py-2.5 text-ink outline-none transition placeholder:text-ink-subtle focus:border-brand focus:ring-2 focus:ring-brand/30';
 
 /**
  * Enrolment form → Toko Academy public API. On 201 it redirects the browser to
@@ -131,8 +131,10 @@ export default function EnrolModal({ open, onClose, price }: Props) {
         if (e.target === e.currentTarget && !submitting) onClose();
       }}
     >
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-toko-lg">
-        {/* header */}
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface-raised shadow-2xl">
+        {/* header — dark in both themes, like the rest of this page's bands.
+            Inverting it would put a white slab on a dark card and leave the
+            green eyebrow on it unreadable. */}
         <div className="relative bg-toko-gray-900 px-6 py-5 text-white">
           <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_85%_10%,rgba(124,179,66,0.35),transparent_55%)]" />
           <button
@@ -145,7 +147,7 @@ export default function EnrolModal({ open, onClose, price }: Props) {
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
           </button>
           <p className="relative text-sm font-semibold uppercase tracking-widest text-toko-green-light">Zero to Live</p>
-          <h3 id="enrol-title" className="relative mt-1 text-2xl font-bold">Enrol &amp; start today</h3>
+          <h3 id="enrol-title" className="relative mt-1 text-white">Enrol &amp; start today</h3>
           <p className="relative mt-1 text-sm text-white/70">
             Pay {price} securely. Your login is emailed to you right after payment.
           </p>
@@ -167,29 +169,29 @@ export default function EnrolModal({ open, onClose, price }: Props) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-toko-gray-700">First name</span>
+              <span className="mb-1 block text-sm font-semibold text-ink">First name</span>
               <input ref={firstFieldRef} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" required className={inputClass} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-toko-gray-700">Last name</span>
+              <span className="mb-1 block text-sm font-semibold text-ink">Last name</span>
               <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" required className={inputClass} />
             </label>
           </div>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-toko-gray-700">Email</span>
+            <span className="mb-1 block text-sm font-semibold text-ink">Email</span>
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required className={inputClass} />
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-toko-gray-700">
-              Phone <span className="font-normal text-toko-gray-400">(optional)</span>
+            <span className="mb-1 block text-sm font-semibold text-ink">
+              Phone <span className="font-normal text-ink-subtle">(optional)</span>
             </span>
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" maxLength={40} className={inputClass} />
           </label>
 
           {error && (
-            <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark" role="alert">
+            <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark dark:text-toko-magenta-light" role="alert">
               {error}
               {showLogin && (
                 <>
@@ -203,7 +205,9 @@ export default function EnrolModal({ open, onClose, price }: Props) {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-toko-green px-6 py-3.5 text-lg font-bold text-white shadow-toko transition-all duration-300 hover:bg-toko-green-dark focus:outline-none focus:ring-4 focus:ring-toko-green/50 disabled:cursor-not-allowed disabled:opacity-80"
+            // A fixed `bg-toko-green`, not `.btn-primary`: the brand token
+            // lightens in the dark theme, and this button's label is white.
+            className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-toko-green px-6 py-3.5 text-lg font-bold text-white shadow-toko transition-all duration-300 hover:bg-toko-green-dark focus:outline-none focus:ring-4 focus:ring-toko-green/50 disabled:cursor-not-allowed disabled:opacity-80"
           >
             {submitting ? (
               <>
@@ -218,7 +222,7 @@ export default function EnrolModal({ open, onClose, price }: Props) {
             )}
           </button>
 
-          <p className="flex items-center justify-center gap-1.5 text-center text-xs text-toko-gray-500">
+          <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-subtle">
             <svg className="h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="10" width="16" height="11" rx="2" strokeWidth="2" /><path d="M8 10V7a4 4 0 118 0v3" strokeWidth="2" strokeLinecap="round" /></svg>
             Secured by Paystack. You&apos;ll be redirected to pay.
           </p>

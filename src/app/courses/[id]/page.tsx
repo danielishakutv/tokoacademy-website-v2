@@ -110,13 +110,13 @@ function Overview({ text }: { text: string }) {
         const heading = /^#{2,3}\s+(.*)$/.exec(block);
         if (heading) {
           return (
-            <h3 key={index} className="text-2xl font-bold text-toko-gray-900 pt-2">
+            <h3 key={index} className="pt-2">
               {heading[1]}
             </h3>
           );
         }
         return (
-          <p key={index} className="text-lg text-toko-gray-600 leading-relaxed">
+          <p key={index} className="text-lg leading-relaxed text-ink-muted">
             {block.replace(/\*\*/g, '')}
           </p>
         );
@@ -129,18 +129,20 @@ function Overview({ text }: { text: string }) {
 function Retired() {
   return (
     <>
-      <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-magenta to-toko-blue text-white">
-        <div className="section-container">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="mb-6">This course is no longer offered</h1>
-            <p className="text-xl text-white/95">
+      <section className="relative overflow-hidden border-b border-line bg-surface-sunken pt-28 pb-14 md:pt-40 md:pb-20">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Retired</p>
+            <h1 className="mt-3">This course is no longer offered</h1>
+            <p className="prose-measure mx-auto mt-5 text-lg text-ink-muted">
               Our curriculum changed and this one has been retired. Everything we teach today is
               on the courses page — several of them cover the same ground in more depth.
             </p>
           </div>
         </div>
       </section>
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container text-center">
           <Link href="/courses" className="btn-primary">
             See our current courses
@@ -163,48 +165,51 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
   return (
     <>
       {/* Hero */}
-      <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-magenta to-toko-blue text-white">
-        <div className="section-container">
-          <nav className="text-sm text-white/70 mb-6">
-            <Link href="/" className="hover:text-white">Home</Link>
-            {' / '}
-            <Link href="/courses" className="hover:text-white">Courses</Link>
-            {' / '}
-            <span className="text-white">{course.title}</span>
+      <section className="relative overflow-hidden border-b border-line bg-surface-sunken pt-28 pb-12 md:pt-40 md:pb-16">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative">
+          {/* `flex-wrap` and `break-words`: a course title is long and this is
+              the one line on the page that cannot shrink. */}
+          <nav className="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-subtle" aria-label="Breadcrumb">
+            <Link href="/" className="link-hover">Home</Link>
+            <span aria-hidden>/</span>
+            <Link href="/courses" className="link-hover">Courses</Link>
+            <span aria-hidden>/</span>
+            <span className="break-words text-ink">{course.title}</span>
           </nav>
 
           <div className="max-w-3xl">
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-              <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold">
+            <div className="mb-4 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">
                 {deliveryLabel(course.deliveryMode)}
               </span>
               {course.hasCertificate && (
-                <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold">
+                <span className="rounded-full bg-brand-soft px-3 py-1 text-sm font-semibold text-brand">
                   Certificate
                 </span>
               )}
               {course.school && (
-                <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold">
+                <span className="rounded-full border border-line-strong px-3 py-1 text-sm font-semibold text-ink-muted">
                   {course.school.name}
                 </span>
               )}
             </div>
 
-            <h1 className="mb-6">{course.title}</h1>
-            <p className="text-xl md:text-2xl text-white/95">{course.description}</p>
+            <h1>{course.title}</h1>
+            <p className="mt-5 text-lg text-ink-muted md:text-xl">{course.description}</p>
 
-            <div className="flex flex-wrap gap-x-8 gap-y-2 mt-8 text-white/90">
+            <div className="mt-8 flex flex-wrap gap-x-8 gap-y-2 text-ink-muted">
               {course.hours > 0 && (
-                <span><strong className="text-white">{course.hours}</strong> hours</span>
+                <span><strong className="text-ink">{course.hours}</strong> hours</span>
               )}
               {lessons > 0 && (
-                <span><strong className="text-white">{lessons}</strong> lessons</span>
+                <span><strong className="text-ink">{lessons}</strong> lessons</span>
               )}
               {course.curriculum.length > 0 && (
-                <span><strong className="text-white">{course.curriculum.length}</strong> modules</span>
+                <span><strong className="text-ink">{course.curriculum.length}</strong> modules</span>
               )}
               {course.enrolledCount > 0 && (
-                <span><strong className="text-white">{course.enrolledCount}</strong> enrolled</span>
+                <span><strong className="text-ink">{course.enrolledCount}</strong> enrolled</span>
               )}
             </div>
           </div>
@@ -212,76 +217,24 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
       </section>
 
       {/* Body */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
           {onLegacyUrl && (
-            <p className="mb-8 rounded-lg bg-toko-gray-50 border border-toko-gray-200 px-4 py-3 text-sm text-toko-gray-600">
+            <p className="mb-8 rounded-lg border border-line bg-surface-sunken px-4 py-3 text-sm text-ink-muted">
               You followed an older link. This course now lives at{' '}
-              <Link href={`/courses/${course.slug}`} className="font-semibold text-toko-green hover:underline">
+              <Link href={`/courses/${course.slug}`} className="font-semibold text-brand hover:underline">
                 /courses/{course.slug}
               </Link>
               .
             </p>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            <div className="lg:col-span-2">
-              {course.about && (
-                <div className="mb-12">
-                  <h2 className="text-3xl font-bold text-toko-gray-900 mb-6">About this course</h2>
-                  <Overview text={course.about} />
-                </div>
-              )}
-
-              {course.curriculum.length > 0 && (
-                <div className="mb-12">
-                  <h2 className="text-3xl font-bold text-toko-gray-900 mb-2">What you will cover</h2>
-                  <p className="text-toko-gray-500 mb-6">
-                    {course.curriculum.length} modules, {lessons} sessions.
-                  </p>
-                  <div className="space-y-6">
-                    {course.curriculum.map((module, index) => (
-                      <div key={index} className="border-l-4 border-toko-green bg-toko-gray-50 rounded p-5">
-                        <h3 className="font-bold text-toko-gray-900 mb-3">{module.title}</h3>
-                        <ul className="space-y-2">
-                          {module.lessons.map((lesson, lessonIndex) => (
-                            <li
-                              key={lessonIndex}
-                              className="flex items-baseline justify-between gap-4 text-toko-gray-600"
-                            >
-                              <span>{lesson.title}</span>
-                              {lesson.duration && (
-                                <span className="shrink-0 text-sm text-toko-gray-400">{lesson.duration}</span>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {course.faqs.length > 0 && (
-                <div>
-                  <h2 className="text-3xl font-bold text-toko-gray-900 mb-6">Questions people ask</h2>
-                  <div className="space-y-4">
-                    {course.faqs.map((faq, index) => (
-                      <details key={index} className="group rounded-lg border border-toko-gray-200 p-5">
-                        <summary className="cursor-pointer font-semibold text-toko-gray-900 marker:content-['']">
-                          {faq.question}
-                        </summary>
-                        <p className="mt-3 text-toko-gray-600 leading-relaxed">{faq.answer}</p>
-                      </details>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div>
-              <div className="sticky top-24 bg-toko-gray-50 rounded-lg p-8">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-3 lg:gap-12">
+            {/* The panel comes first on a phone: somebody who opened a course
+                page wants the price and the button, not to scroll past the
+                syllabus to find them. */}
+            <div className="lg:order-2">
+              <div className="card p-6 sm:p-8 lg:sticky lg:top-32">
                 <div className="mb-6">
                   <CourseThumbnail
                     id={course.slug}
@@ -291,8 +244,8 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
                   />
                 </div>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-toko-magenta">{priceLabel}</span>
-                  <p className="text-toko-gray-600 mt-2">{deliveryLabel(course.deliveryMode)}</p>
+                  <span className="text-4xl font-bold text-toko-magenta dark:text-toko-magenta-light">{priceLabel}</span>
+                  <p className="mt-2 text-ink-muted">{deliveryLabel(course.deliveryMode)}</p>
                 </div>
 
                 <EnrolPanel
@@ -305,12 +258,12 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
 
                 <a
                   href={`mailto:info@tokoacademy.org?subject=${encodeURIComponent(`Question about ${course.title}`)}`}
-                  className="mt-4 block w-full rounded-lg border-2 border-toko-gray-200 bg-white px-6 py-3 text-center font-semibold text-toko-gray-900 transition-colors hover:bg-toko-gray-100"
+                  className="btn-secondary mt-4 w-full"
                 >
                   Ask a question
                 </a>
 
-                <dl className="space-y-4 pt-8 mt-8 border-t border-toko-gray-200">
+                <dl className="mt-8 space-y-4 border-t border-line pt-8">
                   <Fact label="Format" value={deliveryLabel(course.deliveryMode)} />
                   {course.hours > 0 && <Fact label="Contact hours" value={`${course.hours} hours`} />}
                   {lessons > 0 && <Fact label="Sessions" value={`${lessons} across ${course.curriculum.length} modules`} />}
@@ -320,6 +273,60 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
                   )}
                 </dl>
               </div>
+            </div>
+
+            <div className="lg:order-1 lg:col-span-2">
+              {course.about && (
+                <div className="mb-12">
+                  <h2 className="mb-6">About this course</h2>
+                  <Overview text={course.about} />
+                </div>
+              )}
+
+              {course.curriculum.length > 0 && (
+                <div className="mb-12">
+                  <h2 className="mb-2">What you will cover</h2>
+                  <p className="mb-6 text-ink-subtle">
+                    {course.curriculum.length} modules, {lessons} sessions.
+                  </p>
+                  <div className="space-y-6">
+                    {course.curriculum.map((module, index) => (
+                      <div key={index} className="rounded-r-lg border-l-4 border-brand bg-surface-sunken p-5">
+                        <h3 className="mb-3">{module.title}</h3>
+                        <ul className="space-y-2">
+                          {module.lessons.map((lesson, lessonIndex) => (
+                            <li
+                              key={lessonIndex}
+                              className="flex flex-wrap items-baseline justify-between gap-x-4 text-ink-muted"
+                            >
+                              <span>{lesson.title}</span>
+                              {lesson.duration && (
+                                <span className="shrink-0 text-sm text-ink-subtle">{lesson.duration}</span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {course.faqs.length > 0 && (
+                <div>
+                  <h2 className="mb-6">Questions people ask</h2>
+                  <div className="space-y-4">
+                    {course.faqs.map((faq, index) => (
+                      <details key={index} className="group rounded-lg border border-line p-5">
+                        <summary className="cursor-pointer font-semibold text-ink marker:content-['']">
+                          {faq.question}
+                        </summary>
+                        <p className="mt-3 leading-relaxed text-ink-muted">{faq.answer}</p>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -333,8 +340,8 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-sm text-toko-gray-500 mb-1">{label}</dt>
-      <dd className="font-semibold text-toko-gray-900">{value}</dd>
+      <dt className="mb-1 text-sm text-ink-subtle">{label}</dt>
+      <dd className="font-semibold text-ink">{value}</dd>
     </div>
   );
 }

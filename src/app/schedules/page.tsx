@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Picture from '@/components/ui/Picture';
 import SchedulesClient from './client';
 import schedulesData from '@/data/schedules.json';
 
@@ -61,5 +62,20 @@ export default function SchedulesPage() {
     })
   );
 
-  return <SchedulesClient schedules={schedules} />;
+  return (
+    <SchedulesClient
+      schedules={schedules}
+      /* Rendered here, not in the client component: `Picture` looks the file
+         up on disk at build time, which only a server component can do. */
+      heroImage={
+        <Picture
+          src="/images/schedules/classroom.jpg"
+          alt="A class in progress at Toko Academy"
+          brief="Wide shot from the back of the room: trainer at the board, screens lit, people leaning in. Not posed."
+          aspect="aspect-[4/3]"
+          className="reveal reveal-delay-1"
+        />
+      }
+    />
+  );
 }

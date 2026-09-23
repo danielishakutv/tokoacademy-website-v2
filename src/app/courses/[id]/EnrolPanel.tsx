@@ -26,8 +26,14 @@ const LOGIN_URL = `${API}/login`;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/*
+ * `bg-surface-raised` matters as much as the text colour: a field left on the
+ * browser default is white in both themes, so a dark-theme form would be white
+ * boxes on a black card — and the typed text, being `text-ink`, would be white
+ * on white.
+ */
 const inputClass =
-  'w-full rounded-lg border border-toko-gray-300 px-3 py-2.5 text-toko-gray-900 outline-none transition focus:border-toko-green focus:ring-2 focus:ring-toko-green/30';
+  'w-full rounded-lg border border-line-strong bg-surface-raised px-3 py-2.5 text-ink outline-none transition placeholder:text-ink-subtle focus:border-brand focus:ring-2 focus:ring-brand/30';
 
 type Props = {
   slug: string;
@@ -46,10 +52,7 @@ export default function EnrolPanel({ slug, title, price, priceLabel, selfPaced }
   // sign-up does that better than a copy of it here would.
   if (selfPaced && price === 0) {
     return (
-      <a
-        href={LOGIN_URL}
-        className="block w-full rounded-lg bg-toko-green px-6 py-3.5 text-center text-lg font-bold text-white shadow-toko transition-colors hover:bg-toko-green-dark"
-      >
+      <a href={LOGIN_URL} className="btn-primary w-full">
         Start this course free
       </a>
     );
@@ -57,10 +60,10 @@ export default function EnrolPanel({ slug, title, price, priceLabel, selfPaced }
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="w-full btn-primary">
+      <button type="button" onClick={() => setOpen(true)} className="btn-primary w-full">
         {paying ? `Enrol & pay ${priceLabel}` : 'Apply to join'}
       </button>
-      <p className="mt-3 text-center text-xs text-toko-gray-500">
+      <p className="mt-3 text-center text-xs text-ink-subtle">
         {paying
           ? 'Secure payment by Paystack. Your login is emailed straight after.'
           : 'Tell us you are interested and the admissions team will be in touch about dates and payment.'}
@@ -213,7 +216,10 @@ function EnrolDialog({
         if (event.target === event.currentTarget && !submitting) onClose();
       }}
     >
-      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white shadow-toko-lg">
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl bg-surface-raised shadow-2xl">
+        {/* Dark in both themes on purpose. This is a coloured header band, not
+            a surface: inverting it for the dark theme would put a white slab on
+            a black card and leave the green eyebrow unreadable on it. */}
         <div className="relative bg-toko-gray-900 px-6 py-5 text-white">
           <div
             aria-hidden
@@ -233,7 +239,7 @@ function EnrolDialog({
           <p className="relative text-sm font-semibold uppercase tracking-widest text-toko-green-light">
             {title}
           </p>
-          <h3 id="enrol-title" className="relative mt-1 text-2xl font-bold">
+          <h3 id="enrol-title" className="relative mt-1 text-white">
             {applying ? 'Apply to join' : 'Enrol & start today'}
           </h3>
           <p className="relative mt-1 text-sm text-white/70">
@@ -245,13 +251,13 @@ function EnrolDialog({
 
         {done ? (
           <div className="space-y-4 p-6 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-toko-green/10 text-toko-green">
-              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
                 <path d="m5 13 4 4L19 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <h4 className="text-lg font-bold text-toko-gray-900">Application received</h4>
-            <p className="text-sm text-toko-gray-600">
+            <h4>Application received</h4>
+            <p className="text-sm text-ink-muted">
               Thank you. The admissions team will email {email.trim()} about the next cohort,
               the schedule and how to pay.
             </p>
@@ -274,7 +280,7 @@ function EnrolDialog({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-1 block text-sm font-semibold text-toko-gray-700">First name</span>
+                <span className="mb-1 block text-sm font-semibold text-ink">First name</span>
                 <input
                   ref={firstFieldRef}
                   type="text"
@@ -286,7 +292,7 @@ function EnrolDialog({
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-sm font-semibold text-toko-gray-700">Last name</span>
+                <span className="mb-1 block text-sm font-semibold text-ink">Last name</span>
                 <input
                   type="text"
                   value={lastName}
@@ -299,7 +305,7 @@ function EnrolDialog({
             </div>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-toko-gray-700">Email</span>
+              <span className="mb-1 block text-sm font-semibold text-ink">Email</span>
               <input
                 type="email"
                 value={email}
@@ -311,8 +317,8 @@ function EnrolDialog({
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-semibold text-toko-gray-700">
-                Phone <span className="font-normal text-toko-gray-400">(optional)</span>
+              <span className="mb-1 block text-sm font-semibold text-ink">
+                Phone <span className="font-normal text-ink-subtle">(optional)</span>
               </span>
               <input
                 type="tel"
@@ -325,7 +331,7 @@ function EnrolDialog({
             </label>
 
             {error && (
-              <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark" role="alert">
+              <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark dark:text-toko-magenta-light" role="alert">
                 {error}
                 {showLogin && (
                   <>
@@ -341,7 +347,7 @@ function EnrolDialog({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-toko-green px-6 py-3.5 text-lg font-bold text-white shadow-toko transition-all duration-300 hover:bg-toko-green-dark focus:outline-none focus:ring-4 focus:ring-toko-green/50 disabled:cursor-not-allowed disabled:opacity-80"
+              className="btn-primary w-full text-lg disabled:cursor-not-allowed disabled:opacity-80"
             >
               {submitting ? (
                 <>
@@ -359,7 +365,7 @@ function EnrolDialog({
             </button>
 
             {!applying && (
-              <p className="flex items-center justify-center gap-1.5 text-center text-xs text-toko-gray-500">
+              <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-subtle">
                 <svg className="h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <rect x="4" y="10" width="16" height="11" rx="2" strokeWidth="2" />
                   <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="2" strokeLinecap="round" />

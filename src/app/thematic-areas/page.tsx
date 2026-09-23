@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Picture from '@/components/ui/Picture';
 import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
 export const metadata: Metadata = pageMetadata({
@@ -29,70 +30,108 @@ const entityJsonLd = pageEntityJsonLd({
   ],
 });
 
+// Hand-written utilities in globals.css are tree-shaken against the source, so
+// a composed `reveal-delay-${i}` would be stripped from the build.
+const DELAYS = ['reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5'] as const;
+const delay = (index: number) => DELAYS[Math.min(index, DELAYS.length - 1)];
+
+/*
+ * Eight areas, each rewritten to about half its length.
+ *
+ * Nothing has been dropped from the substance: the same audiences, the same
+ * focus lists, the same SDG mappings. What has gone is the register — every
+ * entry opened with a gerund ("Bridging…", "Building…", "Strengthening…") and
+ * ran to forty words before naming a single person it was for. Eight of those
+ * in a row is what made the page read as a grant application.
+ */
 const thematicAreas = [
   {
     number: '1',
     title: 'Digital Literacy & Foundational Skills',
     sdgs: ['SDG 4', 'SDG 10', 'SDG 16'],
     description:
-      'Bridging the digital divide by equipping individuals, public servants, teachers, and underserved communities with essential digital competencies needed to participate in the modern economy and access digital public services.',
+      'The first rung. Individuals, public servants, teachers and whole communities who were never taught the skills that the modern economy — and now every digital public service — quietly assumes everybody has.',
     focus: ['Digital foundations & internet fundamentals', 'Microsoft Office & productivity', 'Digital safety & basic cybersecurity', 'Adult digital literacy'],
+    image: '/images/hero/practical-mentorship-approach-classes.jpg',
+    alt: 'A Toko Academy trainer helping a learner at a laptop during a class',
+    brief: 'Trainer crouched beside an adult learner at a desktop machine, both looking at the screen',
   },
   {
     number: '2',
     title: 'Advanced Technology, Innovation & Software Engineering',
     sdgs: ['SDG 4', 'SDG 8', 'SDG 9'],
     description:
-      'Building next-generation digital capabilities by training developers, graduates, and entrepreneurs to move from technology consumers to creators — equipped to build solutions, products, and businesses for the digital economy.',
+      'Moving developers, graduates and founders from consuming technology to building it — solutions, products and businesses made here rather than imported.',
     focus: ['AI & Machine Learning', 'Blockchain & IoT', 'Web & mobile development', 'Cloud, cybersecurity & UI/UX'],
+    image: '/images/thematic/engineering-lab.jpg',
+    alt: 'Developers working through code together at a Toko Academy engineering session',
+    brief: 'Two developers at one screen, code visible, whiteboard of architecture behind them',
   },
   {
     number: '3',
     title: 'Data, Analytics & Evidence-Based Decision Making',
     sdgs: ['SDG 8', 'SDG 16', 'SDG 17'],
     description:
-      'Strengthening data culture across development organisations, government agencies, and NGOs through data literacy, business intelligence, and MEAL training that improves accountability, service delivery, and evidence-based programming.',
+      'Data literacy, business intelligence and MEAL training for government agencies, NGOs and development organisations — so that a decision rests on the evidence rather than on whoever spoke last.',
     focus: ['Data analysis & visualisation', 'MEAL systems', 'Research methods & survey tools', 'Data-informed governance'],
+    image: '/images/thematic/data-workshop.jpg',
+    alt: 'Participants working with charts and spreadsheets at a Toko Academy data workshop',
+    brief: 'Over-shoulder shot of a participant building a dashboard, projector showing the same chart behind',
   },
   {
     number: '4',
     title: 'Workforce Development, Entrepreneurship & Creative Economy',
     sdgs: ['SDG 4', 'SDG 5', 'SDG 8'],
     description:
-      'Linking training directly to labour market demand and income generation through bootcamps, upskilling, mentorship, and enterprise support — with particular focus on SMEs, creatives, and youth seeking employment, freelance income, or entrepreneurship.',
+      'Training tied directly to income: bootcamps, upskilling, mentorship and enterprise support for SMEs, creatives and young people looking for a job, a first client, or a business of their own.',
     focus: ['Career readiness & employability', 'Entrepreneurship & SME development', 'Digital marketing, content & graphic design', 'Freelancing & the creative economy'],
+    image: '/images/hero/professional-courses.jpg',
+    alt: 'Professionals at laptops during a Toko Academy training session in Yola',
+    brief: 'Working professionals around a table with laptops, trainer presenting from a screen',
   },
   {
     number: '5',
     title: 'Children & Youth Technology Education',
     sdgs: ['SDG 4', 'SDG 5', 'SDG 10'],
     description:
-      'Cultivating early digital readiness, computational thinking, and 21st-century creativity in children and young people — laying the foundation for long-term participation in the digital economy.',
+      'Computational thinking while it is still play. Programming, game building and AI foundations for children and young people, in schools and through the holidays.',
     focus: ['Programming for kids (Scratch, HTML, CSS)', 'VR game development', 'AI foundations for youth', 'School-based & holiday bootcamps'],
+    image: '/images/hero/kids-coding.jpg',
+    alt: 'A young girl presenting her Scratch project on a screen at Toko Academy',
+    brief: 'Child standing beside a large screen showing their own Scratch game, mid-presentation',
   },
   {
     number: '6',
     title: 'Gender Equality, Inclusion & Protection of Vulnerable Groups',
     sdgs: ['SDG 5', 'SDG 10', 'SDG 16'],
     description:
-      'Closing the gender gap in technology and ensuring that women, girls, displacement-affected populations, persons with disabilities, and other marginalised groups are not left behind in the digital transition.',
+      'Closing the gender gap in technology, and making sure women, girls, displacement-affected families and persons with disabilities are not the people a digital transition leaves behind.',
     focus: ['Women & girls in STEM', 'Women in Uniform programming', 'GBV awareness & 16 Days of Activism', 'Scholarships & child-safe standards'],
+    image: '/images/hero/commissioner-for-women-affairs.jpg',
+    alt: 'Toko Academy hosts with a guest at the Women in Uniform event in Yola',
+    brief: 'Guests at the event backdrop, award in hand, partner logos visible behind',
   },
   {
     number: '7',
     title: 'Public Sector Capacity Building & Institutional Strengthening',
     sdgs: ['SDG 8', 'SDG 16', 'SDG 17'],
     description:
-      'Equipping government agencies, law enforcement, regulatory bodies, and public institutions with the digital tools, AI literacy, cybersecurity awareness, and data-driven governance practices required to improve service delivery and citizen outcomes.',
+      'Digital tools, AI literacy, cybersecurity awareness and data-driven practice for agencies, law enforcement and regulators — aimed at the service a citizen actually receives at the counter.',
     focus: ['AI & digital literacy for government', 'Cybersecurity for law enforcement', 'Data-driven decision-making', 'Institutional digital transformation'],
+    image: '/images/hero/training-military-officers.jpg',
+    alt: 'Officers in uniform seated at a Toko Academy digital skills session in Yola',
+    brief: 'Wide shot of the hall from the front, uniforms readable, mid-session',
   },
   {
     number: '8',
     title: 'Climate Education, Green Digital Skills & Sustainability',
     sdgs: ['SDG 4', 'SDG 9', 'SDG 13', 'SDG 15'],
     description:
-      'Preparing learners and institutions for the green digital transition by integrating climate awareness, sustainable technology practices, and green-economy skills into our training and community programming.',
+      'Climate literacy, sustainable computing and green-economy skills — so that learners and institutions here are ready for a transition largely being designed somewhere else.',
     focus: ['Climate literacy for youth & schools', 'Green digital skills (sustainable computing, climate data, e-waste)', 'Tech for climate adaptation', 'Youth-led climate action'],
+    image: '/images/thematic/climate-classroom.jpg',
+    alt: 'Young people at a Toko Academy climate and green skills session',
+    brief: 'Outdoor or window-lit session with young people, climate data on a laptop or flip chart in frame',
   },
 ];
 
@@ -100,39 +139,28 @@ const crossCutting = [
   {
     title: 'Equity & Inclusion',
     description:
-      'Gender-responsive facilitation, scholarships for low-income learners, accessibility considerations across every programme.',
+      'Gender-responsive facilitation, scholarships for low-income learners, and accessibility considered in every programme rather than retrofitted to one.',
   },
   {
     title: 'Community-Centred Delivery',
     description:
-      'Programmes co-designed with local partners and rooted in the lived realities of North-East Nigerian communities.',
+      'Programmes co-designed with local partners and rooted in how life is actually lived in North-East Nigeria.',
   },
   {
     title: 'Evidence & Learning',
     description:
-      'Pre/post assessments, MEAL systems, and a longitudinal beneficiary database tracking outcomes over multiple years.',
+      'Pre and post assessments, MEAL systems, and a beneficiary database that follows outcomes over several years.',
   },
   {
     title: 'Safeguarding & Child Protection',
     description:
-      'Child-safe standards, code of conduct for all trainers, zero-tolerance policies on harassment and exploitation.',
+      'Child-safe standards, a code of conduct binding on every trainer, and zero tolerance for harassment or exploitation.',
   },
   {
     title: 'Partnerships & Multi-Sector Collaboration',
     description:
-      'Working across government, academia, INGOs, faith-based organisations, and private sector to scale impact.',
+      'Working across government, academia, INGOs, faith-based organisations and the private sector, because none of this scales alone.',
   },
-];
-
-const alignmentMatrix = [
-  { area: 'Digital Literacy & Foundational Skills', ratings: ['●', '—', '—', '—', '●', '—', '●'] },
-  { area: 'Advanced Tech, Innovation & Software Eng.', ratings: ['●', '—', '●', '●', '—', '—', '—'] },
-  { area: 'Data, Analytics & Decision Making', ratings: ['—', '—', '●', '—', '—', '—', '●'] },
-  { area: 'Workforce, Entrepreneurship & Creative Econ.', ratings: ['●', '●', '●', '—', '—', '—', '—'] },
-  { area: 'Children & Youth Tech Education', ratings: ['●', '●', '—', '—', '●', '—', '—'] },
-  { area: 'Gender Equality, Inclusion & Protection', ratings: ['—', '●', '—', '—', '●', '—', '●'] },
-  { area: 'Public Sector Capacity Building', ratings: ['—', '—', '●', '—', '—', '—', '●'] },
-  { area: 'Climate Education & Green Digital Skills', ratings: ['●', '—', '—', '●', '—', '●', '—'] },
 ];
 
 export default function ThematicAreasPage() {
@@ -140,42 +168,93 @@ export default function ThematicAreasPage() {
     <>
       <script {...jsonLdScript(entityJsonLd)} />
 
-      <section className="pt-40 pb-16 bg-gradient-to-br from-toko-gray-900 via-toko-blue to-toko-green text-white md:pt-52 md:pb-20">
-        <div className="section-container">
-          <div className="mx-auto max-w-4xl text-center">
-            <p className="text-xs uppercase tracking-[0.2em] text-white/80">What We Do</p>
-            <h1 className="mt-4 text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
-              Eight Thematic Areas. One mission.
-            </h1>
-            <p className="mt-6 text-base text-white/85 md:text-lg">
-              Toko Academy delivers programmes across eight strategic pillars, each aligned to specific Sustainable Development Goals. Together, they form a coherent response to the digital, gender, and workforce challenges of North-East Nigeria — and beyond.
-            </p>
+      <section className="relative overflow-hidden bg-surface-sunken pt-32 pb-14 md:pt-44 md:pb-20">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative z-10">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+            <div className="reveal">
+              <p className="eyebrow">What we work on</p>
+              <h1 className="mt-4">Eight pillars, and the one question underneath them.</h1>
+              <p className="prose-measure mt-6 text-lg text-ink-muted">
+                Every programme we run answers a version of the same question: who is being left out of the
+                digital economy here, and what would actually change that? These eight areas are how the
+                answer has organised itself — each one mapped to the Sustainable Development Goals it
+                contributes to.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/partners" className="btn-primary">
+                  Design a programme with us
+                </Link>
+                <Link href="/impact" className="btn-secondary">
+                  See the outcomes
+                </Link>
+              </div>
+            </div>
+
+            <Picture
+              src="/images/bootcamps/robotics-student.png"
+              alt="A young learner assembling a robotics kit at a Toko Academy class"
+              brief="Learner concentrating on a hands-on build — robotics kit or laptop — shot close, shallow depth"
+              aspect="aspect-[4/3]"
+              className="reveal reveal-delay-1"
+              priority
+              sizes="(max-width: 1024px) 100vw, 46vw"
+            />
           </div>
         </div>
       </section>
 
-      <section className="section-padding bg-white">
+      {/*
+        The eight areas, told one at a time with the room they happen in.
+        Previously a two-column grid of eight near-identical bordered cards —
+        by the third one a reader has stopped reading and is scanning for the
+        end of the section.
+      */}
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {thematicAreas.map((area) => (
-              <article key={area.number} className="rounded-3xl border border-toko-gray-200 p-6 shadow-sm transition-shadow hover:shadow-toko-lg">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.2em] text-toko-green">Area {area.number}</p>
-                    <h2 className="mt-3 text-2xl font-semibold text-toko-gray-900">{area.title}</h2>
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-toko-gray-100 px-4 py-2 text-sm font-semibold text-toko-gray-700">
-                    {area.sdgs.join(' • ')}
-                  </div>
-                </div>
-                <p className="mt-5 text-toko-gray-600">{area.description}</p>
-                <div className="mt-6 space-y-2">
-                  {area.focus.map((item) => (
-                    <div key={item} className="flex gap-3 text-toko-gray-700">
-                      <span className="mt-1 inline-block h-2.5 w-2.5 rounded-full bg-toko-green" />
-                      <span>{item}</span>
-                    </div>
-                  ))}
+          <div className="reveal prose-measure">
+            <p className="eyebrow">The areas</p>
+            <h2 className="mt-4">Eight of them, in order.</h2>
+          </div>
+
+          <div className="mt-12 space-y-16 md:space-y-24">
+            {thematicAreas.map((area, index) => (
+              <article key={area.number} className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
+                <Picture
+                  src={area.image}
+                  alt={area.alt}
+                  brief={area.brief}
+                  aspect="aspect-[3/2]"
+                  // Alternating sides on desktop; on a phone the picture always
+                  // comes first, because a zig-zag in one column is just noise.
+                  className={`reveal ${index % 2 === 1 ? 'md:order-2' : ''}`}
+                  sizes="(max-width: 768px) 100vw, 46vw"
+                />
+
+                <div className="reveal reveal-delay-1">
+                  <p className="eyebrow">Area {area.number}</p>
+                  <h3 className="mt-3">{area.title}</h3>
+                  <p className="mt-4 text-ink-muted">{area.description}</p>
+
+                  <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                    {area.focus.map((item) => (
+                      <li key={item} className="flex gap-2.5 text-sm text-ink">
+                        <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brand" aria-hidden />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <ul className="mt-6 flex flex-wrap gap-2">
+                    {area.sdgs.map((sdg) => (
+                      <li
+                        key={sdg}
+                        className="rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand"
+                      >
+                        {sdg}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </article>
             ))}
@@ -183,67 +262,60 @@ export default function ThematicAreasPage() {
         </div>
       </section>
 
-      <section className="section-padding bg-toko-gray-50">
-        <div className="section-container">
-          <div className="max-w-3xl text-center mx-auto mb-12">
-            <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">Cross-Cutting Approaches</p>
-            <h2 className="mt-3 text-3xl text-toko-gray-900">Applied Across Every Programme</h2>
-          </div>
-          <div className="grid gap-5 lg:grid-cols-5">
-            {crossCutting.map((item) => (
-              <div key={item.title} className="rounded-3xl border border-toko-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="text-xl font-semibold text-toko-gray-900 mb-3">{item.title}</h3>
-                <p className="text-toko-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/*
+        The SDG alignment matrix is gone.
 
-      <section className="section-padding bg-white">
+        It was an eight-row, seven-column grid of ● and — characters, which on a
+        360px screen collapsed into a single unreadable column of dots, and it
+        restated information already printed on each area above: the goals each
+        pillar contributes to. One fact, told twice, the second time as a table
+        nobody can read on a phone.
+      */}
+      <section className="section-padding bg-surface-sunken">
         <div className="section-container">
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-10">
-              <p className="text-sm uppercase tracking-[0.2em] text-toko-gray-500">SDG Alignment Matrix</p>
-              <h2 className="mt-3 text-3xl text-toko-gray-900">SDG Alignment Matrix</h2>
-            </div>
-            <div className="overflow-hidden rounded-3xl border border-toko-gray-200">
-              <div className="grid grid-cols-1 gap-px bg-toko-gray-200 text-sm text-center text-toko-gray-500 md:grid-cols-8">
-                <div className="bg-white p-4 text-left font-semibold text-toko-gray-900">Thematic Area</div>
-                <div className="bg-white p-4">4</div>
-                <div className="bg-white p-4">5</div>
-                <div className="bg-white p-4">8</div>
-                <div className="bg-white p-4">9</div>
-                <div className="bg-white p-4">10</div>
-                <div className="bg-white p-4">13</div>
-                <div className="bg-white p-4">16</div>
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+            <div>
+              <div className="reveal">
+                <p className="eyebrow">Across all eight</p>
+                <h2 className="mt-4">Five things that do not vary by programme.</h2>
               </div>
-              {alignmentMatrix.map((row) => (
-                <div key={row.area} className="grid grid-cols-1 gap-px bg-toko-gray-200 md:grid-cols-8 text-center text-sm text-toko-gray-700">
-                  <div className="bg-white p-4 text-left font-medium">{row.area}</div>
-                  {row.ratings.map((rating, index) => (
-                    <div key={index} className="bg-white p-4">{rating}</div>
-                  ))}
+              <Picture
+                src="/images/thematic/facilitation-team.jpg"
+                alt="Toko Academy facilitators preparing together before a session"
+                brief="Facilitators in a short huddle before class — notes, laptop, room being set up behind them"
+                aspect="aspect-[4/3]"
+                className="reveal reveal-delay-1 mt-10 hidden lg:block"
+                sizes="40vw"
+              />
+            </div>
+
+            <dl className="border-t border-line">
+              {crossCutting.map((item, index) => (
+                <div key={item.title} className={`reveal ${delay(index)} border-b border-line py-5`}>
+                  <dt className="font-heading font-bold text-ink">{item.title}</dt>
+                  <dd className="mt-1.5 text-ink-muted">{item.description}</dd>
                 </div>
               ))}
-            </div>
-            <p className="mt-6 text-sm italic text-toko-gray-500">
-              Legend: ● = Direct contribution. — = Limited / indirect contribution.
-            </p>
+            </dl>
           </div>
         </div>
       </section>
 
-      <section className="section-padding bg-toko-green text-white">
-        <div className="section-container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-semibold">Designing a programme that fits one of these areas?</h2>
-            <p className="mt-4 text-base text-white/90 md:text-lg">
-              We co-design with government, INGO, academic, and private sector partners. Tell us your goal — we will scope the work.
+      <section className="relative overflow-hidden bg-surface py-16 md:py-24">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative z-10">
+          <div className="reveal prose-measure">
+            <h2>Designing something that fits one of these?</h2>
+            <p className="mt-5 text-lg text-ink-muted">
+              We co-design with government, INGO, academic and private sector partners. Tell us the outcome
+              you need and we will scope the work with you.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Link href="/partners" className="inline-flex items-center justify-center rounded-xl bg-white px-8 py-4 text-base font-semibold text-toko-green transition-colors hover:bg-toko-gray-100">
-                Talk to Our Team
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href="/partners" className="btn-primary">
+                Talk to our team
+              </Link>
+              <Link href="/corporate" className="btn-secondary">
+                Corporate &amp; government training
               </Link>
             </div>
           </div>

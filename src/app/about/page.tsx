@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { IconWrapper } from '@/components/IconWrapper';
+import Picture from '@/components/ui/Picture';
 import { externalLinks } from '@/data/config';
 import { pageMetadata, pageEntityJsonLd, jsonLdScript, SITE_URL } from '@/lib/seo';
 
@@ -37,233 +37,305 @@ const entityJsonLd = pageEntityJsonLd({
   ],
 });
 
+/*
+ * Stagger classes, written out rather than composed.
+ *
+ * `reveal-delay-1`…`reveal-delay-5` are hand-written rules inside
+ * globals.css's `@layer utilities`, which means Tailwind tree-shakes them
+ * against what it can find in the source. A template literal like
+ * `reveal-delay-${i}` is invisible to that scan, so the rule would be stripped
+ * from the build and the stagger would silently stop happening.
+ */
+const DELAYS = ['reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3', 'reveal-delay-4', 'reveal-delay-5'] as const;
+const delay = (index: number) => DELAYS[Math.min(index, DELAYS.length - 1)];
+
+/*
+ * The six values, shortened.
+ *
+ * They were six identical cards, each carrying a 12-pixel icon — and five of
+ * those six icons do not exist in IconWrapper's inlined set, so they rendered
+ * as empty squares. A value is a sentence, not a tile: set as a list with the
+ * word first and the meaning beside it, the section reads in about a quarter of
+ * the vertical space and nothing is missing.
+ */
+const values = [
+  { title: 'Excellence', description: 'The highest standard we can teach to, every cohort, not only the ones being watched.' },
+  { title: 'Innovation', description: 'Curriculum revised against what the industry is actually hiring for.' },
+  { title: 'Integrity', description: 'Honest about what a programme will and will not do for you, and figures we can show our workings for.' },
+  { title: 'Empowerment', description: 'Practical skills a learner can earn from, not certificates alone.' },
+  { title: 'Accessibility', description: 'Quality tech education within reach, whatever a learner started with.' },
+  { title: 'Growth', description: 'Continuous learning — for our students, and for the people teaching them.' },
+];
+
+/*
+ * Where to go next, in place of "What We Offer".
+ *
+ * That section listed six things the academy does — courses, instructors,
+ * projects, certification, careers, corporate training — each of which has its
+ * own page saying the same thing at greater length. Three signposts to the real
+ * pages is shorter and more useful than a summary nobody asked for.
+ */
+const signposts = [
+  {
+    href: '/courses',
+    title: 'Courses for individuals',
+    text: 'Software engineering, data, design, digital marketing and the Microsoft suite — in person in Jimeta-Yola, or online.',
+    image: '/images/about/classroom-wide.jpg',
+    alt: 'A Toko Academy class in session in Jimeta-Yola',
+    brief: 'Wide shot of a full classroom from the back: learners at laptops, trainer at the board, projector screen visible',
+  },
+  {
+    href: '/corporate',
+    title: 'Training for organisations',
+    text: 'Curriculum built around your objectives and delivered to your team, on site or remotely.',
+    image: '/images/hero/professional-courses.jpg',
+    alt: 'Professionals at laptops during a Toko Academy training session in Yola',
+    brief: 'Team of professionals around a table with laptops, trainer presenting from a screen',
+  },
+  {
+    href: '/kids',
+    title: 'Children and teenagers',
+    text: 'Scratch, web basics and computer literacy for ages 6 to 18, in small classes at weekends and holidays.',
+    image: '/images/hero/kids-coding.jpg',
+    alt: 'A young girl presenting her Scratch project on a screen at Toko Academy',
+    brief: 'Child standing beside a screen showing their own Scratch project, mid-presentation',
+  },
+];
+
 export default function AboutPage() {
-  const team = [
-    {
-      name: 'Leadership Team',
-      role: 'Experienced Educators & Industry Professionals',
-      description: 'Our leadership brings decades of combined experience in technology, education, and business development.'
-    }
-  ];
-
-  const values = [
-    {
-      icon: 'material-symbols:workspace-premium-rounded',
-      title: 'Excellence',
-      description: 'We are committed to delivering the highest quality education and training programs.'
-    },
-    {
-      icon: 'material-symbols:lightbulb-rounded',
-      title: 'Innovation',
-      description: 'We continuously update our curriculum to reflect the latest industry trends and technologies.'
-    },
-    {
-      icon: 'material-symbols:verified-rounded',
-      title: 'Integrity',
-      description: 'We operate with transparency, honesty, and ethical standards in all our dealings.'
-    },
-    {
-      icon: 'material-symbols:auto-awesome-rounded',
-      title: 'Empowerment',
-      description: 'We believe in empowering our students with practical skills for real-world success.'
-    },
-    {
-      icon: 'material-symbols:public-rounded',
-      title: 'Accessibility',
-      description: 'We make quality tech education accessible to everyone, regardless of background.'
-    },
-    {
-      icon: 'material-symbols:trending-up-rounded',
-      title: 'Growth',
-      description: 'We foster continuous learning and personal development in our students and team.'
-    }
-  ];
-
   return (
     <>
       <script {...jsonLdScript(entityJsonLd)} />
 
-      {/* Hero Section */}
-      <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-green to-toko-blue text-white">
-        <div className="section-container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="mb-6">About Toko Academy</h1>
-            <p className="text-xl md:text-2xl text-white/95">
-              Empowering individuals and organizations with industry-relevant digital skills to thrive in the digital age.
-            </p>
+      {/*
+        The page opened with a green-to-blue gradient band carrying one sentence
+        of abstraction and no photograph — the same band four other pages used.
+        A first screen that shows the actual room, with the proposition beside
+        it, says more about the academy than any gradient can.
+      */}
+      <section className="relative overflow-hidden bg-surface-sunken pt-32 pb-14 md:pt-44 md:pb-20">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative z-10">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
+            <div className="reveal">
+              <p className="eyebrow">About Toko Academy</p>
+              <h1 className="mt-4">We built the academy around a gap.</h1>
+              <p className="prose-measure mt-6 text-lg text-ink-muted">
+                There is a growing distance between the digital skills employers ask for and the skills
+                job seekers have. Toko Academy opened in Jimeta-Yola, Adamawa State, to close it —
+                practical training, taught in small rooms, with work you can show at the end of it.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href={externalLinks.applyNow} className="btn-primary">
+                  See what we teach
+                </Link>
+                <Link href="/impact" className="btn-secondary">
+                  Read our impact
+                </Link>
+              </div>
+            </div>
+
+            <Picture
+              src="/images/hero/practical-mentorship-approach-classes.jpg"
+              alt="A Toko Academy trainer working through a problem with learners at their laptops"
+              brief="Trainer leaning over a learner’s laptop mid-class, others watching — taken from the side, natural light"
+              aspect="aspect-[4/3]"
+              className="reveal reveal-delay-1"
+              priority
+              sizes="(max-width: 1024px) 100vw, 46vw"
+            />
           </div>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="section-padding bg-white">
+      {/*
+        Mission and vision were two bordered cards of four lines each, saying
+        much the same thing twice. Kept — they are what a funder looks for — but
+        halved, and set as a statement rather than as furniture.
+      */}
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
-            <div className="card p-8 border-l-4 border-toko-green">
-              <IconWrapper icon="material-symbols:track-changes-rounded" className="w-12 h-12 mb-4 text-toko-green" ariaHidden />
-              <h2 className="text-3xl font-bold text-toko-gray-900 mb-4">Our Mission</h2>
-              <p className="text-lg text-toko-gray-600 leading-relaxed">
-                To provide accessible, industry-relevant digital skills training that empowers individuals 
-                and organizations to succeed in the rapidly evolving digital economy. We are committed to 
-                bridging the digital skills gap in Africa by offering practical, hands-on education that 
-                prepares our students for real-world challenges.
-              </p>
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+            <div className="reveal">
+              <p className="eyebrow">Why we exist</p>
+              <h2 className="mt-4">Industry-relevant, and within reach.</h2>
             </div>
 
-            <div className="card p-8 border-l-4 border-toko-blue">
-              <IconWrapper icon="material-symbols:travel-explore-rounded" className="w-12 h-12 mb-4 text-toko-blue" ariaHidden />
-              <h2 className="text-3xl font-bold text-toko-gray-900 mb-4">Our Vision</h2>
-              <p className="text-lg text-toko-gray-600 leading-relaxed">
-                To be Africa&apos;s leading digital skills training academy, recognized for excellence in 
-                education, innovation in curriculum development, and transformative impact on individuals 
-                and communities. We envision a future where everyone has the opportunity to participate 
-                meaningfully in the digital economy.
-              </p>
-            </div>
-          </div>
-
-          {/* Story */}
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-toko-gray-900 mb-6 text-center">Our Story</h2>
-            <div className="text-lg text-toko-gray-600 space-y-4 leading-relaxed">
-              <p>
-                Toko Academy was founded with a simple yet powerful vision: to make quality digital skills 
-                education accessible to everyone. We recognized a growing gap between the skills employers 
-                need and the skills job seekers possess, particularly in the technology sector.
-              </p>
-              <p>
-                Since our inception, we have trained over 2,000 students from diverse backgrounds, helping 
-                them launch successful careers in technology, digital marketing, data analysis, and more. 
-                Our programs combine theoretical knowledge with practical, hands-on experience, ensuring 
-                our graduates are job-ready from day one.
-              </p>
-              <p>
-                What sets us apart is our commitment to staying current with industry trends, our 
-                experienced instructors who bring real-world expertise, and our focus on creating a 
-                supportive learning environment where every student can thrive.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Values */}
-      <section className="section-padding bg-toko-gray-50">
-        <div className="section-container">
-          <div className="text-center mb-12">
-            <h2 className="text-toko-gray-900 mb-4">Our Core Values</h2>
-            <p className="text-xl text-toko-gray-600 max-w-3xl mx-auto">
-              These principles guide everything we do at Toko Academy
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {values.map((value, index) => (
-              <div 
-                key={index}
-                className="card p-6 hover:shadow-toko-lg transition-shadow duration-300"
-              >
-                <IconWrapper icon={value.icon} className="w-12 h-12 mb-4 text-toko-green" ariaHidden />
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-3">
-                  {value.title}
-                </h3>
-                <p className="text-toko-gray-600">
-                  {value.description}
+            <div className="grid gap-8 sm:grid-cols-2">
+              <div className="reveal reveal-delay-1">
+                <h3 className="text-brand">Our mission</h3>
+                <p className="mt-3 text-ink-muted">
+                  To make industry-relevant digital skills training reachable for individuals and
+                  organisations across Nigeria — hands-on education that prepares people for the work
+                  itself, not only for the examination.
                 </p>
               </div>
+              <div className="reveal reveal-delay-2">
+                <h3 className="text-brand">Our vision</h3>
+                <p className="mt-3 text-ink-muted">
+                  A country where the place you were born does not decide whether you can take part in the
+                  digital economy — and where the training that makes that possible is taught close to home.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-surface-sunken">
+        <div className="section-container">
+          <div className="grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+            <Picture
+              src="/images/hero/our-ceo-daniel-ishaku-speaking.jpg"
+              alt="Daniel Ishaku, founder of Toko Academy, speaking at a training event"
+              brief="Founder mid-sentence addressing a room, hands in motion, shot at eye level"
+              aspect="aspect-[4/5]"
+              className="reveal"
+              sizes="(max-width: 1024px) 100vw, 38vw"
+            />
+
+            <div className="reveal reveal-delay-1">
+              <p className="eyebrow">Our story</p>
+              <h2 className="mt-4">The gap was visible from where we stood.</h2>
+              <div className="prose-measure mt-6 space-y-4 text-ink-muted">
+                <p>
+                  The advertisements were for data skills, for developers, for people who could run a
+                  campaign or keep a network safe. The skills job seekers had were not those skills. Closing
+                  that distance here — rather than telling people to travel for it — is the part we insisted on.
+                </p>
+                <p>
+                  Since then, over 2,000 learners have come through our programmes: school pupils, graduates,
+                  traders, public servants, officers in uniform. Each cohort is taught the same way — a short
+                  explanation, then the keyboard, then something built and shown to the room.
+                </p>
+                <p>
+                  What has kept it working is unglamorous. Instructors who do the work outside the classroom.
+                  A curriculum revised when the job adverts change. Small enough classes that nobody sits at
+                  the back for twelve weeks without being noticed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/*
+        The four figures the owner stands behind, with the provenance stated
+        plainly next to them. They come from internal enrolment records and
+        participant follow-up, and there is no audited third-party source — so
+        the page says that rather than dressing the numbers as certified.
+      */}
+      <section className="bg-surface-inverted py-16 text-ink-inverted md:py-24">
+        <div className="section-container">
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
+            <div className="reveal">
+              <p className="eyebrow text-ink-inverted/60">By the numbers</p>
+              <p className="mt-5 font-heading text-6xl font-bold leading-none md:text-7xl">2,000+</p>
+              <p className="mt-4 max-w-md text-ink-inverted/80">
+                learners trained since we opened. Counted from our own enrolment and attendance records —
+                not an audited figure, and we would rather say so than imply otherwise.
+              </p>
+              {/* TODO: one named graduate, in their own words and with their permission,
+                  belongs here. A single story does more than the count above it. */}
+            </div>
+
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-8 reveal reveal-delay-1 sm:grid-cols-3">
+              <div>
+                <dt className="font-heading text-3xl font-bold md:text-4xl">20+</dt>
+                <dd className="mt-2 text-sm text-ink-inverted/70">programmes delivered</dd>
+              </div>
+              <div>
+                <dt className="font-heading text-3xl font-bold md:text-4xl">35+</dt>
+                <dd className="mt-2 text-sm text-ink-inverted/70">partner institutions</dd>
+              </div>
+              <div>
+                <dt className="font-heading text-3xl font-bold md:text-4xl">75%</dt>
+                <dd className="mt-2 text-sm text-ink-inverted/70">career progression at follow-up</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-surface">
+        <div className="section-container">
+          <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+            <div>
+              <div className="reveal">
+                <p className="eyebrow">What we hold to</p>
+                <h2 className="mt-4">Six words we are held to.</h2>
+              </div>
+
+              <dl className="mt-8 divide-y divide-line border-t border-line">
+                {values.map((value, index) => (
+                  <div
+                    key={value.title}
+                    className={`reveal ${delay(index)} grid gap-1 py-5 sm:grid-cols-[10rem_1fr] sm:gap-6`}
+                  >
+                    <dt className="font-heading font-bold text-ink">{value.title}</dt>
+                    <dd className="text-ink-muted">{value.description}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <Picture
+              src="/images/about/cohort-portrait.jpg"
+              alt="A Toko Academy cohort photographed together at the end of their programme"
+              brief="Whole cohort outside the Bekaji Road building, certificates in hand, shot slightly wide so the building is readable"
+              aspect="aspect-[3/4]"
+              className="reveal reveal-delay-2 lg:sticky lg:top-32"
+              sizes="(max-width: 1024px) 100vw, 34vw"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="section-padding bg-surface-sunken">
+        <div className="section-container">
+          <div className="reveal max-w-2xl">
+            <p className="eyebrow">Where to start</p>
+            <h2 className="mt-4">Three ways in.</h2>
+          </div>
+
+          <div className="mt-10 grid gap-8 md:grid-cols-3">
+            {signposts.map((item, index) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`reveal ${delay(index)} group block`}
+              >
+                <Picture
+                  src={item.image}
+                  alt={item.alt}
+                  brief={item.brief}
+                  aspect="aspect-[3/2]"
+                  sizes="(max-width: 768px) 100vw, 30vw"
+                />
+                <h3 className="mt-5 transition-colors group-hover:text-brand">{item.title}</h3>
+                <p className="mt-2 text-ink-muted">{item.text}</p>
+                <span className="mt-3 inline-block text-sm font-semibold text-brand">Read more →</span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* What We Offer */}
-      <section className="section-padding bg-white">
-        <div className="section-container">
-          <div className="text-center mb-12">
-            <h2 className="text-toko-gray-900 mb-4">What We Offer</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:library-books-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Comprehensive Courses</h3>
-                <p className="text-toko-gray-600">
-                  From web development to data analysis, our courses cover the most in-demand digital skills.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:school-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Expert Instructors</h3>
-                <p className="text-toko-gray-600">
-                  Learn from industry professionals with years of practical experience.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:handyman-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Hands-On Projects</h3>
-                <p className="text-toko-gray-600">
-                  Build real-world projects that demonstrate your skills to potential employers.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:workspace-premium-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Certification</h3>
-                <p className="text-toko-gray-600">
-                  Earn recognized certificates that validate your new skills and knowledge.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:handshake-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Career Support</h3>
-                <p className="text-toko-gray-600">
-                  Get guidance on job placement, interviews, and building your professional network.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <IconWrapper icon="material-symbols:apartment-rounded" className="w-10 h-10 text-toko-green" ariaHidden />
-              <div>
-                <h3 className="text-xl font-bold text-toko-gray-900 mb-2">Corporate Training</h3>
-                <p className="text-toko-gray-600">
-                  Customized programs to upskill your workforce and drive digital transformation.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="section-padding bg-gradient-to-r from-toko-green to-toko-blue">
-        <div className="section-container">
-          <div className="max-w-4xl mx-auto text-center text-white">
-            <h2 className="text-white mb-6">Join the Toko Academy Community</h2>
-            <p className="text-xl mb-8 text-white/95">
-              Be part of a growing community of learners transforming their careers through digital skills.
+      <section className="relative overflow-hidden bg-surface py-16 md:py-24">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative z-10">
+          <div className="reveal prose-measure">
+            <h2>Come and see a class.</h2>
+            <p className="mt-4 text-lg text-ink-muted">
+              You are welcome at the academy on Bekaji Road, Jimeta, during teaching hours — or start with
+              the catalogue and pick the thing you have been meaning to learn.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/register/"
-                className="btn-primary bg-white text-toko-green hover:bg-toko-gray-100"
-              >
-                Apply Now
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link href={externalLinks.applyNow} className="btn-primary">
+                Browse courses
               </Link>
-              <Link href="/courses" className="btn-secondary bg-transparent text-white border-white hover:bg-white hover:text-toko-green">
-                Explore Courses
+              <Link href="/contact" className="btn-secondary">
+                Talk to us
               </Link>
             </div>
           </div>

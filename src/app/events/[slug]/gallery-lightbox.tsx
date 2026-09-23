@@ -42,6 +42,24 @@ export default function EventGalleryLightbox({ images }: EventGalleryLightboxPro
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [activeIndex, closeLightbox, goNext, goPrev]);
 
+  /*
+   * Hold the page still behind the lightbox — without it, a swipe on a phone
+   * scrolls the article underneath a full-screen photograph.
+   *
+   * Kept out of the effect above on purpose. That one re-runs on every
+   * photograph, so a lock placed in it would read back its own `hidden` as the
+   * value to restore, and closing the lightbox would leave the page frozen.
+   */
+  const lightboxOpen = activeIndex !== null;
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [lightboxOpen]);
+
   if (!images || images.length === 0) {
     return null;
   }
@@ -51,13 +69,14 @@ export default function EventGalleryLightbox({ images }: EventGalleryLightboxPro
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-toko-gray-900 mb-6">Event Gallery</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <h2 className="mb-6">Event Gallery</h2>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => setActiveIndex(index)}
-              className="group relative aspect-video overflow-hidden rounded-lg border border-toko-gray-200 hover:border-toko-green transition-all duration-300 hover:shadow-toko-lg"
+              aria-label={`Open image ${index + 1} of ${images.length}`}
+              className="group relative aspect-video overflow-hidden rounded-lg border border-line transition-all duration-300 hover:border-brand hover:shadow-toko-lg"
             >
               <Image
                 src={image.url}

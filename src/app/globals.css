@@ -41,6 +41,11 @@
     /* Brand. The green is the contrast-corrected one; see tailwind.config.ts. */
     --brand: 74 124 42;
     --brand-soft: 240 246 235;
+    /* What is legible ON the brand colour. A button is brand-coloured with
+       this on top, and the pair has to be chosen together — which is the bug
+       this fixes: the dark theme lifted the green so green TEXT would read on
+       black, and white button labels then sat on a pale green at 1.4:1. */
+    --brand-ink: 255 255 255;
 
     --shadow-colour: 22 24 26;
     --shadow-strength: 0.07;
@@ -63,6 +68,8 @@
     /* Lifted on a dark ground: #4A7C2A is legible on white and muddy on black. */
     --brand: 138 196 92;
     --brand-soft: 26 36 20;
+    /* The lifted green is light, so its label has to be dark. */
+    --brand-ink: 12 22 6;
 
     --shadow-colour: 0 0 0;
     --shadow-strength: 0.5;
@@ -139,10 +146,11 @@
 @layer components {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5
-           text-base font-semibold tracking-tight text-white
+           text-base font-semibold tracking-tight
            transition-all duration-200
            focus:outline-none focus-visible:ring-4 focus-visible:ring-toko-green/40;
     background-color: rgb(var(--brand));
+    color: rgb(var(--brand-ink));
     box-shadow: 0 1px 2px rgb(var(--shadow-colour) / 0.18);
   }
   .btn-primary:hover {

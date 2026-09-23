@@ -1,9 +1,23 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PRICE, HERO_IMG, NOTE_IMG } from './config';
 import EnrolModal from './EnrolModal';
+
+/**
+ * The Zero to Live landing page.
+ *
+ * On the colours: the light sections are now tokens and flip with the theme.
+ * The dark ones — the hero, the offer panel, the two black cards and the
+ * closing call to action — deliberately stay dark in both themes, and their
+ * text deliberately stays `text-white`. They are not surfaces that happen to be
+ * dark; they are a black band with a green wash on it, and a sales page that
+ * alternated between black and white depending on somebody's phone setting
+ * would lose the rhythm the whole page is built on. Every button on those
+ * bands keeps a fixed `bg-toko-green` for the same reason: the brand token
+ * lightens in the dark theme, and white on light green cannot be read.
+ */
 
 function Check({ className = '' }: { className?: string }) {
   return (
@@ -106,6 +120,30 @@ export default function ZeroToLive() {
   const [enrolOpen, setEnrolOpen] = useState(false);
   const openEnrol = () => setEnrolOpen(true);
 
+  /*
+   * The sticky phone bar has to get out of the way at the bottom of the page.
+   * It is `fixed bottom-0`, so at the end of the scroll it sat on top of the
+   * footer's privacy and terms links and made them untappable — a legal notice
+   * you cannot reach is worse than no bar at all. It slides away once the
+   * bottom of the document is in view, and the enrolment button is a few
+   * centimetres above it by then anyway.
+   */
+  const [nearBottom, setNearBottom] = useState(false);
+  useEffect(() => {
+    const onScroll = () => {
+      const remaining =
+        document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+      setNearBottom(remaining < 260);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, []);
+
   return (
     <>
       {/* ================= HERO ================= */}
@@ -127,12 +165,19 @@ export default function ZeroToLive() {
                 </span>
               </div>
 
-              <h1 className="mt-6 text-balance font-heading text-5xl font-extrabold leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl">
+              {/*
+                `text-white` is load-bearing, not decoration. The base layer
+                sets `h1…h6 { color: rgb(var(--ink)) }`, which beats the
+                `text-white` inherited from the section — so a heading on a
+                dark band renders near-black on near-black unless it says
+                otherwise. Caught at 1.00:1 by scripts/visual-check.mjs.
+              */}
+              <h1 className="mt-6 text-balance font-extrabold leading-[0.95] text-white">
                 ZERO<span className="text-toko-gray-400"> TO </span>
                 <span className="bg-gradient-to-r from-toko-green-light via-toko-green to-toko-blue bg-clip-text text-transparent">LIVE</span>
               </h1>
 
-              <p className="mt-5 max-w-xl text-xl font-medium text-white/90 sm:text-2xl">
+              <p className="mt-5 max-w-xl text-lg font-medium text-white/90 sm:text-xl">
                 Build a real app with AI. Put it in people&apos;s hands.{' '}
                 <span className="whitespace-nowrap text-toko-green-light">One weekend.</span>
               </p>
@@ -211,46 +256,46 @@ export default function ZeroToLive() {
       </section>
 
       {/* ================= PROMISE ================= */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-toko-green">The promise</p>
-            <h2 className="mt-4 text-balance text-toko-gray-900">In two days, you ship a live thing that strangers can use.</h2>
-            <p className="mt-6 text-lg leading-relaxed text-toko-gray-600">
+          <div className="mx-auto max-w-3xl text-center reveal">
+            <p className="eyebrow text-brand">The promise</p>
+            <h2 className="mt-4 text-balance">In two days, you ship a live thing that strangers can use.</h2>
+            <p className="mt-6 text-lg leading-relaxed text-ink-muted">
               You&apos;ll build a working app using AI, put it online at an address people can actually type, and leave knowing how to charge for it.
             </p>
-            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-toko-gray-50 px-6 py-4 text-toko-gray-500">
-              <span className="text-lg font-semibold text-toko-gray-400 line-through">Not a demo.</span>
-              <span className="text-lg font-semibold text-toko-gray-400 line-through">Not a prototype on your laptop.</span>
-              <span className="text-lg font-bold text-toko-gray-900">A live thing that works.</span>
+            <div className="mt-8 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-surface-sunken px-6 py-4 text-ink-subtle">
+              <span className="text-lg font-semibold text-ink-subtle line-through">Not a demo.</span>
+              <span className="text-lg font-semibold text-ink-subtle line-through">Not a prototype on your laptop.</span>
+              <span className="text-lg font-bold text-ink">A live thing that works.</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* ================= WHAT YOU LEAVE WITH ================= */}
-      <section id="what-you-leave-with" className="section-padding bg-toko-gray-50">
+      <section id="what-you-leave-with" className="section-padding bg-surface-sunken">
         <div className="section-container">
-          <div className="max-w-2xl">
-            <p className="text-sm font-bold uppercase tracking-widest text-toko-green">You leave with</p>
-            <h2 className="mt-4 text-toko-gray-900">Five things you can use on Monday.</h2>
+          <div className="max-w-2xl reveal">
+            <p className="eyebrow text-brand">You leave with</p>
+            <h2 className="mt-4">Five things you can use on Monday.</h2>
           </div>
 
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {takeaways.map((item) => (
               <div
                 key={item.title}
-                className="group relative flex flex-col rounded-2xl bg-white p-7 shadow-toko ring-1 ring-toko-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-toko-lg"
+                className="card group relative flex flex-col p-6 sm:p-7 reveal"
               >
                 <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${item.bg} ring-1 ring-inset ${item.ring}`}>
                   <svg className={`h-6 w-6 ${item.accent}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
                     {item.icon}
                   </svg>
                 </div>
-                <h3 className="mt-5 text-xl font-bold text-toko-gray-900">{item.title}</h3>
-                <p className="mt-2 flex-1 text-toko-gray-600">{item.body}</p>
+                <h3 className="mt-5">{item.title}</h3>
+                <p className="mt-2 flex-1 text-ink-muted">{item.body}</p>
                 {item.badge && (
-                  <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-toko-magenta/10 px-3 py-1 text-xs font-bold text-toko-magenta">
+                  <span className="mt-4 inline-flex w-fit items-center gap-1.5 rounded-full bg-toko-magenta/10 px-3 py-1 text-xs font-bold text-toko-magenta-dark dark:text-toko-magenta-light">
                     <Check className="h-3.5 w-3.5" /> Powered by {item.badge}
                   </span>
                 )}
@@ -260,7 +305,7 @@ export default function ZeroToLive() {
             <button
               type="button"
               onClick={openEnrol}
-              className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl bg-toko-gray-900 p-7 text-left text-white shadow-toko-lg"
+              className="group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl bg-toko-gray-900 p-6 text-left text-white shadow-toko-lg sm:p-7 reveal"
             >
               <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(124,179,66,0.35),transparent_55%)]" />
               <div className="relative">
@@ -280,27 +325,27 @@ export default function ZeroToLive() {
       </section>
 
       {/* ================= THE TWO DAYS ================= */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-bold uppercase tracking-widest text-toko-green">The weekend</p>
-            <h2 className="mt-4 text-toko-gray-900">Two days. Two jumps.</h2>
+          <div className="mx-auto max-w-2xl text-center reveal">
+            <p className="eyebrow text-brand">The weekend</p>
+            <h2 className="mt-4">Two days. Two jumps.</h2>
           </div>
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
-            <div className="relative overflow-hidden rounded-2xl border border-toko-gray-200 bg-toko-gray-50 p-8">
-              <span className="absolute -right-4 -top-6 select-none text-8xl font-black text-toko-green/10">1</span>
-              <p className="text-sm font-bold uppercase tracking-widest text-toko-green">Day 1</p>
-              <h3 className="mt-3 text-3xl font-extrabold text-toko-gray-900">Idea → working.</h3>
-              <p className="mt-3 text-toko-gray-600">
+            <div className="relative overflow-hidden rounded-2xl border border-line bg-surface-sunken p-6 sm:p-8 reveal">
+              <span className="absolute -right-4 -top-6 select-none text-8xl font-black text-brand/10" aria-hidden>1</span>
+              <p className="eyebrow text-brand">Day 1</p>
+              <h3 className="mt-3">Idea → working.</h3>
+              <p className="mt-3 text-ink-muted">
                 Turn the idea in your head into an app that actually runs — directing AI to do the building, with you in control of what gets made.
               </p>
             </div>
-            <div className="relative overflow-hidden rounded-2xl border border-toko-blue/20 bg-toko-blue/5 p-8">
-              <span className="absolute -right-4 -top-6 select-none text-8xl font-black text-toko-blue/10">2</span>
-              <p className="text-sm font-bold uppercase tracking-widest text-toko-blue">Day 2</p>
-              <h3 className="mt-3 text-3xl font-extrabold text-toko-gray-900">Localhost → the world.</h3>
-              <p className="mt-3 text-toko-gray-600">
+            <div className="relative overflow-hidden rounded-2xl border border-toko-blue/20 bg-toko-blue/5 p-6 sm:p-8 reveal reveal-delay-1">
+              <span className="absolute -right-4 -top-6 select-none text-8xl font-black text-toko-blue/10" aria-hidden>2</span>
+              <p className="eyebrow text-toko-blue-dark dark:text-toko-blue-light">Day 2</p>
+              <h3 className="mt-3">Localhost → the world.</h3>
+              <p className="mt-3 text-ink-muted">
                 Take it off your laptop and onto the internet — a real domain, live hosting, and the pitch to turn it into your first paid client.
               </p>
             </div>
@@ -309,25 +354,25 @@ export default function ZeroToLive() {
       </section>
 
       {/* ================= FOR YOU / NOT FOR YOU ================= */}
-      <section className="section-padding bg-toko-gray-50">
+      <section className="section-padding bg-surface-sunken">
         <div className="section-container">
           <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
-            <div className="rounded-2xl bg-white p-8 shadow-toko ring-1 ring-toko-gray-100">
-              <h3 className="text-2xl font-bold text-toko-gray-900">This is for you if…</h3>
+            <div className="card p-6 sm:p-8 reveal">
+              <h3>This is for you if…</h3>
               <ul className="mt-6 space-y-4">
                 {forYou.map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-toko-green/10 text-toko-green">
+                    <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-brand-soft text-brand">
                       <Check className="h-3.5 w-3.5" />
                     </span>
-                    <span className="text-toko-gray-700">{item}</span>
+                    <span className="text-ink-muted">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="rounded-2xl bg-toko-gray-900 p-8 text-white">
-              <h3 className="text-2xl font-bold">This is not for you if…</h3>
+            <div className="rounded-2xl bg-toko-gray-900 p-6 text-white sm:p-8 reveal reveal-delay-1">
+              <h3 className="text-white">This is not for you if…</h3>
               <ul className="mt-6 space-y-4">
                 <li className="flex items-start gap-3">
                   <span className="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-toko-magenta/20 text-toko-magenta-light">
@@ -345,7 +390,7 @@ export default function ZeroToLive() {
       </section>
 
       {/* ================= OFFER / PRICING ================= */}
-      <section id="register" className="section-padding bg-white">
+      <section id="register" className="section-padding bg-surface">
         <div className="section-container">
           <div className="mx-auto max-w-3xl overflow-hidden rounded-3xl bg-toko-gray-900 text-white shadow-toko-lg">
             <div className="relative">
@@ -357,7 +402,7 @@ export default function ZeroToLive() {
                   </span>
 
                   <div className="mt-5 flex items-end gap-3">
-                    <span className="font-heading text-6xl font-extrabold leading-none">{price}</span>
+                    <span className="font-heading text-4xl font-extrabold leading-none sm:text-5xl">{price}</span>
                   </div>
 
                   <p className="mt-3 text-white/70">
@@ -402,11 +447,11 @@ export default function ZeroToLive() {
       </section>
 
       {/* ================= FOUNDER NOTE ================= */}
-      <section className="section-padding bg-toko-gray-50">
+      <section className="section-padding bg-surface-sunken">
         <div className="section-container">
-          <div className="mx-auto grid max-w-5xl gap-10 rounded-3xl bg-white p-8 shadow-toko ring-1 ring-toko-gray-100 sm:p-12 md:grid-cols-[0.8fr_1.2fr] md:items-center">
+          <div className="card mx-auto grid max-w-5xl gap-10 p-6 sm:p-12 md:grid-cols-[0.8fr_1.2fr] md:items-center reveal">
             <div className="relative mx-auto w-full max-w-xs">
-              <div className="overflow-hidden rounded-2xl ring-1 ring-toko-gray-200">
+              <div className="overflow-hidden rounded-2xl ring-1 ring-line">
                 <div className="relative aspect-[4/5]">
                   <Image src={NOTE_IMG} alt="Daniel Ishaku with a Toko Academy cohort" fill sizes="(max-width: 768px) 80vw, 30vw" className="object-cover object-center" />
                 </div>
@@ -417,17 +462,17 @@ export default function ZeroToLive() {
             </div>
 
             <div>
-              <svg className="h-8 w-8 text-toko-green/30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 7L8 11h3v6H5v-6l2-4h3zm9 0l-2 4h3v6h-6v-6l2-4h3z" /></svg>
-              <p className="mt-4 text-lg leading-relaxed text-toko-gray-700">
+              <svg className="h-8 w-8 text-brand/40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 7L8 11h3v6H5v-6l2-4h3zm9 0l-2 4h3v6h-6v-6l2-4h3z" /></svg>
+              <p className="mt-4 text-lg leading-relaxed text-ink-muted">
                 The gap between &ldquo;I have an idea&rdquo; and &ldquo;people are using my thing&rdquo; used to take months and money most people don&apos;t have. It doesn&apos;t anymore. In one weekend I&apos;ll walk you across it — and you&apos;ll walk out with a live app, a domain, and the confidence to charge for the next one.
               </p>
-              <p className="mt-4 text-lg font-semibold leading-relaxed text-toko-gray-900">
+              <p className="mt-4 text-lg font-semibold leading-relaxed text-ink">
 Only so many people fit in the room. If that&apos;s you, hold your seat.
               </p>
-              <div className="mt-6 flex items-center gap-4">
+              <div className="mt-6 flex flex-wrap items-center gap-4">
                 <div>
-                  <p className="font-heading text-xl font-bold text-toko-gray-900">Daniel Ishaku</p>
-                  <p className="text-toko-gray-500">Founder, Toko Academy</p>
+                  <p className="font-heading text-xl font-bold text-ink">Daniel Ishaku</p>
+                  <p className="text-ink-subtle">Founder, Toko Academy</p>
                 </div>
                 <button type="button" onClick={openEnrol} className="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-lg bg-toko-green px-6 py-3 font-bold text-white transition-colors duration-300 hover:bg-toko-green-dark">
                   Hold my seat
@@ -439,20 +484,20 @@ Only so many people fit in the room. If that&apos;s you, hold your seat.
       </section>
 
       {/* ================= FAQ ================= */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
           <div className="mx-auto max-w-3xl">
-            <h2 className="text-center text-toko-gray-900">Quick questions.</h2>
-            <div className="mt-10 divide-y divide-toko-gray-200 border-y border-toko-gray-200">
+            <h2 className="text-center">Quick questions.</h2>
+            <div className="mt-10 divide-y divide-line border-y border-line">
               {faqs.map((faq) => (
                 <details key={faq.q} className="group py-5">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-toko-gray-900 [&::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-4 text-lg font-semibold text-ink [&::-webkit-details-marker]:hidden">
                     {faq.q}
-                    <span className="flex-none text-toko-green transition-transform duration-300 group-open:rotate-45">
+                    <span className="flex-none text-brand transition-transform duration-300 group-open:rotate-45">
                       <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" /></svg>
                     </span>
                   </summary>
-                  <p className="mt-3 leading-relaxed text-toko-gray-600">{faq.a}</p>
+                  <p className="mt-3 leading-relaxed text-ink-muted">{faq.a}</p>
                 </details>
               ))}
             </div>
@@ -464,7 +509,8 @@ Only so many people fit in the room. If that&apos;s you, hold your seat.
       <section className="relative overflow-hidden bg-toko-gray-900 py-20 text-white md:py-28">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,179,66,0.25),transparent_50%),radial-gradient(circle_at_50%_120%,rgba(33,150,243,0.2),transparent_50%)]" />
         <div className="section-container relative z-10 text-center">
-          <h2 className="mx-auto max-w-3xl text-balance">One weekend. A live app with your name on it.</h2>
+          {/* text-white for the same reason as the hero h1 above. */}
+          <h2 className="mx-auto max-w-3xl text-balance text-white">One weekend. A live app with your name on it.</h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/70">
             {PRICE} for two full days, in person in Jimeta-Yola. Places are limited.
           </p>
@@ -481,13 +527,17 @@ Only so many people fit in the room. If that&apos;s you, hold your seat.
       </section>
 
       {/* ================= STICKY MOBILE CTA ================= */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-toko-gray-200 bg-white/95 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur md:hidden">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/95 p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] backdrop-blur transition-transform duration-300 md:hidden ${
+          nearBottom ? 'translate-y-full' : 'translate-y-0'
+        }`}
+      >
         <div className="flex items-center gap-3">
           <div className="flex-none">
-            <p className="text-lg font-extrabold leading-none text-toko-gray-900">{price}</p>
-            <p className="text-xs text-toko-gray-500">Places are limited</p>
+            <p className="text-lg font-extrabold leading-none text-ink">{price}</p>
+            <p className="text-xs text-ink-subtle">Places are limited</p>
           </div>
-          <button type="button" onClick={openEnrol} className="flex flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-toko-green px-4 py-3 font-bold text-white">
+          <button type="button" onClick={openEnrol} className="flex min-h-[44px] flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-toko-green px-4 py-3 font-bold text-white">
             Hold my seat
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>

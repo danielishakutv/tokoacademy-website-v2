@@ -60,7 +60,18 @@ export default function CourseThumbnail({ id, title, src, duration, courseId, pr
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center p-4">
-          <span className="text-center text-base font-bold leading-tight text-toko-gray-700/80">
+          {/*
+            `text-ink`, which flips — not a fixed dark.
+
+            The reasoning for fixing it was that the tile is a brand gradient
+            "chosen for a light ground", but the gradient is translucent
+            (`from-toko-green/20`) and sits on `surface-raised`, which is dark
+            in the dark theme. So the tile flips too, and fixed dark text on it
+            measured 1.86:1 — a course title that cannot be read. Caught by
+            scripts/visual-check.mjs rather than by looking at the source,
+            which is the point of that script.
+          */}
+          <span className="text-center text-base font-bold leading-tight text-ink/85">
             {title}
           </span>
         </div>

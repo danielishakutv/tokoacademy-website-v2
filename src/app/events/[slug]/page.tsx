@@ -84,28 +84,25 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
 
-      <section className="relative overflow-hidden bg-toko-gray-900 pb-16 pt-44 text-white">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(33,150,243,0.20),transparent_35%),radial-gradient(circle_at_10%_20%,rgba(124,179,66,0.18),transparent_35%)]" />
-        <div className="section-container relative z-10">
-          <Link
-            href="/events"
-            className="inline-flex items-center text-sm font-semibold text-white/90 transition-colors hover:text-white"
-          >
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <section className="relative overflow-hidden border-b border-line bg-surface-sunken pt-28 pb-12 md:pt-40 md:pb-16">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative">
+          <Link href="/events" className="link-hover inline-flex items-center text-sm font-semibold text-ink-muted">
+            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Events
           </Link>
 
-          <h1 className="mt-8 max-w-4xl">{item.title}</h1>
-          <p className="mt-4 text-lg text-white/80">{item.date}</p>
+          <h1 className="mt-6 max-w-4xl">{item.title}</h1>
+          <p className="mt-4 text-lg text-ink-muted">{item.date}</p>
         </div>
       </section>
 
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="mx-auto max-w-5xl">
-            <div className="relative mb-12 h-80 overflow-hidden rounded-2xl md:h-[32rem]">
+          <div className="mx-auto max-w-4xl">
+            <div className="relative mb-10 h-56 overflow-hidden rounded-2xl sm:h-80 md:mb-12 md:h-[28rem]">
               <Image
                 src={item.image}
                 alt={item.imageAlt}
@@ -116,13 +113,29 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               />
             </div>
 
+            {/*
+              WordPress HTML, so its own tags carry no classes: these arbitrary
+              variants are the only way the tokens reach inside it. The heading
+              sizes that used to be pinned here (`[&_h2]:text-3xl`) are gone —
+              the global fluid scale handles them, and pinning one size was
+              half the reason headings dwarfed the body copy.
+            */}
             <article
-              className="prose prose-lg max-w-none mb-12 space-y-6 text-lg leading-relaxed text-toko-gray-700 [&_a]:font-semibold [&_a]:text-toko-blue [&_a]:underline-offset-4 hover:[&_a]:underline [&_h2]:mt-10 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:text-toko-gray-900 [&_h3]:mt-8 [&_h3]:text-2xl [&_h3]:font-semibold [&_h3]:text-toko-gray-900 [&_p]:mb-4"
+              className="mb-12 max-w-none space-y-6 text-lg leading-relaxed text-ink-muted
+                         [&_a]:font-semibold [&_a]:text-brand [&_a]:underline-offset-4 hover:[&_a]:underline
+                         [&_h2]:mt-10 [&_h2]:text-ink [&_h3]:mt-8 [&_h3]:text-ink
+                         [&_strong]:text-ink [&_p]:mb-4
+                         [&_blockquote]:border-l-4 [&_blockquote]:border-line-strong [&_blockquote]:pl-4 [&_blockquote]:italic
+                         [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-2
+                         [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl
+                         [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full [&_iframe]:rounded-xl
+                         [&_pre]:overflow-x-auto [&_pre]:rounded-xl [&_pre]:bg-surface-sunken [&_pre]:p-4
+                         [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto"
               dangerouslySetInnerHTML={{ __html: item.contentHtmlWithoutImages }}
             />
 
-            <div className="mt-12 rounded-2xl border border-toko-gray-200 bg-toko-gray-50 p-6">
-              <h2 className="text-2xl font-bold text-toko-gray-900">Event Links</h2>
+            <div className="mt-12 rounded-2xl border border-line bg-surface-sunken p-5 sm:p-6">
+              <h2>Event Links</h2>
               {item.links.length > 0 ? (
                 <div className="mt-4 flex flex-wrap gap-3">
                   {item.links.map((linkItem, index) => (
@@ -131,14 +144,14 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                       href={linkItem.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center rounded-lg border border-toko-gray-300 bg-white px-4 py-2 text-sm font-semibold text-toko-gray-700 transition-colors hover:border-toko-blue hover:text-toko-blue"
+                      className="inline-flex min-h-[44px] items-center rounded-lg border border-line-strong bg-surface-raised px-4 py-2 text-sm font-semibold text-ink-muted transition-colors hover:border-brand hover:text-brand"
                     >
                       {linkItem.label}
                     </a>
                   ))}
                 </div>
               ) : (
-                <p className="mt-3 text-toko-gray-600">No external event links were provided for this event.</p>
+                <p className="mt-3 text-ink-muted">No external event links were provided for this event.</p>
               )}
             </div>
 
@@ -148,7 +161,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               </div>
             )}
 
-            <div className="mt-12 flex flex-wrap gap-4">
+            <div className="mt-12 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
               <Link href="/events" className="btn-secondary">
                 Back to Events
               </Link>

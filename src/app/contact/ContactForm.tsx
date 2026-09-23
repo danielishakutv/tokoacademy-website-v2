@@ -33,7 +33,7 @@ declare global {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const inputClass =
-  'w-full rounded-lg border border-toko-gray-300 px-4 py-3 text-toko-gray-900 outline-none transition focus:border-toko-green focus:ring-2 focus:ring-toko-green/30';
+  'w-full rounded-lg border border-line-strong bg-surface-raised px-4 py-3 text-ink outline-none transition placeholder:text-ink-subtle focus:border-brand focus:ring-2 focus:ring-brand/30';
 
 export default function ContactForm({ siteKey }: { siteKey: string | null }) {
   const [name, setName] = useState('');
@@ -67,7 +67,10 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
         'expired-callback': () => {
           tokenRef.current = '';
         },
-        theme: 'light',
+        // Follow the page, not the operating system: the theme here is a
+        // class on <html>, and a white captcha box on a dark form is the one
+        // piece of this page we do not control the colours of.
+        theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
       });
     };
 
@@ -156,15 +159,15 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
 
   if (sent) {
     return (
-      <div className="card p-8">
-        <div className="rounded-lg bg-toko-green/10 p-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-toko-green text-white">
+      <div className="card p-6 sm:p-8">
+        <div className="rounded-lg bg-brand-soft p-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white">
             <svg className="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="m5 13 4 4L19 7" />
             </svg>
           </div>
-          <h2 className="mb-2 text-2xl font-bold text-toko-gray-900">Thank you — we have your message</h2>
-          <p className="text-toko-gray-600">
+          <h2 className="mb-2">Thank you — we have your message</h2>
+          <p className="text-ink-muted">
             We reply to {email.trim()} within one working day. If it is urgent, please call us on the
             numbers above.
           </p>
@@ -174,9 +177,9 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
   }
 
   return (
-    <div className="card p-8">
-      <h2 className="mb-2 text-3xl font-bold text-toko-gray-900">Send Us a Message</h2>
-      <p className="mb-6 text-toko-gray-600">
+    <div className="card p-6 sm:p-8">
+      <h2 className="mb-2">Send Us a Message</h2>
+      <p className="mb-6 text-ink-muted">
         We reply within one working day.
       </p>
 
@@ -194,7 +197,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
         />
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-toko-gray-700">Your name</span>
+          <span className="mb-1.5 block text-sm font-semibold text-ink">Your name</span>
           <input
             type="text"
             value={name}
@@ -207,7 +210,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold text-toko-gray-700">Email</span>
+            <span className="mb-1.5 block text-sm font-semibold text-ink">Email</span>
             <input
               type="email"
               value={email}
@@ -218,8 +221,8 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-semibold text-toko-gray-700">
-              Phone <span className="font-normal text-toko-gray-400">(optional)</span>
+            <span className="mb-1.5 block text-sm font-semibold text-ink">
+              Phone <span className="font-normal text-ink-subtle">(optional)</span>
             </span>
             <input
               type="tel"
@@ -233,8 +236,8 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
         </div>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-toko-gray-700">
-            Subject <span className="font-normal text-toko-gray-400">(optional)</span>
+          <span className="mb-1.5 block text-sm font-semibold text-ink">
+            Subject <span className="font-normal text-ink-subtle">(optional)</span>
           </span>
           <input
             type="text"
@@ -247,7 +250,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-semibold text-toko-gray-700">Message</span>
+          <span className="mb-1.5 block text-sm font-semibold text-ink">Message</span>
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
@@ -261,7 +264,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
         {siteKey && <div ref={captchaRef} className="min-h-[65px]" />}
 
         {error && (
-          <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark" role="alert">
+          <div className="rounded-lg bg-toko-magenta/10 px-4 py-3 text-sm text-toko-magenta-dark dark:text-toko-magenta-light" role="alert">
             {error}
           </div>
         )}
@@ -284,7 +287,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
           )}
         </button>
 
-        <p className="text-center text-xs text-toko-gray-500">
+        <p className="text-center text-xs text-ink-subtle">
           We use what you send here only to reply to you.
         </p>
       </form>

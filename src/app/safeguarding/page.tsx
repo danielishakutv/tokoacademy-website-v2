@@ -17,55 +17,70 @@ export const metadata: Metadata = {
 
 export default function SafeguardingPage() {
   return (
-    <section className="pt-40 pb-20 bg-white text-toko-gray-900">
-      <div className="section-container">
-        <div className="mx-auto max-w-4xl">
-          <p className="text-sm uppercase tracking-[0.2em] text-toko-green">Safeguarding Policy</p>
-          <h1 className="mt-4 text-4xl font-bold sm:text-5xl">Protecting Children, Youth, and Vulnerable Participants</h1>
-          <p className="mt-6 text-lg text-toko-gray-600">
-            Toko Academy is committed to upholding the highest safeguarding standards across all Kids, Youth, and community-facing programmes. Our policy is designed to create safe, respectful, and accountable learning environments.
-          </p>
-
-          <div className="mt-12 space-y-10">
-            <article className="rounded-3xl border border-toko-gray-200 bg-toko-gray-50 p-8">
-              <h2 className="text-2xl font-semibold text-toko-gray-900">Governance and Accountability</h2>
-              <p className="mt-4 text-toko-gray-600">
-                Our governance framework includes documented policies, a clear reporting structure, and oversight from the CEO and Board. We review safeguarding procedures regularly and update them to align with international best practice.
-              </p>
-            </article>
-
-            <article className="rounded-3xl border border-toko-gray-200 bg-white p-8">
-              <h2 className="text-2xl font-semibold text-toko-gray-900">Child-Friendly Facilitation Standards</h2>
-              <p className="mt-4 text-toko-gray-600">
-                All Kids & Youth Technology programmes operate with supervision ratios, age-appropriate content, and facilitation methods designed to support learners safely. Trainers are expected to model respectful behaviour and protect participant dignity at all times.
-              </p>
-            </article>
-
-            <article className="rounded-3xl border border-toko-gray-200 bg-toko-gray-50 p-8">
-              <h2 className="text-2xl font-semibold text-toko-gray-900">Reporting and Response</h2>
-              <p className="mt-4 text-toko-gray-600">
-                We maintain a mandatory reporting protocol for safeguarding concerns, with a confidential reporting line to senior leadership. Any incident is reviewed promptly and handled in accordance with established safeguarding procedures.
-              </p>
-            </article>
-
-            <article className="rounded-3xl border border-toko-gray-200 bg-white p-8">
-              <h2 className="text-2xl font-semibold text-toko-gray-900">Partner and Donor Assurance</h2>
-              <p className="mt-4 text-toko-gray-600">
-                Our policies are available to partners and donors on request. We also maintain a code of conduct for all trainers, volunteers, and programme staff involved with young people.
-              </p>
-            </article>
-          </div>
-
-          <div className="mt-12 rounded-3xl border border-toko-gray-200 bg-toko-green/5 p-8 text-center">
-            <p className="text-base text-toko-gray-700">
-              For safeguarding documentation or partnership inquiries, please contact us.
+    <>
+      <section className="relative overflow-hidden border-b border-line bg-surface-sunken pt-28 pb-12 md:pt-40 md:pb-16">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative">
+          <div className="max-w-3xl">
+            <p className="eyebrow">Safeguarding Policy</p>
+            {/* No size class. The heading was pinned at `text-4xl sm:text-5xl`
+                — 48px against 16px body copy, which is the ratio the whole
+                type scale was rebuilt to fix. */}
+            <h1 className="mt-3">Protecting Children, Youth, and Vulnerable Participants</h1>
+            <p className="prose-measure mt-5 text-lg text-ink-muted">
+              Toko Academy is committed to upholding the highest safeguarding standards across all Kids, Youth, and community-facing programmes. Our policy is designed to create safe, respectful, and accountable learning environments.
             </p>
-            <Link href="mailto:info@tokoacademy.org?subject=Safeguarding%20Documentation%20Request" className="mt-6 inline-flex rounded-xl bg-toko-green px-8 py-3 font-semibold text-white transition-colors hover:bg-toko-green-dark">
-              Request Safeguarding Documentation
-            </Link>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="section-padding bg-surface">
+        <div className="section-container">
+          <div className="mx-auto max-w-4xl">
+            <div className="space-y-6">
+              <article className="card p-6 sm:p-8 reveal">
+                <h2>Governance and Accountability</h2>
+                <p className="mt-4 text-ink-muted">
+                  Our governance framework includes documented policies, a clear reporting structure, and oversight from the CEO and Board. We review safeguarding procedures regularly and update them to align with international best practice.
+                </p>
+              </article>
+
+              <article className="card p-6 sm:p-8 reveal">
+                <h2>Child-Friendly Facilitation Standards</h2>
+                <p className="mt-4 text-ink-muted">
+                  All Kids &amp; Youth Technology programmes operate with supervision ratios, age-appropriate content, and facilitation methods designed to support learners safely. Trainers are expected to model respectful behaviour and protect participant dignity at all times.
+                </p>
+              </article>
+
+              <article className="card p-6 sm:p-8 reveal">
+                <h2>Reporting and Response</h2>
+                <p className="mt-4 text-ink-muted">
+                  We maintain a mandatory reporting protocol for safeguarding concerns, with a confidential reporting line to senior leadership. Any incident is reviewed promptly and handled in accordance with established safeguarding procedures.
+                </p>
+              </article>
+
+              <article className="card p-6 sm:p-8 reveal">
+                <h2>Partner and Donor Assurance</h2>
+                <p className="mt-4 text-ink-muted">
+                  Our policies are available to partners and donors on request. We also maintain a code of conduct for all trainers, volunteers, and programme staff involved with young people.
+                </p>
+              </article>
+            </div>
+
+            <div className="mt-12 rounded-2xl border border-line bg-brand-soft p-6 text-center sm:p-8">
+              <p className="text-ink-muted">
+                For safeguarding documentation or partnership inquiries, please contact us.
+              </p>
+              <Link
+                href="mailto:info@tokoacademy.org?subject=Safeguarding%20Documentation%20Request"
+                className="btn-primary mt-6"
+              >
+                Request Safeguarding Documentation
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

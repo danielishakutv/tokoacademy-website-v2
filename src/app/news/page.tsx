@@ -33,12 +33,24 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+/*
+ * Each accent carries a dark-theme partner: the light-theme greens and blues
+ * were picked for contrast against white and go muddy on a tinted block in the
+ * dark. The fallback matters too — an unrecognised category used to put the
+ * string "undefined" in the class attribute and render an unstyled chip.
+ */
 const categoryStyles: Record<string, string> = {
-  'Press Release': 'bg-toko-green/10 text-toko-green',
-  'Toko in the News': 'bg-toko-blue/10 text-toko-blue',
-  'Newsroom': 'bg-toko-magenta/10 text-toko-magenta',
-  'Tips': 'bg-orange-500/10 text-orange-600',
+  'Press Release': 'bg-toko-green/10 text-toko-green dark:text-toko-green-light',
+  'Toko in the News': 'bg-toko-blue/10 text-toko-blue-dark dark:text-toko-blue-light',
+  'Newsroom': 'bg-toko-magenta/10 text-toko-magenta-dark dark:text-toko-magenta-light',
+  'Tips': 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
 };
+
+const FALLBACK_CATEGORY_STYLE = 'bg-surface-sunken text-ink-muted';
+
+function categoryStyle(category: string) {
+  return categoryStyles[category] ?? FALLBACK_CATEGORY_STYLE;
+}
 
 export default async function NewsPage() {
   const articles = await fetchNewsArticles();
@@ -82,11 +94,13 @@ export default async function NewsPage() {
       />
       
       {/* Hero */}
-      <section className="pt-48 md:pt-56 pb-16 md:pb-20 bg-gradient-to-br from-toko-green to-toko-blue text-white">
-        <div className="section-container">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="mb-6">News & Insights</h1>
-            <p className="text-xl md:text-2xl text-white/95">
+      <section className="relative overflow-hidden border-b border-line bg-surface-sunken pt-28 pb-14 md:pt-40 md:pb-20">
+        <div className="aurora" aria-hidden />
+        <div className="section-container relative">
+          <div className="mx-auto max-w-3xl text-center reveal">
+            <p className="eyebrow">Newsroom</p>
+            <h1 className="mt-3">News &amp; Insights</h1>
+            <p className="prose-measure mx-auto mt-5 text-lg text-ink-muted md:text-xl">
               Press releases, Toko in the news, newsroom updates, and practical tips to help you grow.
             </p>
           </div>
@@ -94,13 +108,13 @@ export default async function NewsPage() {
       </section>
 
       {/* Categories */}
-      <section className="section-padding bg-white">
+      <section className="section-padding bg-surface">
         <div className="section-container">
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
+          <div className="mb-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             {categories.map((category) => (
               <span
                 key={category}
-                className={`px-4 py-2 rounded-full text-sm font-semibold ${categoryStyles[category]}`}
+                className={`rounded-full px-4 py-2 text-sm font-semibold ${categoryStyle(category)}`}
               >
                 {category}
               </span>
@@ -111,9 +125,9 @@ export default async function NewsPage() {
           {featured && (
             <Link
               href={`/news/${featured.slug}`}
-              className="group grid grid-cols-1 lg:grid-cols-2 gap-10 items-center card p-0 overflow-hidden hover:shadow-toko-lg transition-shadow duration-300"
+              className="card group grid grid-cols-1 items-center overflow-hidden p-0 lg:grid-cols-2 reveal"
             >
-              <div className="relative h-72 lg:h-full min-h-[18rem]">
+              <div className="relative h-56 sm:h-72 lg:h-full lg:min-h-[20rem]">
                 <Image
                   src={featured.image}
                   alt={featured.imageAlt}
@@ -123,21 +137,21 @@ export default async function NewsPage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-black/50 via-black/10 to-transparent" />
               </div>
-              <div className="p-8 lg:p-10">
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${categoryStyles[featured.category]}`}>
+              <div className="p-6 sm:p-8 lg:p-10">
+                <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryStyle(featured.category)}`}>
                     {featured.category}
                   </span>
-                  <span className="text-sm text-toko-gray-500">{featured.date}</span>
-                  <span className="text-sm text-toko-gray-500">{featured.readTime}</span>
+                  <span className="text-sm text-ink-subtle">{featured.date}</span>
+                  <span className="text-sm text-ink-subtle">{featured.readTime}</span>
                 </div>
-                <h2 className="text-3xl font-bold text-toko-gray-900 mb-4 group-hover:text-toko-green transition-colors">
+                <h2 className="mb-4 transition-colors group-hover:text-brand">
                   {featured.title}
                 </h2>
-                <p className="text-lg text-toko-gray-600 mb-6">{featured.excerpt}</p>
-                <span className="inline-flex items-center text-toko-green font-semibold">
+                <p className="mb-6 text-lg text-ink-muted">{featured.excerpt}</p>
+                <span className="inline-flex items-center font-semibold text-brand">
                   Read full story
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </span>
@@ -146,12 +160,12 @@ export default async function NewsPage() {
           )}
 
           {/* News Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+          <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
             {others.map((item) => (
               <Link
                 key={item.slug}
                 href={`/news/${item.slug}`}
-                className="group card p-0 overflow-hidden hover:shadow-toko-lg transition-shadow duration-300"
+                className="card group overflow-hidden p-0 reveal"
               >
                 <div className="relative h-48">
                   <Image
@@ -163,19 +177,19 @@ export default async function NewsPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
                 </div>
-                <div className="p-6">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${categoryStyles[item.category]}`}>
+                <div className="p-5 sm:p-6">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${categoryStyle(item.category)}`}>
                       {item.category}
                     </span>
-                    <span className="text-xs text-toko-gray-500">{item.date}</span>
-                    <span className="text-xs text-toko-gray-500">{item.readTime}</span>
+                    <span className="text-xs text-ink-subtle">{item.date}</span>
+                    <span className="text-xs text-ink-subtle">{item.readTime}</span>
                   </div>
-                  <h3 className="text-xl font-bold text-toko-gray-900 mb-3 group-hover:text-toko-green transition-colors">
+                  <h3 className="mb-3 transition-colors group-hover:text-brand">
                     {item.title}
                   </h3>
-                  <p className="text-toko-gray-600 mb-4">{item.excerpt}</p>
-                  <span className="text-sm font-semibold text-toko-green">Read full gist</span>
+                  <p className="mb-4 text-ink-muted">{item.excerpt}</p>
+                  <span className="text-sm font-semibold text-brand">Read full gist</span>
                 </div>
               </Link>
             ))}
