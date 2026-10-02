@@ -214,6 +214,26 @@
 
   /* The measure of a readable column. */
   .prose-measure { max-width: 68ch; }
+
+  /*
+   * The panel of a Sheet (components/ui/Sheet.tsx).
+   *
+   * Two declarations, deliberately. `vh` on iOS Safari means the viewport with
+   * the toolbars HIDDEN, so a panel capped at 92vh is taller than what is on
+   * screen and its bottom edge — the submit button — sits under the browser
+   * chrome, unreachable, because the panel itself is clipped by the viewport
+   * rather than scrolled. `dvh` is the visible viewport and shrinks when the
+   * on-screen keyboard appears, which is exactly when a form needs it to.
+   *
+   * The `vh` line stays first as the fallback: a browser that does not know
+   * `dvh` drops the second declaration and keeps a usable, if imperfect, cap.
+   * This cannot be two Tailwind classes — they would land at equal specificity
+   * in whatever order the build emits them.
+   */
+  .sheet-panel {
+    max-height: 92vh;
+    max-height: 92dvh;
+  }
 }
 
 @layer utilities {
