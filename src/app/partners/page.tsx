@@ -64,7 +64,7 @@ const collaborations = [
     title: 'Development organisations',
     text: 'Practical learning pathways for the communities and beneficiaries you already work with — co-designed, delivered locally, and measured against indicators you can report on.',
     image: '/images/partners/community-workshop.jpg',
-    alt: 'A community digital skills workshop run with a partner organisation in Adamawa State',
+    alt: 'A digital skills workshop run with a partner organisation in Yola, Adamawa State',
     brief: 'Community hall workshop, mixed ages seated in a circle or at tables, facilitator standing',
   },
   {

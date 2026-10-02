@@ -281,7 +281,7 @@ export default function ThematicAreasPage() {
               </div>
               <Picture
                 src="/images/thematic/facilitation-team.jpg"
-                alt="Toko Academy facilitators preparing together before a session"
+                alt="Two Toko Academy facilitators leading a session in front of the class"
                 brief="Facilitators in a short huddle before class — notes, laptop, room being set up behind them"
                 aspect="aspect-[4/3]"
                 className="reveal reveal-delay-1 mt-10 hidden lg:block"

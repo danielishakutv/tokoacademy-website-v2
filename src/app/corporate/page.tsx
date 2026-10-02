@@ -315,7 +315,7 @@ export default function CorporatePage() {
 
             <Picture
               src="/images/corporate/needs-assessment.jpg"
-              alt="A Toko Academy consultant meeting a client team to scope a training programme"
+              alt="A Toko Academy facilitator working with a client team around the table during a corporate session in Yola"
               brief="Four or five people round a meeting table, one at a flip chart mapping out a programme"
               aspect="aspect-[4/5]"
               className="reveal reveal-delay-1 lg:sticky lg:top-32"

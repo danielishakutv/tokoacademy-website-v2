@@ -155,7 +155,7 @@ const pathways = [
     href: '/kids',
     cta: "Explore children's programmes",
     image: '/images/home/pathway-children-club.jpg',
-    alt: 'Children working at laptops in a Toko Academy coding club',
+    alt: 'A child working through a Scratch project at a laptop in a Toko Academy coding class',
     brief:
       'Four or five children at laptops in the Yola lab, an instructor crouched at their level. Shoot from their eye height, faces lit and visible, screens showing their own work.',
   },
@@ -168,7 +168,7 @@ const pathways = [
     href: '/courses',
     cta: 'Explore youth pathways',
     image: '/images/home/pathway-youth-bootcamp.jpg',
-    alt: 'Young adults working together on a project during a Toko Academy bootcamp',
+    alt: 'Young adults at a Toko Academy session in Yola, mid-discussion',
     brief:
       'Three or four young adults around one laptop, mid-argument about the work. Natural light, no posing, whiteboard or sticky notes in the background.',
   },
@@ -181,7 +181,7 @@ const pathways = [
     href: '/courses',
     cta: 'Advance your skills',
     image: '/images/home/pathway-professional-class.jpg',
-    alt: 'Working professionals in an evening class at Toko Academy',
+    alt: 'Working professionals at a Toko Academy training session in Yola',
     brief:
       'Adults in work clothes at an evening or weekend session, laptops open, one person asking a question. Warm indoor light, room clearly in use.',
   },
@@ -194,7 +194,7 @@ const pathways = [
     href: '/corporate',
     cta: 'See training solutions',
     image: '/images/home/pathway-institutional-training.jpg',
-    alt: 'A Toko Academy facilitator leading a training session for an institutional cohort',
+    alt: 'A full hall of officers from a partner institution at a Toko Academy training session in Yola',
     brief:
       'A facilitator at the front of a full room of staff from one institution — badges, uniforms or branded banner visible so the client is identifiable. Wide, from the back corner.',
   },
@@ -503,7 +503,7 @@ export default async function Home() {
             <Picture
               className="reveal"
               src="/images/home/approach-instructor-and-learner.jpg"
-              alt="A Toko Academy instructor working through a problem with a learner"
+              alt="A learner at Toko Academy building a Scratch project on the classroom screen"
               brief="One instructor, one learner, one screen, mid-explanation. Tight enough that you can read both faces."
               aspect="aspect-[4/3]"
               sizes="(max-width: 1024px) 100vw, 560px"
@@ -572,7 +572,7 @@ export default async function Home() {
             <Picture
               className="reveal reveal-delay-1"
               src="/images/home/partnership-signing.jpg"
-              alt="Toko Academy and a partner institution at the signing of a training agreement"
+              alt="A Toko Academy trainer and an officer of a partner institution at the close of a corporate programme in Yola"
               brief="Two or three people at a table signing or shaking hands, both organisations' banners behind them. Landscape, room visible."
               aspect="aspect-[4/3]"
               sizes="(max-width: 1024px) 100vw, 560px"

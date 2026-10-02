@@ -9,6 +9,11 @@
 # Next.js
 /.next/
 /out/
+# A build output directory renamed aside rather than deleted — Windows keeps a
+# handle on `out/` whenever anything has served from it, and the export then
+# fails with EBUSY. Renaming is the safe way through; these are build artefacts
+# and must never reach a commit.
+/out.bak.*/
 
 # Generated Open Graph images + manifest (produced by scripts/generate-og-images.mjs)
 /public/og/

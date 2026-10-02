@@ -122,7 +122,7 @@ const furtherWork = [
     text: 'A community event for students, professionals and enthusiasts, shifting participants from consuming AI tools to building with them.',
     meta: 'February 2026 · SDG 4, 8, 9',
     image: '/images/impact/ai-builders-yola.jpg',
-    alt: 'Participants building with AI tools at a Toko Academy community event',
+    alt: 'A Toko Academy facilitator running an AI session at a partner workshop in Yola',
     brief: 'Two or three participants at one laptop, screen showing code or an AI tool, others in discussion behind',
   },
   {
@@ -253,7 +253,7 @@ export default function ImpactPage() {
 
               <Picture
                 src="/images/impact/mel-review-session.jpg"
-                alt="Toko Academy staff reviewing post-training assessment results"
+                alt="Toko Academy staff and participants going through session records together on a laptop"
                 brief="Two staff at a desk going through printed assessment sheets and a laptop dashboard, close crop"
                 aspect="aspect-[3/2]"
                 className="reveal reveal-delay-1 mt-10 hidden lg:block"
