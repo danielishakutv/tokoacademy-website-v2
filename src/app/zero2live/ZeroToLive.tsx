@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { PRICE, HERO_IMG, NOTE_IMG } from './config';
+import { useLivePrice, PromoBadge } from '@/components/ui/Price';
 import EnrolModal from './EnrolModal';
 
 /**
@@ -115,8 +116,34 @@ const faqs = [
   },
 ];
 
-export default function ZeroToLive() {
-  const price = PRICE;
+type Props = {
+  /** What the workshop costs today, from the catalogue. */
+  price: number;
+  /** The list price, when a promotion is running. */
+  originalPrice?: number | null;
+  discountEndsAt?: string | null;
+  discountLabel?: string | null;
+  /** False for a scheduled workshop: a seat is requested, not bought on the spot. */
+  selfPaced?: boolean;
+};
+
+export default function ZeroToLive({
+  price: priceNaira,
+  originalPrice = null,
+  discountEndsAt = null,
+  discountLabel = null,
+  selfPaced = false,
+}: Props) {
+  /*
+   * Re-derived in the browser, not frozen into the build.
+   *
+   * This is a static export, so a page served after the promotion ends would
+   * otherwise still advertise the promotional price while the platform charged
+   * the full one. `PRICE` remains only as the fallback for a build that could
+   * not reach the catalogue.
+   */
+  const live = useLivePrice(priceNaira, originalPrice, discountEndsAt);
+  const price = live.label || PRICE;
   const [enrolOpen, setEnrolOpen] = useState(false);
   const openEnrol = () => setEnrolOpen(true);
 
@@ -209,6 +236,8 @@ export default function ZeroToLive() {
               <p className="mt-4 text-sm text-white/60">
                 Two full days, in person. It is a small room — everyone ships.
               </p>
+
+              <PromoBadge className="mt-4" endsAt={discountEndsAt} label={discountLabel} />
             </div>
 
             {/* Right: hero portrait */}
@@ -238,7 +267,7 @@ export default function ZeroToLive() {
 
                 {/* floating price chip */}
                 <div className="absolute -left-3 top-6 rounded-xl border border-white/15 bg-toko-gray-800/90 px-4 py-3 shadow-toko-lg backdrop-blur sm:-left-6">
-                  <p className="text-xl font-extrabold leading-none text-white">{PRICE}</p>
+                  <p className="text-xl font-extrabold leading-none text-white">{price}</p>
                   <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-white/60">all in</p>
                 </div>
 
@@ -312,7 +341,7 @@ export default function ZeroToLive() {
                 <p className="text-sm font-semibold uppercase tracking-widest text-toko-green-light">Ready?</p>
                 <p className="mt-3 text-2xl font-extrabold leading-tight">Claim your seat.</p>
                 <p className="mt-2 text-white/70">
-                  {`${PRICE} — two full days, in person in Jimeta-Yola.`}
+                  {`${price} — two full days, in person in Jimeta-Yola.`}
                 </p>
               </div>
               <span className="relative mt-6 inline-flex items-center gap-2 font-bold text-toko-green-light">
@@ -512,7 +541,7 @@ Only so many people fit in the room. If that&apos;s you, hold your seat.
           {/* text-white for the same reason as the hero h1 above. */}
           <h2 className="mx-auto max-w-3xl text-balance text-white">One weekend. A live app with your name on it.</h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/70">
-            {PRICE} for two full days, in person in Jimeta-Yola. Places are limited.
+            {price} for two full days, in person in Jimeta-Yola. Places are limited.
           </p>
           <button
             type="button"
@@ -544,7 +573,12 @@ Only so many people fit in the room. If that&apos;s you, hold your seat.
         </div>
       </div>
 
-      <EnrolModal open={enrolOpen} onClose={() => setEnrolOpen(false)} price={price} />
+      <EnrolModal
+        open={enrolOpen}
+        onClose={() => setEnrolOpen(false)}
+        price={price}
+        selfPaced={selfPaced}
+      />
     </>
   );
 }

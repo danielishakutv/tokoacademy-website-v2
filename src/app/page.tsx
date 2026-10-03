@@ -5,7 +5,8 @@ import CourseThumbnail from '@/components/CourseThumbnail';
 import Picture from '@/components/ui/Picture';
 import HeroSlider, { type HeroSlide } from '@/components/home/HeroSlider';
 import SectionHeading from '@/components/home/SectionHeading';
-import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import { getCourses, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import Price from '@/components/ui/Price';
 import { fetchNewsArticles, fetchEventPosts, type NewsArticle, type EventPost } from '@/lib/wordpress';
 
 /**
@@ -474,7 +475,12 @@ export default async function Home() {
 
                 <div className="mt-auto">
                   <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-                    <span className="font-semibold text-ink">{formatPrice(course.price)}</span>
+                    <Price
+                      className="font-semibold text-ink"
+                      price={course.price}
+                      originalPrice={course.originalPrice}
+                      endsAt={course.discount?.endsAt}
+                    />
                     <Link
                       href={`/courses/${course.slug}`}
                       className="link-hover inline-flex items-center gap-1.5 text-sm font-semibold text-brand"

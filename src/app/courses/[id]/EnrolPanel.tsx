@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Sheet from '@/components/ui/Sheet';
+import { useLivePrice } from '@/components/ui/Price';
 
 /**
  * The one place a course page turns a reader into a student.
@@ -49,11 +50,34 @@ type Props = {
   title: string;
   price: number;
   priceLabel: string;
+  /** The undiscounted price, when a promotion is running. */
+  originalPrice?: number | null;
+  /** When that promotion ends, so the button can stop quoting it. */
+  discountEndsAt?: string | null;
   selfPaced: boolean;
 };
 
-export default function EnrolPanel({ slug, title, price, priceLabel, selfPaced }: Props) {
+export default function EnrolPanel({
+  slug,
+  title,
+  price,
+  priceLabel,
+  originalPrice = null,
+  discountEndsAt = null,
+  selfPaced,
+}: Props) {
   const [open, setOpen] = useState(false);
+  /*
+   * The amount on these buttons is re-derived in the browser rather than taken
+   * from the build.
+   *
+   * `priceLabel` was correct when the page was exported, and this site is a
+   * static export — so after the promotion ends, a page served from the last
+   * build would offer "Pay ₦90,000" and the platform would charge ₦180,000.
+   * The button has to agree with the checkout, so it asks the clock.
+   */
+  const live = useLivePrice(price, originalPrice, discountEndsAt);
+  const shownPrice = live.label || priceLabel;
   const paying = selfPaced && price > 0;
   const applying = !selfPaced;
 
@@ -70,7 +94,7 @@ export default function EnrolPanel({ slug, title, price, priceLabel, selfPaced }
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-primary w-full">
-        {paying ? `Enrol & pay ${priceLabel}` : 'Apply to join'}
+        {paying ? `Enrol & pay ${shownPrice}` : 'Apply to join'}
       </button>
       <p className="mt-3 text-center text-xs text-ink-subtle">
         {paying
@@ -82,7 +106,7 @@ export default function EnrolPanel({ slug, title, price, priceLabel, selfPaced }
         onClose={() => setOpen(false)}
         slug={slug}
         title={title}
-        priceLabel={priceLabel}
+        priceLabel={shownPrice}
         applying={applying}
       />
     </>

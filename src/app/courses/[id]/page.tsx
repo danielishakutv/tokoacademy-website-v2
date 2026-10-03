@@ -14,6 +14,7 @@ import {
   type DlcCourse,
 } from '@/lib/dlc';
 import CourseThumbnail from '@/components/CourseThumbnail';
+import Price, { PromoBadge } from '@/components/ui/Price';
 import EnrolPanel from './EnrolPanel';
 
 /**
@@ -244,7 +245,17 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
                   />
                 </div>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-toko-magenta dark:text-toko-magenta-light">{priceLabel}</span>
+                  <Price
+                    className="text-4xl font-bold text-toko-magenta dark:text-toko-magenta-light"
+                    price={course.price}
+                    originalPrice={course.originalPrice}
+                    endsAt={course.discount?.endsAt}
+                  />
+                  <PromoBadge
+                    className="mt-3"
+                    endsAt={course.discount?.endsAt}
+                    label={course.discount?.label}
+                  />
                   <p className="mt-2 text-ink-muted">{deliveryLabel(course.deliveryMode)}</p>
                 </div>
 
@@ -253,6 +264,8 @@ export default async function CourseDetailsPage({ params }: { params: { id: stri
                   title={course.title}
                   price={course.price}
                   priceLabel={priceLabel}
+                  originalPrice={course.originalPrice ?? null}
+                  discountEndsAt={course.discount?.endsAt ?? null}
                   selfPaced={selfPaced}
                 />
 

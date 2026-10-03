@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { IconWrapper } from '@/components/IconWrapper';
 import CourseThumbnail from '@/components/CourseThumbnail';
-import { getCourses, formatPrice, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import { getCourses, deliveryLabel, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import Price, { PromoBadge } from '@/components/ui/Price';
 
 /**
  * Everything Toko Academy actually teaches.
@@ -77,6 +78,11 @@ function bySchool(courses: DlcCourseCard[]) {
 export default async function CoursesPage() {
   const courses = await getCourses();
   const { groups, ungrouped } = bySchool(courses);
+  /* The promotion, read off the catalogue rather than restated here. The
+     platform decides whether one is running and when it ends; if every course
+     comes back undiscounted there is nothing to announce and the badge renders
+     nothing. */
+  const promo = courses.find((course) => course.discount)?.discount ?? null;
 
   return (
     <>
@@ -91,6 +97,13 @@ export default async function CoursesPage() {
               {courses.length} courses across digital literacy, software engineering, data, AI and
               creative technology — most taught in person, some at your own pace.
             </p>
+            {/* Taken from a course rather than hardcoded: the promotion is the
+                platform's, and it ends on the platform's clock, not this page's. */}
+            <PromoBadge
+              className="mt-6"
+              endsAt={promo?.endsAt}
+              label={promo?.label}
+            />
           </div>
         </div>
       </section>
@@ -246,7 +259,12 @@ function CourseCard({ course }: { course: DlcCourseCard }) {
       )}
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
-        <span className="text-lg font-bold text-ink">{formatPrice(course.price)}</span>
+        <Price
+          className="text-lg font-bold text-ink"
+          price={course.price}
+          originalPrice={course.originalPrice}
+          endsAt={course.discount?.endsAt}
+        />
         <span className="inline-flex items-center gap-1 font-semibold text-brand">
           {selfPaced ? 'Start now' : 'View details'}
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

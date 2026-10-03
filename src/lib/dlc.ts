@@ -28,7 +28,16 @@ export interface DlcCourseCard {
   icon: string;
   thumbnailUrl: string | null;
   description: string;
+  /**
+   * What the course costs TODAY. Already discounted by the platform when a
+   * promotion is running, so anything that just renders this is correct — and
+   * is the same figure the checkout will charge.
+   */
   price: number;
+  /** The undiscounted price, or null when nothing is being taken off. */
+  originalPrice?: number | null;
+  /** Non-null only while a promotion is running. */
+  discount?: { percentOff: number; endsAt: string; label: string } | null;
   currency: string;
   hours: number;
   lessonCount: number;

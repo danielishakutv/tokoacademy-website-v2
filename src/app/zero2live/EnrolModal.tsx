@@ -2,12 +2,22 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Sheet from '@/components/ui/Sheet';
-import { ENROL_ENDPOINT, COURSE_SLUG, LOGIN_URL } from './config';
+import { ENROL_ENDPOINT, APPLY_ENDPOINT, COURSE_SLUG, LOGIN_URL } from './config';
 
 type Props = {
   open: boolean;
   onClose: () => void;
   price: string;
+  /**
+   * Whether the workshop can be bought on the spot.
+   *
+   * It cannot, as the catalogue currently stands: Zero to Live is `blended`, and
+   * /api/public/enrol refuses a scheduled course. So this form was opening a
+   * checkout the platform would never open, and showing the refusal to the
+   * visitor as an error. A scheduled course takes an application, and admissions
+   * confirms the seat and the payment.
+   */
+  selfPaced?: boolean;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,7 +38,7 @@ const FORM_ID = 'z2l-enrol-form';
  * dialog's layout, scrolling and focus behaviour now comes from Sheet — see the
  * note at the top of components/ui/Sheet.tsx for what it fixes.
  */
-export default function EnrolModal({ open, onClose, price }: Props) {
+export default function EnrolModal({ open, onClose, price, selfPaced = false }: Props) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -36,6 +46,7 @@ export default function EnrolModal({ open, onClose, price }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [done, setDone] = useState(false);
   const honeypotRef = useRef<HTMLInputElement>(null);
 
   // Reset transient state ONLY when the modal opens — not on every submitting
@@ -45,6 +56,7 @@ export default function EnrolModal({ open, onClose, price }: Props) {
       setError(null);
       setShowLogin(false);
       setSubmitting(false);
+      setDone(false);
     }
   }, [open]);
 
@@ -76,7 +88,7 @@ export default function EnrolModal({ open, onClose, price }: Props) {
     setError(null);
     setShowLogin(false);
     try {
-      const res = await fetch(ENROL_ENDPOINT, {
+      const res = await fetch(selfPaced ? ENROL_ENDPOINT : APPLY_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -95,10 +107,41 @@ export default function EnrolModal({ open, onClose, price }: Props) {
         window.location.href = data.authorizationUrl;
         return;
       }
+      if (!selfPaced && (res.status === 201 || res.status === 200)) {
+        // Application lodged. Nothing to pay yet; admissions confirms the seat.
+        setDone(true);
+        setSubmitting(false);
+        return;
+      }
       if (res.status === 200 && data.ok) {
         // Honeypot tripped (a bot) — silently ignore.
         setSubmitting(false);
         return;
+      }
+      if (data.code === 'SCHEDULED_COURSE') {
+        /*
+         * The catalogue says scheduled even though this page was built thinking
+         * otherwise — somebody changed the course between the build and now.
+         * Lodge the application rather than losing the person: they filled the
+         * form in, and the details are the point.
+         */
+        const retry = await fetch(APPLY_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: fn,
+            lastName: ln,
+            email: em,
+            phone: ph,
+            courseSlug: COURSE_SLUG,
+            website: honeypotRef.current?.value ?? '',
+          }),
+        });
+        if (retry.status === 201 || retry.status === 200) {
+          setDone(true);
+          setSubmitting(false);
+          return;
+        }
       }
       if (res.status === 409) {
         setShowLogin(true);
@@ -126,9 +169,20 @@ export default function EnrolModal({ open, onClose, price }: Props) {
       busy={submitting}
       labelId="z2l-enrol-title"
       eyebrow="Zero to Live"
-      title="Hold my seat"
-      description={`Pay ${price} securely. Your login is emailed to you right after payment.`}
+      title={done ? 'Seat requested' : 'Hold my seat'}
+      description={
+        done
+          ? undefined
+          : selfPaced
+            ? `Pay ${price} securely. Your login is emailed to you right after payment.`
+            : `${price} for the two days. Tell us you want a seat and we will confirm it and take payment — the room is small, so places are held in order.`
+      }
       footer={
+        done ? (
+          <button type="button" onClick={onClose} className="btn-primary w-full">
+            Done
+          </button>
+        ) : (
         <div className="space-y-2.5">
           <button
             type="submit"
@@ -144,10 +198,12 @@ export default function EnrolModal({ open, onClose, price }: Props) {
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
                   <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
                 </svg>
-                Taking you to payment…
+                {selfPaced ? 'Taking you to payment…' : 'Sending…'}
               </>
-            ) : (
+            ) : selfPaced ? (
               <>Enrol &amp; pay {price}</>
+            ) : (
+              <>Request my seat</>
             )}
           </button>
           <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-subtle">
@@ -155,11 +211,32 @@ export default function EnrolModal({ open, onClose, price }: Props) {
               <rect x="4" y="10" width="16" height="11" rx="2" strokeWidth="2" />
               <path d="M8 10V7a4 4 0 118 0v3" strokeWidth="2" strokeLinecap="round" />
             </svg>
-            Secured by Paystack. You&apos;ll be redirected to pay.
+            {selfPaced
+              ? "Secured by Paystack. You'll be redirected to pay."
+              : 'No payment now — we will call you to confirm your seat.'}
           </p>
         </div>
+        )
       }
     >
+      {done ? (
+        <div className="space-y-4 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+              <path d="m5 13 4 4L19 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <p className="text-sm text-ink-muted">
+            Thank you. We have your details and the admissions team will call{' '}
+            <strong className="font-semibold text-ink">{phone.trim()}</strong> to confirm your seat
+            and take payment.
+          </p>
+          <p className="text-xs text-ink-subtle">
+            Places are held in the order they are requested, so the sooner we reach you the better.
+          </p>
+        </div>
+      ) : (
+      <>
       {/* validation is handled in JS (handleSubmit) so we show styled errors */}
       <form id={FORM_ID} onSubmit={handleSubmit} noValidate className="space-y-4">
         {/* honeypot — hidden off-screen; real people never fill this */}
@@ -220,6 +297,8 @@ export default function EnrolModal({ open, onClose, price }: Props) {
           </div>
         )}
       </form>
+      </>
+      )}
     </Sheet>
   );
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import CourseThumbnail from '@/components/CourseThumbnail';
-import { deliveryLabel, formatPrice, getCourses, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import { deliveryLabel, getCourses, thumbnailUrl, type DlcCourseCard } from '@/lib/dlc';
+import Price from '@/components/ui/Price';
 import { actions, choice, count, stagger, text, type SectionProps } from './fields';
 import Band, { Actions, Intro, toneOf } from './tone';
 
@@ -106,7 +107,12 @@ export default async function Courses({ data, first = false }: SectionProps) {
 
               <div className="mt-auto">
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-                  <span className="font-semibold text-ink">{formatPrice(course.price)}</span>
+                  <Price
+                    className="font-semibold text-ink"
+                    price={course.price}
+                    originalPrice={course.originalPrice}
+                    endsAt={course.discount?.endsAt}
+                  />
                   <Link
                     href={`/courses/${course.slug}`}
                     className="link-hover inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
