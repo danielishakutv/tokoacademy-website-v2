@@ -130,7 +130,7 @@ const furtherWork = [
     text: 'A GBV awareness, digital safety and youth advocacy workshop delivered with the Tent2School Initiative.',
     meta: 'December 2025 · SDG 5, 10',
     image: '/images/impact/16-days-workshop.jpg',
-    alt: 'Young women and men at a digital safety and advocacy workshop in Yola',
+    alt: 'A full auditorium at Toko Academy’s Women in Uniform, Breaking Tech Barriers event in Yola',
     brief: 'Workshop circle mid-discussion, facilitator standing, flip chart visible — faces of minors not identifiable',
   },
 ];

@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import Link from 'next/link';
 import { tileGradient } from '@/lib/dlc';
 
@@ -18,14 +20,42 @@ import { tileGradient } from '@/lib/dlc';
  * as well, but the honest repair is here: stop requesting files that are not
  * there.
  *
- * Now it draws the real thumbnail when there is one and a coloured tile when
- * there is not. The tile is CSS, so it costs no request, cannot 404, and
- * differs per course.
+ * Now it draws, in this order:
+ *
+ *   1. the thumbnail uploaded in the admin, when the course has one;
+ *   2. `public/images/courses/<slug>.jpg` from this repository, when it exists;
+ *   3. a coloured tile with the title on it.
+ *
+ * The middle step is new, and the order is the point. Six of the twelve
+ * published courses have no thumbnail in the admin, so they drew a gradient
+ * tile — correct, and still a card with no picture on it. The repository can
+ * now supply one without pretending to be the catalogue: the moment somebody
+ * uploads a real thumbnail in the admin, step 1 wins and the repository's copy
+ * is ignored. Nothing has to be removed, and the admin stays the source of
+ * truth for course data.
+ *
+ * The existence check is `existsSync`, not a guess at a filename — the guessing
+ * is exactly what this component used to do, and what fired two 404s per card
+ * that the service worker then cached for ever.
  *
  * Deliberately a server component — no `onError`, no client JavaScript, and
  * therefore nothing to hydrate. The fallback is decided at build time from
  * data we already have, rather than in the browser after a failure.
  */
+
+/** A repository thumbnail for this course, if one has been added. */
+function repoThumbnail(slug: string): string | null {
+  // A slug comes from the catalogue, but it reaches here as a plain string and
+  // is about to be joined onto a filesystem path. Anything that is not a slug
+  // is refused rather than resolved.
+  if (!/^[a-z0-9-]+$/i.test(slug)) return null;
+  const url = `/images/courses/${slug}.jpg`;
+  try {
+    return existsSync(path.join(process.cwd(), 'public', 'images', 'courses', `${slug}.jpg`)) ? url : null;
+  } catch {
+    return null;
+  }
+}
 
 type Props = {
   /** The course's own slug — identifies it, and picks the fallback colour. */
@@ -41,14 +71,15 @@ type Props = {
 };
 
 export default function CourseThumbnail({ id, title, src, duration, courseId, priority }: Props) {
+  const resolved = src ?? repoThumbnail(id);
   const thumbnail = (
     <div
       className={`relative w-full aspect-video overflow-hidden rounded-md bg-gradient-to-br ${tileGradient(id)}`}
     >
-      {src ? (
+      {resolved ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={src}
+          src={resolved}
           alt=""
           className="h-full w-full object-cover"
           loading={priority ? 'eager' : 'lazy'}

@@ -102,7 +102,7 @@ export default async function ContactPage() {
 
               <Picture
                 src="/images/contact/entrance.jpg"
-                alt="The entrance to Toko Academy on Bekaji Road, Jimeta-Yola"
+                alt="A session under way in the Toko Academy training room on Bekaji Road, Jimeta-Yola"
                 brief="The front of the building with the signage visible, shot in daylight from across the street. Landscape."
                 aspect="aspect-[3/2]"
                 className="mt-6"
@@ -189,7 +189,7 @@ export default async function ContactPage() {
             <div className="mt-10 grid gap-8 md:grid-cols-2 md:items-center">
               <Picture
                 src="/images/contact/reception.jpg"
-                alt="The reception area at Toko Academy, Jimeta-Yola"
+                alt="Learners and guests in the Toko Academy training room, Jimeta-Yola"
                 brief="Where a visitor arrives — the desk, the waiting chairs, daylight from the window. Nobody posing."
                 aspect="aspect-[4/3]"
                 className="reveal"

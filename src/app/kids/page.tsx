@@ -55,7 +55,7 @@ const programmeImages: Record<string, { src: string; alt: string; brief: string 
   },
   'cbt-program': {
     src: '/images/kids/cbt-lab.jpg',
-    alt: 'Teenagers working at computers in the Toko Academy training lab',
+    alt: 'A child working at a computer in the Toko Academy training room in Yola',
     brief: 'Row of teenagers at desktop machines in the lab, invigilator walking the row — shot down the row',
   },
 };

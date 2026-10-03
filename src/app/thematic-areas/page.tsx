@@ -64,7 +64,7 @@ const thematicAreas = [
       'Moving developers, graduates and founders from consuming technology to building it — solutions, products and businesses made here rather than imported.',
     focus: ['AI & Machine Learning', 'Blockchain & IoT', 'Web & mobile development', 'Cloud, cybersecurity & UI/UX'],
     image: '/images/thematic/engineering-lab.jpg',
-    alt: 'Developers working through code together at a Toko Academy engineering session',
+    alt: 'A Toko Academy trainer working through JavaScript on screen with the class',
     brief: 'Two developers at one screen, code visible, whiteboard of architecture behind them',
   },
   {
@@ -75,7 +75,7 @@ const thematicAreas = [
       'Data literacy, business intelligence and MEAL training for government agencies, NGOs and development organisations — so that a decision rests on the evidence rather than on whoever spoke last.',
     focus: ['Data analysis & visualisation', 'MEAL systems', 'Research methods & survey tools', 'Data-informed governance'],
     image: '/images/thematic/data-workshop.jpg',
-    alt: 'Participants working with charts and spreadsheets at a Toko Academy data workshop',
+    alt: 'Participants following a presentation on screen at a Toko Academy session in Yola',
     brief: 'Over-shoulder shot of a participant building a dashboard, projector showing the same chart behind',
   },
   {
@@ -130,7 +130,7 @@ const thematicAreas = [
       'Climate literacy, sustainable computing and green-economy skills — so that learners and institutions here are ready for a transition largely being designed somewhere else.',
     focus: ['Climate literacy for youth & schools', 'Green digital skills (sustainable computing, climate data, e-waste)', 'Tech for climate adaptation', 'Youth-led climate action'],
     image: '/images/thematic/climate-classroom.jpg',
-    alt: 'Young people at a Toko Academy climate and green skills session',
+    alt: 'Participants at a Toko Academy session in Yola',
     brief: 'Outdoor or window-lit session with young people, climate data on a laptop or flip chart in frame',
   },
 ];
