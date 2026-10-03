@@ -202,6 +202,10 @@ function EnrolDialog({
           email: em,
           phone: ph,
           courseSlug: slug,
+          // Which page they were on. It travels to the leads notification in
+          // ta_admin, where "/courses/data-analysis" answers the first question
+          // anybody asks about a lead before they ring it.
+          source: typeof window === 'undefined' ? '' : window.location.pathname,
           website: honeypotRef.current?.value ?? '', // honeypot; a person leaves it empty
         }),
       });
