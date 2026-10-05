@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next'
 import { fetchNewsArticles, fetchGalleryAlbums, fetchEventPosts } from '@/lib/wordpress'
 import { getCourses } from '@/lib/dlc'
 import { canonical } from '@/lib/seo'
-import { managedPages } from '@/lib/managed'
+import { hasProfilePage, managedPages, managedTeam } from '@/lib/managed'
 
 /**
  * The sitemap.
@@ -137,6 +137,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
+  /**
+   * The team page, and one entry per person who has a profile page.
+   *
+   * Conditional on there being somebody on it. While the list is empty `/team`
+   * renders a short "we are putting this together" page, and submitting that to
+   * a search engine would be submitting a thin page on purpose — so it stays
+   * out until it has content, and appears by itself on the publish after the
+   * first person is switched on.
+   *
+   * `hasProfilePage` is the same test the page and the grid use, so the sitemap
+   * can never list a profile that was not built.
+   */
+  const team = await managedTeam()
+  const teamRoutes: MetadataRoute.Sitemap =
+    team.length === 0
+      ? []
+      : [
+          {
+            url: canonical('/team'),
+            lastModified: BUILD_DATE,
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+          },
+          ...team.filter(hasProfilePage).map((member) => ({
+            url: canonical(`/team/${member.slug}`),
+            lastModified: BUILD_DATE,
+            changeFrequency: 'yearly' as const,
+            priority: 0.4,
+          })),
+        ]
+
   return [
     ...staticRoutes,
     ...courseRoutes,
@@ -144,5 +175,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...galleryRoutes,
     ...eventRoutes,
     ...composedRoutes,
+    ...teamRoutes,
   ]
 }

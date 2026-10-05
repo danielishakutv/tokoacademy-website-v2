@@ -77,6 +77,10 @@ export const navigation: NavigationItem[] = [
     href: '/about',
     dropdown: [
       { name: 'Who we are', href: '/about' },
+      // Built from the team list in ta_admin, so it is the one page here that
+      // changes without a commit. Directly under "Who we are": a visitor
+      // looking for the people is looking in the same place as the story.
+      { name: 'Our team', href: '/team' },
       { name: 'Our impact', href: '/impact' },
       { name: 'Thematic areas', href: '/thematic-areas' },
       { name: 'Partners', href: '/partners' },
