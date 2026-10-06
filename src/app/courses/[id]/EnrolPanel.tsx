@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Sheet from '@/components/ui/Sheet';
 import { useLivePrice } from '@/components/ui/Price';
+import { leadSource } from '@/lib/leadSource';
 
 /**
  * The one place a course page turns a reader into a student.
@@ -11,7 +12,7 @@ import { useLivePrice } from '@/components/ui/Price';
  * into this page:
  *
  *   paid + self-paced  → pay now and start today, OR register now and pay later
- *   free + self-paced  → create an account and begin
+ *   free + self-paced  → give us your details and the course opens immediately
  *   scheduled          → apply, and somebody approves before the seat is real
  *
  * "Register now, pay later" exists because the old form had exactly one way
@@ -21,9 +22,17 @@ import { useLivePrice } from '@/components/ui/Price';
  * arrives: they can read the syllabus, browse everything else, and pay when
  * they are ready. The lock is enforced by the platform, not by this page.
  *
- * Both forms post to the learning platform's public API. This component owns
- * no backend and holds no key: the payment link comes back from the server and
- * the browser follows it, which is why Paystack's keys never touch this site.
+ * The free route is the same form, because the mistake it replaces was treating
+ * free as "no form needed". This button used to be a link to the platform's
+ * sign-in screen — which has no self-service sign-up behind it, so a stranger
+ * arrived at a password box for an account that did not exist and could not be
+ * created. The one journey on this site that collected nothing also could not
+ * be completed. Now it collects what the paid routes collect, and the platform
+ * grants access on the spot: free means nothing to pay, not nobody to know.
+ *
+ * All four post to the learning platform's public API. This component owns no
+ * backend and holds no key: the payment link comes back from the server and the
+ * browser follows it, which is why Paystack's keys never touch this site.
  */
 
 const API = process.env.NEXT_PUBLIC_DLC_API_URL ?? 'https://learn.tokoacademy.org';
@@ -42,8 +51,19 @@ const inputClass =
 
 const FORM_ID = 'enrol-form';
 
-/** Which button was pressed. Both submit the same fields to different endpoints. */
-type Intent = 'pay' | 'register' | 'apply';
+/** Which button was pressed. All four submit the same fields to different endpoints. */
+type Intent = 'pay' | 'register' | 'apply' | 'free';
+
+/** What this course offers, which decides the whole dialog. */
+type Mode = 'pay' | 'apply' | 'free';
+
+/** The endpoint each intent posts to. */
+const ENDPOINT: Record<Intent, string> = {
+  pay: 'enrol',
+  register: 'register',
+  apply: 'apply',
+  free: 'start-free',
+};
 
 type Props = {
   slug: string;
@@ -78,36 +98,42 @@ export default function EnrolPanel({
    */
   const live = useLivePrice(price, originalPrice, discountEndsAt);
   const shownPrice = live.label || priceLabel;
-  const paying = selfPaced && price > 0;
-  const applying = !selfPaced;
 
-  // A free self-paced course needs an account, not a form — the platform's own
-  // sign-up does that better than a copy of it here would.
-  if (selfPaced && price === 0) {
-    return (
-      <a href={LOGIN_URL} className="btn-primary w-full">
-        Start this course free
-      </a>
-    );
-  }
+  /*
+   * Which of the three journeys this course is on.
+   *
+   * `live.price` rather than the build's `price`, for the same reason the label
+   * is re-derived: a course discounted to nothing is free while the promotion
+   * runs and priced again the moment it ends, and the platform decides that by
+   * its own clock. A page cached from before the end must not offer a free
+   * start for something that now costs money — the server would refuse it, and
+   * the person would be told their details were wrong when they were not.
+   */
+  const mode: Mode = !selfPaced ? 'apply' : live.amount > 0 ? 'pay' : 'free';
+
+  const label =
+    mode === 'pay' ? `Enrol & pay ${shownPrice}` : mode === 'free' ? 'Start this course free' : 'Apply to join';
+
+  const note =
+    mode === 'pay'
+      ? 'Pay now and start today, or register and pay later — either way it takes a minute.'
+      : mode === 'free'
+        ? 'Free, and it opens as soon as you tell us who you are — about a minute.'
+        : 'Tell us you are interested and the admissions team will be in touch about dates and payment.';
 
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-primary w-full">
-        {paying ? `Enrol & pay ${shownPrice}` : 'Apply to join'}
+        {label}
       </button>
-      <p className="mt-3 text-center text-xs text-ink-subtle">
-        {paying
-          ? 'Pay now and start today, or register and pay later — either way it takes a minute.'
-          : 'Tell us you are interested and the admissions team will be in touch about dates and payment.'}
-      </p>
+      <p className="mt-3 text-center text-xs text-ink-subtle">{note}</p>
       <EnrolDialog
         open={open}
         onClose={() => setOpen(false)}
         slug={slug}
         title={title}
         priceLabel={shownPrice}
-        applying={applying}
+        mode={mode}
       />
     </>
   );
@@ -119,14 +145,14 @@ function EnrolDialog({
   slug,
   title,
   priceLabel,
-  applying,
+  mode,
 }: {
   open: boolean;
   onClose: () => void;
   slug: string;
   title: string;
   priceLabel: string;
-  applying: boolean;
+  mode: Mode;
 }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -135,7 +161,16 @@ function EnrolDialog({
   const [submitting, setSubmitting] = useState<Intent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
-  const [done, setDone] = useState<'applied' | 'registered' | null>(null);
+  const [done, setDone] = useState<'applied' | 'registered' | 'enrolled' | null>(null);
+  /*
+   * Whether the platform actually emailed them a password.
+   *
+   * It does not when the address already had a working login — it will not mail
+   * a password for an account somebody else might own, which is right. But the
+   * screen used to promise an email in both cases, so the one person who had
+   * been here before was told to wait for something that was never coming.
+   */
+  const [emailedLogin, setEmailedLogin] = useState(true);
 
   const honeypotRef = useRef<HTMLInputElement>(null);
 
@@ -146,7 +181,7 @@ function EnrolDialog({
    * submitter support across that boundary is not something to bet a checkout
    * on.
    */
-  const intentRef = useRef<Intent>(applying ? 'apply' : 'pay');
+  const intentRef = useRef<Intent>(mode);
 
   // Cleared when it opens, not on every render — an error set just before
   // submitting flips back to null would otherwise be wiped before it is read.
@@ -155,10 +190,11 @@ function EnrolDialog({
       setError(null);
       setShowLogin(false);
       setDone(null);
+      setEmailedLogin(true);
       setSubmitting(null);
-      intentRef.current = applying ? 'apply' : 'pay';
+      intentRef.current = mode;
     }
-  }, [open, applying]);
+  }, [open, mode]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -190,10 +226,8 @@ function EnrolDialog({
     setError(null);
     setShowLogin(false);
 
-    const path = intent === 'apply' ? 'apply' : intent === 'register' ? 'register' : 'enrol';
-
     try {
-      const response = await fetch(`${API}/api/public/${path}`, {
+      const response = await fetch(`${API}/api/public/${ENDPOINT[intent]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -202,10 +236,10 @@ function EnrolDialog({
           email: em,
           phone: ph,
           courseSlug: slug,
-          // Which page they were on. It travels to the leads notification in
-          // ta_admin, where "/courses/data-analysis" answers the first question
-          // anybody asks about a lead before they ring it.
-          source: typeof window === 'undefined' ? '' : window.location.pathname,
+          // Which page they were on, as a whole address. It travels to the leads
+          // notification in ta_admin, where a link somebody can tap answers the
+          // first question anybody asks about a lead before they ring it.
+          source: leadSource(),
           website: honeypotRef.current?.value ?? '', // honeypot; a person leaves it empty
         }),
       });
@@ -222,9 +256,12 @@ function EnrolDialog({
         onClose();
         return;
       }
-      // Applying or registering: 201 means it is lodged. Nothing to pay yet.
+      // Applying, registering or starting a free course: 201 means it is done.
+      // Nothing to pay in any of the three.
       if (intent !== 'pay' && (response.status === 201 || response.status === 200)) {
-        setDone(intent === 'apply' ? 'applied' : 'registered');
+        // Absent means a brand-new account, which is always emailed its login.
+        setEmailedLogin(data.credentialsEmailed !== false);
+        setDone(intent === 'apply' ? 'applied' : intent === 'free' ? 'enrolled' : 'registered');
         setSubmitting(null);
         return;
       }
@@ -238,9 +275,9 @@ function EnrolDialog({
             : 'Something went wrong. Please try again.',
         );
       } else if (response.status === 429) {
-        // The register endpoint is throttled per IP and per email, because it sends an email on
-        // every call. Say what to do rather than "something went wrong" — nothing is broken and
-        // trying again immediately will not help.
+        // The register and free endpoints are throttled per IP and per email, because they send an
+        // email on every call. Say what to do rather than "something went wrong" — nothing is
+        // broken and trying again immediately will not help.
         setError('That is a few too many attempts. Please wait a few minutes and try again.');
       } else if (response.status === 400) {
         setError(data.error || 'Please check your details and try again.');
@@ -258,6 +295,26 @@ function EnrolDialog({
 
   const busy = submitting !== null;
 
+  const heading = done
+    ? done === 'applied'
+      ? 'Application received'
+      : done === 'enrolled'
+        ? "You're in"
+        : "You're registered"
+    : mode === 'apply'
+      ? 'Apply to join'
+      : mode === 'free'
+        ? 'Start this course free'
+        : 'Enrol on this course';
+
+  const description = done
+    ? undefined
+    : mode === 'apply'
+      ? 'We will contact you about the next cohort, dates and payment.'
+      : mode === 'free'
+        ? 'It is free. Tell us who you are and we will open it on your dashboard straight away.'
+        : `Pay ${priceLabel} now and start today, or register and pay when you are ready.`;
+
   return (
     <Sheet
       open={open}
@@ -265,20 +322,18 @@ function EnrolDialog({
       busy={busy}
       labelId="enrol-title"
       eyebrow={title}
-      title={done ? (done === 'applied' ? 'Application received' : "You're registered") : applying ? 'Apply to join' : 'Enrol on this course'}
-      description={
-        done
-          ? undefined
-          : applying
-            ? 'We will contact you about the next cohort, dates and payment.'
-            : `Pay ${priceLabel} now and start today, or register and pay when you are ready.`
-      }
+      title={heading}
+      description={description}
       footer={
         done ? (
-          <DoneFooter onClose={onClose} registered={done === 'registered'} />
+          <DoneFooter
+            onClose={onClose}
+            signIn={done !== 'applied'}
+            label={done === 'registered' ? 'Log in and pay' : 'Log in and start'}
+          />
         ) : (
           <Actions
-            applying={applying}
+            mode={mode}
             priceLabel={priceLabel}
             submitting={submitting}
             onIntent={(intent) => {
@@ -289,7 +344,13 @@ function EnrolDialog({
       }
     >
       {done ? (
-        <DoneBody registered={done === 'registered'} email={email.trim()} title={title} priceLabel={priceLabel} />
+        <DoneBody
+          done={done}
+          email={email.trim()}
+          title={title}
+          priceLabel={priceLabel}
+          emailedLogin={emailedLogin}
+        />
       ) : (
         <>
           <form id={FORM_ID} onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -340,6 +401,11 @@ function EnrolDialog({
                 required
                 className={inputClass}
               />
+              {mode === 'free' && (
+                <span className="mt-1 block text-xs text-ink-subtle">
+                  Your login goes here, so do check it is right.
+                </span>
+              )}
             </label>
 
             <label className="block">
@@ -356,7 +422,9 @@ function EnrolDialog({
                 className={inputClass}
               />
               <span className="mt-1 block text-xs text-ink-subtle">
-                So we can reach you about dates and payment. WhatsApp is fine.
+                {mode === 'free'
+                  ? 'So we can reach you about this course and the next one. WhatsApp is fine.'
+                  : 'So we can reach you about dates and payment. WhatsApp is fine.'}
               </span>
             </label>
 
@@ -378,7 +446,7 @@ function EnrolDialog({
             )}
           </form>
 
-          {!applying && (
+          {mode === 'pay' && (
             <p className="mt-5 flex items-start gap-2 rounded-lg bg-surface-sunken px-4 py-3 text-xs leading-relaxed text-ink-muted">
               <svg className="mt-0.5 h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
                 <rect x="4" y="10" width="16" height="11" rx="2" strokeWidth="2" />
@@ -387,6 +455,18 @@ function EnrolDialog({
               <span>
                 Register now and the course waits <strong className="font-semibold text-ink">locked</strong> on your
                 dashboard — you can read the syllabus and browse every other course, and unlock it whenever you pay.
+              </span>
+            </p>
+          )}
+
+          {mode === 'free' && (
+            <p className="mt-5 flex items-start gap-2 rounded-lg bg-surface-sunken px-4 py-3 text-xs leading-relaxed text-ink-muted">
+              <svg className="mt-0.5 h-4 w-4 flex-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
+                <path d="m5 13 4 4L19 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>
+                No payment and <strong className="font-semibold text-ink">nothing to approve</strong> — we make your
+                account, email you a password, and the course is open the moment you sign in.
               </span>
             </p>
           )}
@@ -418,19 +498,19 @@ function Spinner() {
  * would otherwise close the dialog and leave no contact details behind.
  */
 function Actions({
-  applying,
+  mode,
   priceLabel,
   submitting,
   onIntent,
 }: {
-  applying: boolean;
+  mode: Mode;
   priceLabel: string;
   submitting: Intent | null;
   onIntent: (intent: Intent) => void;
 }) {
   const busy = submitting !== null;
 
-  if (applying) {
+  if (mode === 'apply') {
     return (
       <button
         type="submit"
@@ -448,6 +528,30 @@ function Actions({
           'Send my application'
         )}
       </button>
+    );
+  }
+
+  if (mode === 'free') {
+    return (
+      <div className="space-y-2.5">
+        <button
+          type="submit"
+          form={FORM_ID}
+          disabled={busy}
+          onClick={() => onIntent('free')}
+          className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-80"
+        >
+          {submitting === 'free' ? (
+            <>
+              <Spinner />
+              Setting up your account…
+            </>
+          ) : (
+            'Start the course'
+          )}
+        </button>
+        <p className="pt-0.5 text-center text-xs text-ink-subtle">Free. No card, no payment details.</p>
+      </div>
     );
   }
 
@@ -490,17 +594,40 @@ function Actions({
   );
 }
 
+/**
+ * What happened, and what to do next.
+ *
+ * Three outcomes, and the difference between them is the whole message: an
+ * application waits for a person, a registration waits for money, and a free
+ * course waits for nothing at all. Saying "we will be in touch" after the third
+ * one would hide the fact that the course is already open.
+ */
 function DoneBody({
-  registered,
+  done,
   email,
   title,
   priceLabel,
+  emailedLogin,
 }: {
-  registered: boolean;
+  done: 'applied' | 'registered' | 'enrolled';
   email: string;
   title: string;
   priceLabel: string;
+  emailedLogin: boolean;
 }) {
+  /** How they get in, which depends on whether a password was just emailed. */
+  const signInStep = emailedLogin ? (
+    <>
+      Sign in with the temporary password we emailed to{' '}
+      <strong className="font-semibold text-ink">{email}</strong>.
+    </>
+  ) : (
+    <>
+      Sign in with the password you already use — this email address has an account, so we have not sent a new
+      one.
+    </>
+  );
+
   return (
     <div className="space-y-4 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand">
@@ -508,24 +635,41 @@ function DoneBody({
           <path d="m5 13 4 4L19 7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      {registered ? (
+
+      {done === 'enrolled' && (
         <>
           <p className="text-sm text-ink-muted">
-            Your place on <strong className="font-semibold text-ink">{title}</strong> is saved. We have emailed{' '}
-            <strong className="font-semibold text-ink">{email}</strong> your login details.
+            You are enrolled in <strong className="font-semibold text-ink">{title}</strong>. It is free, so there is
+            nothing to pay and nothing to wait for.
           </p>
           <div className="rounded-lg bg-surface-sunken px-4 py-3 text-left text-sm text-ink-muted">
             <p className="font-semibold text-ink">What happens next</p>
-            <ol className="mt-2 space-y-1.5 list-decimal pl-4">
-              <li>Sign in with the temporary password in that email.</li>
-              <li>
-                The course sits locked on your dashboard until you pay {priceLabel} — one button unlocks it.
-              </li>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-4">
+              <li>{signInStep}</li>
+              <li>The course is already open on your dashboard — start the first lesson.</li>
+              <li>Browse the rest of the catalogue whenever you like.</li>
+            </ol>
+          </div>
+        </>
+      )}
+
+      {done === 'registered' && (
+        <>
+          <p className="text-sm text-ink-muted">
+            Your place on <strong className="font-semibold text-ink">{title}</strong> is saved.
+          </p>
+          <div className="rounded-lg bg-surface-sunken px-4 py-3 text-left text-sm text-ink-muted">
+            <p className="font-semibold text-ink">What happens next</p>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-4">
+              <li>{signInStep}</li>
+              <li>The course sits locked on your dashboard until you pay {priceLabel} — one button unlocks it.</li>
               <li>Browse and pay for anything else in the catalogue meanwhile.</li>
             </ol>
           </div>
         </>
-      ) : (
+      )}
+
+      {done === 'applied' && (
         <p className="text-sm text-ink-muted">
           Thank you. The admissions team will email <strong className="font-semibold text-ink">{email}</strong> about
           the next cohort, the schedule and how to pay.
@@ -535,8 +679,8 @@ function DoneBody({
   );
 }
 
-function DoneFooter({ onClose, registered }: { onClose: () => void; registered: boolean }) {
-  if (!registered) {
+function DoneFooter({ onClose, signIn, label }: { onClose: () => void; signIn: boolean; label: string }) {
+  if (!signIn) {
     return (
       <button type="button" onClick={onClose} className="btn-primary w-full">
         Done
@@ -546,7 +690,7 @@ function DoneFooter({ onClose, registered }: { onClose: () => void; registered: 
   return (
     <div className="space-y-2">
       <a href={LOGIN_URL} className="btn-primary w-full">
-        Log in and pay
+        {label}
       </a>
       <button
         type="button"

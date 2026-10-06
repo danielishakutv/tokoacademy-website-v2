@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ENQUIRY_ENDPOINT } from '@/lib/enquiries';
+import { leadSource } from '@/lib/leadSource';
 
 /**
  * The contact form.
@@ -132,7 +133,7 @@ export default function ContactForm({ siteKey }: { siteKey: string | null }) {
           phone: phone.trim(),
           subject: subject.trim(),
           message: trimmedMessage,
-          source: typeof window === 'undefined' ? '' : window.location.pathname,
+          source: leadSource(),
           captchaToken: tokenRef.current,
           website: honeypotRef.current?.value ?? '',
         }),

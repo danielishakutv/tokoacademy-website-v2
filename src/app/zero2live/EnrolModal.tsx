@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Sheet from '@/components/ui/Sheet';
 import { ENROL_ENDPOINT, APPLY_ENDPOINT, COURSE_SLUG, LOGIN_URL } from './config';
+import { leadSource } from '@/lib/leadSource';
 
 type Props = {
   open: boolean;
@@ -99,7 +100,7 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
           courseSlug: COURSE_SLUG,
           // Travels through to the leads notification, so the group can see the
           // seat request came from this landing page rather than the catalogue.
-          source: typeof window === 'undefined' ? '' : window.location.pathname,
+          source: leadSource(),
           website: honeypotRef.current?.value ?? '', // honeypot, stays empty
         }),
       });
@@ -137,7 +138,7 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
             email: em,
             phone: ph,
             courseSlug: COURSE_SLUG,
-            source: typeof window === 'undefined' ? '' : window.location.pathname,
+            source: leadSource(),
             website: honeypotRef.current?.value ?? '',
           }),
         });
