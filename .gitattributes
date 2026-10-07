@@ -1,0 +1,3 @@
+# Font binaries must never be line-ending converted.
+*.woff2 binary
+*.woff  binary

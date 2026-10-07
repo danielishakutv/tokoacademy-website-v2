@@ -13,9 +13,23 @@
  *
  * Everything here runs at BUILD time. The site is a static export
  * (`output: 'export'`), so there is no server to fetch anything later — the
- * HTML that ships is the HTML a visitor gets. That is why a course change in
- * the admin needs a rebuild to appear, and why the platform pings this repo's
- * deploy webhook when a course is published.
+ * HTML that ships is the HTML a visitor gets. A course change in the admin
+ * therefore needs a rebuild to appear at all.
+ *
+ * Two things cause that rebuild, and until 2026-10-07 only the second existed:
+ *
+ *   1. The platform fires a `course_update` repository_dispatch when a course
+ *      is created, edited, published, unpublished or re-curriculumed. The
+ *      change is live in about two minutes. (Its end is
+ *      `server/src/lib/websiteRebuild.ts` in the toko_dlc repository.)
+ *   2. A nightly build at 06:17 UTC, which catches anything missed.
+ *
+ * This comment used to claim (1) already existed. It did not — there was no
+ * such call anywhere in the platform — so every course edit actually waited for
+ * the nightly build. On the morning of 2026-10-07 that build failed in
+ * `next/font`, silently, and this site served a thirty-hour-old catalogue.
+ * Hence the dispatch, a font that no longer comes over the network, and an
+ * issue opened on this repository whenever a deploy fails.
  */
 
 const API = process.env.DLC_API_URL ?? 'https://learn.tokoacademy.org';
