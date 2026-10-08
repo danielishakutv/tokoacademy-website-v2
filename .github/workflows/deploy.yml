@@ -128,51 +128,42 @@ jobs:
 
   # ---------------------------------------------------------------------
   # A failed deploy used to be silent: the site just stopped updating and
-  # nothing said so. On 2026-10-07 that cost thirty hours. This turns a
-  # failure into something that arrives - GitHub emails the repository owner
-  # about a new issue, and the issue is itself a record of when it started.
+  # nothing said so. On 2026-10-07 that cost thirty hours. This sends the
+  # failure to the Telegram group, which is where these are actually read.
   #
-  # It uses the job own GITHUB_TOKEN, so there is no new secret to hold and
-  # nothing to rotate. The build job keeps contents:read; only this job may
-  # write an issue, and it never touches the server.
+  # It goes through scripts/telegram-alert.sh, the same file the deliberate
+  # test in alert-test.yml uses — a test that exercised a different code path
+  # would prove nothing about this one.
+  #
+  # If the secrets are missing or Telegram refuses, this job goes RED with the
+  # reason. An alert that silently fails to send is worse than none, because
+  # the quiet feels like good news.
   # ---------------------------------------------------------------------
   notify-failure:
     needs: build-and-deploy
     if: failure()
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
-      - name: Open or update the deploy-failure issue
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Tell Telegram the website stopped updating
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           TRIGGER: ${{ github.event_name }}
         run: |
-          set -euo pipefail
-          label="deploy-failure"
-
-          # The label must exist before an issue can carry it. And a build that
-          # fails every night must not open an issue every night, so an open
-          # one is commented on rather than duplicated.
-          gh label create "$label" --color B60205 --description "The site build or deploy failed; tokoacademy.org is not updating" --repo "$REPO" 2>/dev/null || true
-
           {
-            echo "The site did not deploy, so **tokoacademy.org is still serving the previous build**. Anything edited since then - a course price, a title, a page - is not visible to visitors."
+            echo "<b>tokoacademy.org did not deploy</b>"
             echo
-            echo "- Run: $RUN_URL"
-            echo "- Triggered by: $TRIGGER"
-            echo "- Failed at: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "The site is still serving the previous build. Anything edited since then - a course price, a title, a page - is not visible to visitors."
             echo
-            echo "Course data is read from the DLC API at build time, so until a build succeeds the catalogue on the website stays frozen at the last good one."
-          } > issue-body.md
-
-          existing=$(gh issue list --repo "$REPO" --label "$label" --state open --limit 1 --json number --jq '.[0].number // empty')
-
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --repo "$REPO" --body-file issue-body.md
-            echo "commented on open issue #$existing"
-          else
-            gh issue create --repo "$REPO" --label "$label" --title "Deploy failed - the website has stopped updating" --body-file issue-body.md
-          fi
+            echo "Course data is read from the DLC API at build time, so the catalogue on the website stays frozen at the last good build until this is fixed."
+            echo
+            echo "Triggered by: $TRIGGER"
+            echo "Run: $RUN_URL"
+          } | bash scripts/telegram-alert.sh

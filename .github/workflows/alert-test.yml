@@ -1,0 +1,63 @@
+name: Test the failure alert (fails on purpose)
+
+# Proves the deploy-failure alert actually reaches somebody, without having to
+# break a real deploy to find out.
+#
+# The point is the SHAPE of it. A test that just called Telegram would prove the
+# token works and nothing else. This fails a job on purpose and hangs the alert
+# off `needs` + `if: failure()` — the identical mechanism deploy.yml uses — and
+# sends through the identical script. So a green `notify` job here means the
+# real thing will fire and arrive.
+#
+# THE RUN WILL SHOW RED. That is the test working: the `break` job is meant to
+# fail. Read the `notify` job instead — green there is the answer. GitHub may
+# also email you about the failed run, which is itself a second alert path
+# proving itself.
+#
+# Run it from the Actions tab, or:  gh workflow run alert-test.yml
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  break:
+    name: Fail on purpose
+    runs-on: ubuntu-latest
+    steps:
+      - name: This is supposed to fail
+        run: |
+          echo "Failing deliberately so the alert below is reached the same way"
+          echo "a real failed deploy reaches it."
+          exit 1
+
+  notify:
+    name: Send the alert
+    needs: break
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Send a test alert to Telegram
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          WHO: ${{ github.actor }}
+        run: |
+          {
+            echo "<b>Test alert - tokoacademy.org</b>"
+            echo
+            echo "Nothing is wrong. This is the deploy-failure alert being tested on purpose, so that it is known to work before it is needed."
+            echo
+            echo "A real one says the site did not deploy and is serving an old build."
+            echo
+            echo "Started by: $WHO"
+            echo "Run: $RUN_URL"
+          } | bash scripts/telegram-alert.sh
