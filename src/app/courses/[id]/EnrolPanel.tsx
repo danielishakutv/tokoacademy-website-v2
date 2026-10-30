@@ -171,6 +171,12 @@ function EnrolDialog({
    * been here before was told to wait for something that was never coming.
    */
   const [emailedLogin, setEmailedLogin] = useState(true);
+  /**
+   * Whether the course they applied for sits locked until they pay. The server
+   * says so (`locked`), because a free scheduled course opens on approval
+   * instead, and telling that person to pay would be wrong.
+   */
+  const [appliedLocked, setAppliedLocked] = useState(true);
 
   const honeypotRef = useRef<HTMLInputElement>(null);
 
@@ -261,6 +267,7 @@ function EnrolDialog({
       if (intent !== 'pay' && (response.status === 201 || response.status === 200)) {
         // Absent means a brand-new account, which is always emailed its login.
         setEmailedLogin(data.credentialsEmailed !== false);
+        setAppliedLocked(data.locked !== false);
         setDone(intent === 'apply' ? 'applied' : intent === 'free' ? 'enrolled' : 'registered');
         setSubmitting(null);
         return;
@@ -310,7 +317,7 @@ function EnrolDialog({
   const description = done
     ? undefined
     : mode === 'apply'
-      ? 'We will contact you about the next cohort, dates and payment.'
+      ? 'We will email you a login straight away. Sign in to pay and secure your place in the next cohort.'
       : mode === 'free'
         ? 'It is free. Tell us who you are and we will open it on your dashboard straight away.'
         : `Pay ${priceLabel} now and start today, or register and pay when you are ready.`;
@@ -328,8 +335,14 @@ function EnrolDialog({
         done ? (
           <DoneFooter
             onClose={onClose}
-            signIn={done !== 'applied'}
-            label={done === 'registered' ? 'Log in and pay' : 'Log in and start'}
+            signIn
+            label={
+              done === 'registered' || (done === 'applied' && appliedLocked)
+                ? 'Log in and pay'
+                : done === 'applied'
+                  ? 'Log in'
+                  : 'Log in and start'
+            }
           />
         ) : (
           <Actions
@@ -350,6 +363,7 @@ function EnrolDialog({
           title={title}
           priceLabel={priceLabel}
           emailedLogin={emailedLogin}
+          appliedLocked={appliedLocked}
         />
       ) : (
         <>
@@ -597,10 +611,11 @@ function Actions({
 /**
  * What happened, and what to do next.
  *
- * Three outcomes, and the difference between them is the whole message: an
- * application waits for a person, a registration waits for money, and a free
- * course waits for nothing at all. Saying "we will be in touch" after the third
- * one would hide the fact that the course is already open.
+ * Three outcomes, and the difference between them is the whole message: a
+ * paid application or registration waits for money (approval never opens a
+ * paid course), a free application waits for a person, and a free course waits
+ * for nothing at all. Saying "we will be in touch" after the last one would
+ * hide the fact that the course is already open.
  */
 function DoneBody({
   done,
@@ -608,12 +623,14 @@ function DoneBody({
   title,
   priceLabel,
   emailedLogin,
+  appliedLocked,
 }: {
   done: 'applied' | 'registered' | 'enrolled';
   email: string;
   title: string;
   priceLabel: string;
   emailedLogin: boolean;
+  appliedLocked: boolean;
 }) {
   /** How they get in, which depends on whether a password was just emailed. */
   const signInStep = emailedLogin ? (
@@ -670,10 +687,26 @@ function DoneBody({
       )}
 
       {done === 'applied' && (
-        <p className="text-sm text-ink-muted">
-          Thank you. The admissions team will email <strong className="font-semibold text-ink">{email}</strong> about
-          the next cohort, the schedule and how to pay.
-        </p>
+        <>
+          <p className="text-sm text-ink-muted">
+            Your application for <strong className="font-semibold text-ink">{title}</strong> is in.
+          </p>
+          <div className="rounded-lg bg-surface-sunken px-4 py-3 text-left text-sm text-ink-muted">
+            <p className="font-semibold text-ink">What happens next</p>
+            <ol className="mt-2 list-decimal space-y-1.5 pl-4">
+              <li>{signInStep}</li>
+              {appliedLocked ? (
+                <li>
+                  The course sits locked on your dashboard until you pay {priceLabel}. One button unlocks it, and
+                  paying is what secures your place in the cohort.
+                </li>
+              ) : (
+                <li>The admissions team will confirm your place, and the course opens on your dashboard.</li>
+              )}
+              <li>We will email you about the cohort dates and schedule.</li>
+            </ol>
+          </div>
+        </>
       )}
     </div>
   );

@@ -48,6 +48,8 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
   const [error, setError] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(false);
   const [done, setDone] = useState(false);
+  // False when the email already had a working login, so no password was sent.
+  const [emailedLogin, setEmailedLogin] = useState(true);
   const honeypotRef = useRef<HTMLInputElement>(null);
 
   // Reset transient state ONLY when the modal opens — not on every submitting
@@ -112,7 +114,8 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
         return;
       }
       if (!selfPaced && (res.status === 201 || res.status === 200)) {
-        // Application lodged. Nothing to pay yet; admissions confirms the seat.
+        // Application lodged. Their login is emailed now; the seat opens once they pay.
+        setEmailedLogin(data.credentialsEmailed !== false);
         setDone(true);
         setSubmitting(false);
         return;
@@ -143,6 +146,8 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
           }),
         });
         if (retry.status === 201 || retry.status === 200) {
+          const retryData = await retry.json().catch(() => ({}));
+          setEmailedLogin(retryData.credentialsEmailed !== false);
           setDone(true);
           setSubmitting(false);
           return;
@@ -153,6 +158,9 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
         setError(data.error || "You're already enrolled — just log in to continue.");
       } else if (res.status === 503) {
         setError(data.error || "Online payment isn't available yet. Please try again later.");
+      } else if (res.status === 429) {
+        // The apply endpoint is throttled because it emails a login on every call.
+        setError('That is a few too many attempts. Please wait a few minutes and try again.');
       } else if (res.status === 400) {
         setError(data.error || 'Please check your details and try again.');
       } else if (res.status === 404) {
@@ -180,13 +188,22 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
           ? undefined
           : selfPaced
             ? `Pay ${price} securely. Your login is emailed to you right after payment.`
-            : `${price} for the two days. Tell us you want a seat and we will confirm it and take payment — the room is small, so places are held in order.`
+            : `${price} for the two days. Request a seat and we will email you a login straight away. Pay from your dashboard to secure it. The room is small, so places go in the order they are paid for.`
       }
       footer={
         done ? (
-          <button type="button" onClick={onClose} className="btn-primary w-full">
-            Done
-          </button>
+          <div className="space-y-2">
+            <a href={LOGIN_URL} className="btn-primary w-full">
+              Log in and pay
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-ink-muted transition-colors hover:text-ink"
+            >
+              I&apos;ll do it later
+            </button>
+          </div>
         ) : (
         <div className="space-y-2.5">
           <button
@@ -218,7 +235,7 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
             </svg>
             {selfPaced
               ? "Secured by Paystack. You'll be redirected to pay."
-              : 'No payment now — we will call you to confirm your seat.'}
+              : 'No payment on this form. You pay after you sign in.'}
           </p>
         </div>
         )
@@ -232,12 +249,18 @@ export default function EnrolModal({ open, onClose, price, selfPaced = false }: 
             </svg>
           </div>
           <p className="text-sm text-ink-muted">
-            Thank you. We have your details and the admissions team will call{' '}
-            <strong className="font-semibold text-ink">{phone.trim()}</strong> to confirm your seat
-            and take payment.
+            {emailedLogin ? (
+              <>
+                Thank you. We have emailed a login to{' '}
+                <strong className="font-semibold text-ink">{email.trim()}</strong>.
+              </>
+            ) : (
+              <>Thank you. This email already has an account, so sign in with the password you already use.</>
+            )}{' '}
+            Sign in and pay {price} from your dashboard to secure your seat.
           </p>
           <p className="text-xs text-ink-subtle">
-            Places are held in the order they are requested, so the sooner we reach you the better.
+            Places go in the order they are paid for. If you would rather pay by transfer, reply to the email.
           </p>
         </div>
       ) : (
